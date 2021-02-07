@@ -22,19 +22,6 @@ public void OnPluginStart()
 	//	SetFailState("This plugin works only on CS:GO");
 	//}
 	
-	Handle core = FindPluginByFile("gangs.smx"); 
-	if (core != INVALID_HANDLE) PrintToServer("Success find core"); 
-	else SetFailState("Core not found");
-	
-	char sVersion[128];
-	if (GetPluginInfo(core, PlInfo_Version, sVersion, sizeof(sVersion)))
-	{
-		if(!StrEqual(sVersion, "1.2 [Private]")) 
-			SetFailState("This plugin not work with this core version");
-	}
-	else SetFailState("Failed to get core version"); 
-	core = INVALID_HANDLE;
-	
 	RegAdminCmd("sm_gangadmin", Command_GangAdmin, ADMFLAG_ROOT);
 }
 

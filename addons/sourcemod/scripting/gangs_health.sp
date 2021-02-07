@@ -155,19 +155,6 @@ public void OnPluginStart()
 		SetFailState("This plugin works only on CS:GO");
 	}
 	
-	Handle core = FindPluginByFile("gangs.smx"); 
-	if (core != INVALID_HANDLE) PrintToServer("Success"); 
-	else SetFailState("Core not found");
-	
-	char sVersion[128];
-	if (GetPluginInfo(core, PlInfo_Version, sVersion, sizeof(sVersion)))
-	{
-		if(!StrEqual(sVersion, "1.2 [Private]")) 
-			SetFailState("This plugin not work with this core version");
-	}
-	else SetFailState("Failed to get core version"); 
-	core = INVALID_HANDLE;
-	
 	HookEvent("player_spawn", Event_PlayerSpawn);
 	
 	m_iHealth = FindSendPropInfo("CCSPlayer", "m_iHealth");
