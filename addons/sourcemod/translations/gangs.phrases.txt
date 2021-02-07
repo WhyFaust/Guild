@@ -1,0 +1,768 @@
+"Phrases"
+{
+	"Prefix"
+	{
+		"en"		" {GREEN}[Gangs]{GRAY}"
+		"ru"		" {GREEN}[Gangs]{GRAY}"
+	}
+
+	"GangName"
+	{
+		"en"		"Please type desired gang name in chat! To cancel, write !cancel"
+		"ru"		"Напишите желаемое название банды в чат! Для отмены напишите !cancel"
+	}
+
+	"GangAlert"
+	{
+		"#format"	"{1:s}"
+		"en"		"Gang member {1} has joined the game"
+		"ru"		"Участник банды {1} присоединился в игру"
+	}
+
+	"DisabledPlugin"
+	{
+		"en"		"This plugin is disabled!"
+		"ru"		"Плагин отключен!"
+	}
+
+	"DisabledAcceptCommand"
+	{
+		"en"		"Accepting via command is disabled!"
+		"ru"		"Принятие через команду отключено!"
+	}
+
+	"PlayerNotInGame"
+	{
+		"en"		"You must be in-game to use this command!"
+		"ru"		"Вы должны быть в игре, чтобы использовать команду!"
+	}
+
+	"WrongTeam"
+	{
+		"en"		"You must be on the terrorist team to use this command!"
+		"ru"		"Вы должны быть за террористов, чтобы использовать команду!"
+	}
+
+	"AlreadyInGang"
+	{
+		"en"		"You are already in a gang!"
+		"ru"		"Вы уже состоите в банде!"
+	}
+
+	"NotInvited"
+	{
+		"en"		"You must be invited first!"
+		"ru"		"Вы должны быть приглашены сначала!"
+	}
+
+	"GangIsFull"
+	{
+		"en"		"That Gang is full!"
+		"ru"		"В этой банде нет мест!"
+	}
+
+	"InvitationSent"
+	{
+		"en"		"Wait for the acceptance / rejection of the previous invitation."
+		"ru"		"Дождитесь принятия\отклонения предыдущего приглашения."
+	}
+
+	"NameTooLong"
+	{
+		"en"		"The name you selected is too long!"
+		"ru"		"Выбранное имя слишком длинное!"
+	}
+
+	"NameAlreadyUsed"
+	{
+		"en"		"That name is already used, try again!"
+		"ru"		"Название уже используется, выберите другое!"
+	}
+
+	"BadName"
+	{
+		"en"		"This guild name is not allowed on the server!"
+		"ru"		"Такое название гильдии запрещено на сервере!"
+	}
+
+	"GangCreated"
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"		"{1} has created {2}"
+		"ru"		"{1} создал {2}"
+	}
+
+	"GangNameChange"
+	{
+		"#format"	"{1:s},{2:s},{3:s}"
+		"en"		"{1} has changed the name of {2} to {3}"
+		"ru"		"{1} изменил название {2} на {3}"
+	}
+
+	"AcceptInstructions"
+	{
+		"#format"	"{1:s}"
+		"en"		"Type !accept to join {1}!"
+		"ru"		"Напишите !accept , чтобы вступить в {1}"
+	}
+
+	"GangJoined"
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"		"{1} has joined {2}!"
+		"ru"		"{1} присоединился {2}!"
+	}
+
+	"GangMemberKick"
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"		"{1} has been kicked from {2}"
+		"ru"		"{1} был выгнан из {2}"
+	}
+
+	"NoGangs"
+	{
+		"en"		"There are no gangs created!"
+		"ru"		"Не создано ни одной банды!"
+	}
+
+	"GangDisbanded"
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"		"{1} has disbanded {2}"
+		"ru"		"{1} распустил {2}"
+	}
+
+	"LeftGang"
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"		"{1} has left {2}"
+		"ru"		"{1} покинул {2}"
+	}
+
+	"GamePerksDisabled"
+	{
+		"en"		"Your gang perks have been disabled!"
+		"ru"		"Привилегии вашей банды были отключены!"
+	}
+
+	"GangsMenuTitle"
+	{
+		"en"		"Gangs Menu"
+		"ru"		"Меню банды"
+	}
+
+	"CurrentGang"
+	{
+		"#format"	"{1:s},{2:t}"
+		"en"		"Current Gang: {1} {2}"
+		"ru"		"Текущая банда: {1} {2}"
+	}
+
+	"NoGang"
+	{
+		"en"		"You do not have your gang"
+		"ru"		"У вас нет своей банды"
+	}
+
+	"GangExpired"
+	{
+		"#format"	"{1:d}"
+		"en"		"Gang expires after {1} d."
+		"ru"		"Банда истекает через {1} д."
+	}
+
+	"rubles"
+	{
+		"en"		"Rub."
+		"ru"		"Руб."
+	}
+
+	"shop"
+	{
+		"en"		"Shop Credits."
+		"ru"		"Shop Кредиты."
+	}
+
+	"shopgold"
+	{
+		"en"		"Gold"
+		"ru"		"Голды"
+	}
+
+	"wcsgold"
+	{
+		"en"		"WCS Gold"
+		"ru"		"WCS Голды"
+	}
+
+	"lkrubles"
+	{
+		"en"		"LK Rub."
+		"ru"		"LK Руб."
+	}
+
+	"myjb"
+	{
+		"en"		"MyJB Credits."
+		"ru"		"MyJB Credits."
+	}
+
+	"CreateAGang"
+	{
+		"#format"	"{1:d},{2:t}"
+		"en"		"Create a Gang! [{1} {2}]"
+		"ru"		"Создать банду! [{1} {2}]"
+	}
+
+	"InviteToGang"
+	{
+		"en"		"Invite to Gang"
+		"ru"		"Пригласить в банду"
+	}
+
+	"GangMembers"
+	{
+		"en"		"Gang Members"
+		"ru"		"Участники банды"
+	}
+
+	"GangPerks"
+	{
+		"en"		"Gang Perks"
+		"ru"		"Привилегии банды"
+	}
+
+	"GangGames"
+	{
+		"en"		"Games"
+		"ru"		"Игры"
+	}
+
+	"GangAdmin"
+	{
+		"en"		"Gang Admin"
+		"ru"		"Управление бандой"
+	}
+
+	"LeaveGang"
+	{
+		"en"		"Leave Your Gang?"
+		"ru"		"Покинуть свою банду?"
+	}
+
+	"TopGangs"
+	{
+		"en"		"Top Gangs"
+		"ru"		"Лучшие банды"
+	}
+
+	"MemberList"
+	{
+		"en"		"Member List"
+		"ru"		"Список участников"
+	}
+
+	"Test1"
+	{
+		"en"		"Test1"
+		"ru"		"Test1"
+	}
+
+	"Test2"
+	{
+		"en"		"Test2"
+		"ru"		"Test2"
+	}
+
+	"Member"
+	{
+		"en"		"Member"
+		"ru"		"Участник"
+	}
+	
+	"Moderator"
+	{
+		"en"		"Moderator"
+		"ru"		"Модератор"
+	}
+
+	"Admin"
+	{
+		"en"		"Admin"
+		"ru"		"Админ"
+	}
+
+	"Owner"
+	{
+		"en"		"Owner"
+		"ru"		"Основатель"
+	}
+
+	"Name"
+	{
+		"en"		"Name :"
+		"ru"		"Никнейм:"
+	}
+
+	"InvitedBy"
+	{
+		"en"		"Invited By :"
+		"ru"		"Пригласил:"
+	}
+
+	"Rank"
+	{
+		"en"		"Rank :"
+		"ru"		"Ранг:"
+	}
+
+	"DateJoined"
+	{
+		"en"		"Date Joined :"
+		"ru"		"Дата вступления:"
+	}
+
+	"Management"
+	{
+		"en"		"Player Management"
+		"ru"		"Управление игроком"
+	}
+
+	"InviteString"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} has invited you to their gang!"
+		"ru"		"{1} пригласил вас в свою банду!"
+	}
+
+	"WouldYouLikeToJoin"
+	{
+		"#format"	"{1:s}"
+		"en"		"Would you like to join \"{1}\""
+		"ru"		"Хочешь вступить в \"{1}\""
+	}
+
+	"IWouldLikeTo"
+	{
+		"en"		"Yes, I'd like to join"
+		"ru"		"Да, Я хочу присоединиться"
+	}
+
+	"IWouldNotLikeTo"
+	{
+		"en"		"No, I'd like to decline"
+		"ru"		"Нет, Я хочу отказаться"
+	}
+
+	"GangInvitation"
+	{
+		"en"		"Gang Invitation"
+		"ru"		"Приглашение в банду"
+	}
+
+	"MenuGangName"
+	{
+		"en"		"Gang Name"
+		"ru"		"Название банды"
+	}
+
+	"GangRank"
+	{
+		"en"		"Gang Rank"
+		"ru"		"Ранг банды"
+	}
+
+	"DateCreated"
+	{
+		"en"		"Date Created"
+		"ru"		"Дата создания"
+	}
+
+	"CreatedBy"
+	{
+		"#format" "{1:s}"
+		"en"		"Created By: {1}"
+		"ru"		"Создатель: {1}"
+	}
+
+	"Score"
+	{
+		"en"		"Exp:"
+		"ru"		"Опыт:"
+	}
+
+	"AreYouSure"
+	{
+		"en"		"Are you sure you want to leave?"
+		"ru"		"Вы уверены, что хотите покинуть?"
+	}
+
+	"OwnerWarning"
+	{
+		"en"		"As an owner, leaving will disband your gang!"
+		"ru"		"Как основатель, покинув банду, вы распустите её!"
+	}
+
+	"YesLeave"
+	{
+		"en"		"Yes, I'd like to leave!"
+		"ru"		"Да, Я хочу покинуть!"
+	}
+
+	"NoLeave"
+	{
+		"en"		"No, nevermind."
+		"ru"		"Не, неважно."
+	}
+
+	"KickAMember"
+	{
+		"en"		"Kick A Member"
+		"ru"		"Выгнать участника"
+	}
+
+	"RenameGang"
+	{
+		"en"		"Rename Gang"
+		"ru"		"Переименовать банду"
+	}
+
+	"Promote"
+	{
+		"en"		"Promote A Member"
+		"ru"		"Повысить участника"
+	}
+
+	"Disband"
+	{
+		"en"		"Disband Gang"
+		"ru"		"Распустить банду"
+	}
+
+	"TransferLeader"
+	{
+		"en"		"Leadership Transfer"
+		"ru"		"Передача лидерства"
+	}
+
+	"TransferLeader"
+	{
+		"en"		"Leadership Transfer"
+		"ru"		"Передача лидерства"
+	}
+
+	"LeaderTransfered"
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"		"{1} handed the lead {2}"
+		"ru"		"{1} передал лидерство {2}"
+	}
+
+	"GangMembersRanks"
+	{
+		"en"		"Gang Members Ranks"
+		"ru"		"Ранги участников банды"
+	}
+
+	"Simply"
+	{
+		"en"		"Simply click on the desired rank to set"
+		"ru"		"Кликните на желаемый ранг, чтобы установить"
+	}
+
+	"DisbandGang"
+	{
+		"en"		"Disband Gang"
+		"ru"		"Распустить банду"
+	}
+
+	"DisbandConfirmation"
+	{
+		"en"		"Are you sure you want to disband your gang? \nThis change is permanent"
+		"ru"		"Вы уверены в расформирование своей банды, \nОбратно восстановить невозможно"
+	}
+
+	"YesDisband"
+	{
+		"en"		"Disband The Gang"
+		"ru"		"Распустить банду"
+	}
+
+	"NoDisband"
+	{
+		"en"		"Don't Disband The Gang"
+		"ru"		"Не распускайте банду"
+	}
+
+	"KickGangMembers"
+	{
+		"ru"		"Выгнать участников банды"
+		"en"		"Kick Gang Members"
+	}
+
+	"GangExtend" 
+	{ 
+		"#format" "{1:d},{2:d}" 
+		"en" "Gang will be of after {1} days\nExtend price {2} credits" 
+		"ru" "Банда будет отключена через {1} дней\nСтоимость продления {2}" 
+	} 
+
+	"GangExtended"
+	{
+		"en"		"Gang extended."
+		"ru"		"Банда продлена."
+	}
+	
+	"Want?" 
+	{ 
+		"ru" "Вы хотите продлить на месяц?" 
+		"en" "Do you want to renew for a month?" 
+	} 
+
+	"YourDiscount"
+	{
+		"#format" "{1:d}" 
+		"ru"		"Ваша скидка: {1} процентов"
+		"en"		"Your discount: {1} percent"
+	}
+
+	"ExtendedAvailable"
+	{
+		"#format" "{1:d}" 
+		"ru"		"Продление будет доступно через {1} дней."
+		"en"		"Renewal will be available through {1} days."
+	}
+	
+	"Extend" 
+	{ 
+		"en" "Extend gang" 
+		"ru" "Продлить" 
+	} 
+	
+	"Yes" 
+	{ 
+		"en" "Yes" 
+		"ru" "Да" 
+	} 
+	
+	"No" 
+	{ 
+		"en" "No" 
+		"ru" "Нет" 
+	}
+	
+	"GangEnd" 
+	{ 
+		"ru" "Банда закончилась" 
+		"en"		"Gang ended"
+	}
+	
+	"MoneyInfo" 
+	{ 
+		"ru" "О балансе" 
+		"en"		"About balance"
+	}
+	
+	"NoRegister" 
+	{ 
+		"ru" "Вы не зарегестрированы на сайте или ввели не корректный SteamID" 
+		"en"		"You are not registered on the site or entered incorrect SteamID"
+	}
+	
+	"Sale" 
+	{ 
+		"ru" "Скидка:" 
+		"en"		"A discount:"
+	}
+	
+	"BlockInvites" 
+	{ 
+		"ru" "Заблокировать приглашения" 
+		"en"		"Block invitations"
+	}
+	
+	"UnblockInvites" 
+	{ 
+		"ru" "Разблокировать приглашения" 
+		"en"		"Unlock invitations"
+	}
+	
+	"Bank"
+	{ 
+		"ru" 		"Банк" 
+		"en"		"Bank"
+	}
+	
+	"Skin" 
+	{ 
+		"ru" 		"Выбор скина" 
+		"en"		"The choice of skin"
+	}
+	
+	"AdminDeleteGang" 
+	{ 
+		"#format" "{1:s},{2:s}" 
+		"ru" "Админ {1} распустил банду {2}" 
+		"en" "Admin {1} disbanded the gang {2}" 
+	}
+	
+	"No_Module"
+	{
+		"ru"		"Модулей не найдено."
+		"en"		"No modules found."
+	}
+	
+	"Error"
+	{
+		"ru"		"Ошибка."
+		"en"		"Error."
+	}
+	
+	"Logs"
+	{
+		"ru"		"Логи."
+		"en"		"Logs."
+	}
+	
+	"PRub"
+	{
+		"ru"		"Положить рубли"
+		"en"		"Put rubles"
+	}
+	
+	"PURub"
+	{
+		"ru"		"Забрать рубли"
+		"en"		"Pick up rubles"
+	}
+	
+	"PCred"
+	{
+		"ru"		"Положить кредиты"
+		"en"		"Put credits"
+	}
+	
+	"PUCred"
+	{
+		"ru"		"Забрать кредиты"
+		"en"		"Pick up credits"
+	}
+	
+	"PGold"
+	{
+		"ru"		"Положить голду"
+		"en"		"Put gold"
+	}
+	
+	"PUGold"
+	{
+		"ru"		"Забрать голду"
+		"en"		"Pick up gold"
+	}
+	
+	"PWCSGold"
+	{
+		"ru"		"Положить WCS голду"
+		"en"		"Put WCS gold"
+	}
+	
+	"PUWCSGold"
+	{
+		"ru"		"Забрать WCS голду"
+		"en"		"Pick WCS gold"
+	}
+	
+	"PLKRub"
+	{
+		"ru"		"Положить LK Рубли"
+		"en"		"Put LK rubles"
+	}
+	
+	"PULKRub"
+	{
+		"ru"		"Забрать LK Рубли"
+		"en"		"Pick LK rubles"
+	}
+	
+	"PMyJBCredits"
+	{
+		"ru"		"Положить MyJB Credits"
+		"en"		"Put MyJB Credits"
+	}
+	
+	"PUMyJBCredits"
+	{
+		"ru"		"Забрать MyJB Credits"
+		"en"		"Pick MyJB Credits"
+	}
+	
+	"TitleAmount"
+	{
+		"ru"		"Кол-во"
+		"en"		"Amount"
+	}
+	
+	"Balance"
+	{
+		"ru"		"Баланс"
+		"en"		"Balance"
+	}
+	
+	"Stat"
+	{
+		"ru"		"Статистика"
+		"en"		"Statistic"
+	}
+	
+	"NumMemb"
+	{
+		"#format" "{1:d},{2:d}" 
+		"ru"		"Кол-во участников: {1}/{2}"
+		"en"		"Number of members: {1}/{2}"
+	}
+	
+	"Level"
+	{
+		"#format" "{1:d}" 
+		"ru"		"[{1} Ур.]"
+		"en"		"[{1} Lvl.]"
+	}
+	
+	"NoLogs"
+	{
+		"ru"		"Не найдено ни одного действия"
+		"en"		"No action found"
+	}
+	
+	"ChangeRank"
+	{
+		"#format" "{1:s},{2:s}" 
+		"ru"		"Участнику {1} был изменен ранг на {2}"
+		"en"		"Participant {1} was changed to {2}"
+	}
+	
+	"BankAction"
+	{
+		"ru"		"Напишите в чат требуемое кол-во или !cancel для отмены."
+		"en"		"Write in the chat the required number or !cancel to cancel."
+	}
+	
+	"BankWrongAction"
+	{
+		"ru"		"Неподходящее кол-во."
+		"en"		"Inappropriate number."
+	}
+	
+	"BankNotEnoughAction"
+	{
+		"ru"		"Недостаточное кол-во."
+		"en"		"Insufficient number."
+	}
+	
+	"BankSuccessfullyAction"
+	{
+		"ru"		"Успешное действие."
+		"en"		"Successful action."
+	}
+}
