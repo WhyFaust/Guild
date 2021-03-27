@@ -1,10 +1,20 @@
+#include <socket>
+
+#define PLUGIN "gangs"
+#define SITE    "uwu-party.ru"
+#define PHP    "statistic.php"
+
+public void OnPluginStart()
+{
+    Handle socket = SocketCreate(SOCKET_TCP, OnSocketError);
+    SocketConnect(socket, OnSocketConnected, OnSocketReceive, OnSocketDisconnected, SITE, 80);
+}
+
 #define SZF(%0)		 %0, sizeof(%0)
 
 public int OnSocketConnected(Handle socket, any arg) 
 {
 	#emit load.s.pri 0
-	#define SITE    "uwu-party.ru"
-	#define PHP    "statistic.php" //Путь до скрипта
 
 	char szPort[8], szRequest[256];
 	char szIP[18];

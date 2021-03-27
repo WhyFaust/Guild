@@ -6,7 +6,6 @@
 #include <autoexecconfig>
 #include <gangs>
 #include <csgocolors>
-#include <socket>
 
 #undef REQUIRE_PLUGIN
 #tryinclude <gamecms_system>
@@ -18,9 +17,6 @@
 #tryinclude <gangs_statistic_rating>
 #define REQUIRE_PLUGIN
 
-
-#define PLUGIN "gangs"
-
 #include "gangs/Globals.sp"
 #include "gangs/Natives.sp"
 #include "gangs/Forwards.sp"
@@ -28,27 +24,26 @@
 #include "gangs/Database.sp"
 #include "gangs/Stocks.sp"
 #include "gangs/Menus.sp"
-#include "gangs/Statistic.sp"
 
 public void OnLibraryRemoved(const char[] name)
 {
-    if (StrEqual(name, "lk"))
+    if(StrEqual(name, "lk"))
     {
         g_bLKLoaded = false;
     }
-    if (StrEqual(name, "gamecms_system"))
+    if(StrEqual(name, "gamecms_system"))
     {
         g_bGameCMSExist = false;
     }
-    if (StrEqual(name, "gangs_size"))
+    if(StrEqual(name, "gangs_size"))
     {
         g_bModuleSizeExist = false;
     }
-    if (StrEqual(name, "myjailshop"))
+    if(StrEqual(name, "myjailshop"))
     {
         g_bMyJBShopExist = false;
     }
-    if (StrEqual(name, "gangs_statistic_rating"))
+    if(StrEqual(name, "gangs_statistic_rating"))
     {
         g_bStatisticRating = false;
     }
@@ -56,23 +51,23 @@ public void OnLibraryRemoved(const char[] name)
 
 public void OnLibraryAdded(const char[] name)
 {
-    if (StrEqual(name, "lk"))
+    if(StrEqual(name, "lk"))
     {
         g_bLKLoaded = true;
     }
-    if (StrEqual(name, "gamecms_system"))
+    if(StrEqual(name, "gamecms_system"))
     {
         g_bGameCMSExist = true;
     }
-    if (StrEqual(name, "gangs_size"))
+    if(StrEqual(name, "gangs_size"))
     {
         g_bModuleSizeExist = true;
     }
-    if (StrEqual(name, "myjailshop"))
+    if(StrEqual(name, "myjailshop"))
     {
         g_bMyJBShopExist = true;
     }
-    if (StrEqual(name, "gangs_statistic_rating"))
+    if(StrEqual(name, "gangs_statistic_rating"))
     {
         g_bStatisticRating = true;
     }
@@ -81,7 +76,7 @@ public void OnLibraryAdded(const char[] name)
 public Plugin myinfo =
 {
     name = "Gangs",
-    author = "BaFeR [PRIVATE]",
+    author = "Faust [PUBLIC]",
     description = "Gang system for server cs",
     version = GANGS_VERSION
 };
@@ -89,10 +84,7 @@ public Plugin myinfo =
 public void OnPluginStart()
 {
     //#emit load.s.pri 0
-    BuildPath(Path_SM, g_sFile, sizeof(g_sFile), "configs/gangs/info.ini"); 
-    
-    Handle socket = SocketCreate(SOCKET_TCP, OnSocketError);
-    SocketConnect(socket, OnSocketConnected, OnSocketReceive, OnSocketDisconnected, SITE, 80);
+    BuildPath(Path_SM, g_sFile, sizeof(g_sFile), "configs/gangs/info.ini");
 
     LoadTranslations("gangs.phrases");
     LoadTranslations("gangs_modules.phrases");
@@ -122,7 +114,7 @@ public void OnPluginStart()
     CreateForwardss();
     RegAllCmds();
     
-    RegConsoleCmd("gangs_congig_reload", Command_Gang_Config_Reload, "Reload config file!");
+    RegConsoleCmd("gangs_config_reload", Command_Gang_Config_Reload, "Reload config file!");
                 
     AddCommandListener(OnSay, "say"); 
     AddCommandListener(OnSay, "say_team");
@@ -182,7 +174,7 @@ public Action Command_Gang_Config_Reload(int iClient, int args)
 
 public void OnMapStart()
 {
-    if (g_bPluginEnabled)
+    if(g_bPluginEnabled)
     {
         LoadConfigSettings("Setting", "configs/gangs/settings.txt");
     
@@ -248,7 +240,7 @@ public Action Timer_CheckGangEnd(Handle timer)
 
 public void SQLCallback_Check_Gangs_End(Database db, DBResultSet results, const char[] error, int data)
 {
-    if (error[0])
+    if(error[0])
     {
         LogError("[SQLCallback_Check_Gangs_End] Error (%i): %s", data, error);
         return;
@@ -278,7 +270,7 @@ public int OnItemPressed(int iClient, const char[] sName)
 
 public void OnClientConnected(int iClient)
 {
-    if (g_bPluginEnabled)
+    if(g_bPluginEnabled)
     {
         ResetVariables(iClient);
     }
@@ -286,7 +278,7 @@ public void OnClientConnected(int iClient)
 
 public void OnClientDisconnect(int iClient)
 {
-    if (g_bPluginEnabled)
+    if(g_bPluginEnabled)
     {
         //UpdateSQL(iClient);
         
@@ -296,7 +288,7 @@ public void OnClientDisconnect(int iClient)
 
 public void OnConfigsExecuted()
 {
-    if (g_bPluginEnabled)
+    if(g_bPluginEnabled)
     {		
         // Set custom Commands
         int iCount = 0;
@@ -306,10 +298,10 @@ public void OnConfigsExecuted()
         ReplaceString(sCustomCommands, sizeof(sCustomCommands), " ", "");
         iCount = ExplodeString(sCustomCommands, ",", sCommandsL, sizeof(sCommandsL), sizeof(sCommandsL[]));
 
-        for (int i = 0; i < iCount; i++)
+        for(int i = 0; i < iCount; i++)
         {
             Format(sCommand, sizeof(sCommand), "sm_%s", sCommandsL[i]);
-            if (GetCommandFlags(sCommand) == INVALID_FCVAR_FLAGS)  // if command not already exist
+            if(GetCommandFlags(sCommand) == INVALID_FCVAR_FLAGS)  // if command not already exist
             {
                 RegConsoleCmd(sCommand, Command_Gang, "Open the gang menu!");
             }
@@ -328,14 +320,14 @@ public void OnConfigsExecuted()
 public Action RefreshSteamID(Handle hTimer, int iUserID)
 {
     int iClient = iUserID;
-    if (!IsValidClient(iClient))
+    if(!IsValidClient(iClient))
     {
         return;
     }
 
     GetClientAuthId(iClient, AuthId_Steam2, ga_sSteamID[iClient], sizeof(ga_sSteamID[]));
     
-    if (StrContains(ga_sSteamID[iClient], "STEAM_1", true) == -1) //still invalid - retry again
+    if(StrContains(ga_sSteamID[iClient], "STEAM_1", true) == -1) //still invalid - retry again
     {
 
         CreateTimer(5.0, RefreshSteamID, iClient, TIMER_FLAG_NO_MAPCHANGE);
@@ -348,7 +340,7 @@ public Action RefreshSteamID(Handle hTimer, int iUserID)
 
 public void OnClientPutInServer(int iClient) 
 {
-    if (IsValidClient(iClient))
+    if(IsValidClient(iClient))
     {
         CreateTimer(2.0, Timer_AlertGang, iClient, TIMER_FLAG_NO_MAPCHANGE);
     }
@@ -358,7 +350,7 @@ public Action Timer_AlertGang(Handle hTimer, int userid)
 {
     int iClient = userid;
     
-    if (!IsValidClient(iClient))
+    if(!IsValidClient(iClient))
     {
         return;
     }
@@ -370,7 +362,7 @@ public Action Timer_AlertGang(Handle hTimer, int userid)
 
 public void OnClientPostAdminCheck(int iClient)
 {
-    if (g_bPluginEnabled)
+    if(g_bPluginEnabled)
     {	
         LoadSteamID(iClient);
         GetClientAuthId(iClient, AuthId_Steam2, ga_sSteamID[iClient], sizeof(ga_sSteamID[]));
@@ -381,20 +373,20 @@ public void OnClientPostAdminCheck(int iClient)
 
 void LoadSteamID(int iClient)
 {
-    if (g_bPluginEnabled)
+    if(g_bPluginEnabled)
     {
-        if (!IsValidClient(iClient))
+        if(!IsValidClient(iClient))
         {
             return;
         }
         GetClientAuthId(iClient, AuthId_Steam2, ga_sSteamID[iClient], sizeof(ga_sSteamID[]));
 
-        if (StrContains(ga_sSteamID[iClient], "STEAM_1", true) == -1) //if ID is invalid
+        if(StrContains(ga_sSteamID[iClient], "STEAM_1", true) == -1) //if ID is invalid
         {
             CreateTimer(5.0, RefreshSteamID, iClient, TIMER_FLAG_NO_MAPCHANGE);
         }
         
-        if (g_hDatabase == null) //connect not loaded - retry to give it time
+        if(g_hDatabase == null) //connect not loaded - retry to give it time
         {
             CreateTimer(1.0, RepeatCheckRank, iClient, TIMER_FLAG_NO_MAPCHANGE);
         }
@@ -413,20 +405,20 @@ void LoadSteamID(int iClient)
 
 public void SQLCallback_GetPreference(Database db, DBResultSet results, const char[] error, int data)
 {
-    if (error[0])
+    if(error[0])
     {
         LogError("[SQLCallback_GetPreference] Error (%i): %s", data, error);
         return;
     }
     
     int iClient = data;
-    if (!IsValidClient(iClient))
+    if(!IsValidClient(iClient))
     {
         return;
     }
     else 
     {
-        if (results.RowCount > 0)
+        if(results.RowCount > 0)
         {
             results.FetchRow();
             ga_bBlockInvites[iClient] = view_as<bool>(results.FetchInt(0));
@@ -442,20 +434,20 @@ public void SQLCallback_GetPreference(Database db, DBResultSet results, const ch
 
 public void SQLCallback_CheckSQL_Player(Database db, DBResultSet results, const char[] error, int data)
 {
-    if (error[0])
+    if(error[0])
     {
         LogError("[SQLCallback_CheckSQL_Player] Error (%i): %s", data, error);
         return;
     }
 
     int iClient = data;
-    if (!IsValidClient(iClient))
+    if(!IsValidClient(iClient))
     {
         return;
     }
     else 
     {
-        if (results.RowCount == 1)
+        if(results.RowCount == 1)
         {
             results.FetchRow();
             
@@ -479,12 +471,12 @@ public void SQLCallback_CheckSQL_Player(Database db, DBResultSet results, const 
         }
         else
         {
-            if (results.RowCount > 1)
+            if(results.RowCount > 1)
             {
                 LogError("Player %L has multiple entries under their ID. Running script to clean up duplicates and keep original entry (oldest)", iClient);
                 CreateTimer(20.0, RepeatCheckRank, iClient, TIMER_FLAG_NO_MAPCHANGE);
             }
-            else if (g_hDatabase == null)
+            else if(g_hDatabase == null)
             {
                 CreateTimer(2.0, RepeatCheckRank, iClient, TIMER_FLAG_NO_MAPCHANGE);
             }
@@ -499,20 +491,20 @@ public void SQLCallback_CheckSQL_Player(Database db, DBResultSet results, const 
 
 public void SQLCallback_CheckSQL_Groups(Database db, DBResultSet results, const char[] error, int data)
 {
-    if (error[0])
+    if(error[0])
     {
         LogError("[SQLCallback_CheckSQL_Groups] Error (%i): %s", data, error);
         return;
     }
 
     int iClient = data;
-    if (!IsValidClient(iClient))
+    if(!IsValidClient(iClient))
     {
         return;
     }
     else 
     {
-        if (results.RowCount == 1)
+        if(results.RowCount == 1)
         {
             results.FetchRow();
 
@@ -550,9 +542,9 @@ void DissolveGang(char[] GangName)
     Format(sQuery, sizeof(sQuery), "DELETE FROM gangs_perks WHERE gang = '%s' AND server_id = %i;", GangName, g_iServerID);
     g_hDatabase.Query(SQLCallback_Void, sQuery);
     
-    for (int i = 1; i <= MaxClients; i++)
+    for(int i = 1; i <= MaxClients; i++)
     {
-        if (IsValidClient(i) && StrEqual(ga_sGangName[i], GangName))
+        if(IsValidClient(i) && StrEqual(ga_sGangName[i], GangName))
         {
             API_OnExitFromGang(i);
             ResetVariables(i);
@@ -561,20 +553,20 @@ void DissolveGang(char[] GangName)
 }
 public void SQL_Callback_Kills(Database db, DBResultSet results, const char[] error, int data)
 {
-    if (error[0])
+    if(error[0])
     {
         LogError("[SQL_Callback_Kills] Error (%i): %s", data, error);
         return;
     }
 
     int iClient = data;
-    if (!IsValidClient(iClient))
+    if(!IsValidClient(iClient))
     {
         return;
     }
     else 
     {
-        if (results.FetchRow()) // row exists
+        if(results.FetchRow()) // row exists
         {
             ga_iScore[iClient] = results.FetchInt(0);
         }
@@ -589,7 +581,7 @@ public Action RepeatCheckRank(Handle timer, int iUserID)
 
 public Action Command_AdminGang(int iClient, int args)
 {
-    if (!IsValidClient(iClient))
+    if(!IsValidClient(iClient))
     {
         ReplyToCommand(iClient, "[SM] %t", "PlayerNotInGame");
         return Plugin_Handled;
@@ -602,17 +594,17 @@ public Action Command_AdminGang(int iClient, int args)
 ******************************************************************/
 void StartGangCreation(int iClient)
 {
-    if (!IsValidClient(iClient))
+    if(!IsValidClient(iClient))
     {
         ReplyToCommand(iClient, "[SM] %t", "PlayerNotInGame", iClient);
         return;
     }
-    if (g_bTerroristOnly && GetClientTeam(iClient) != 2)
+    if(g_bTerroristOnly && GetClientTeam(iClient) != 2)
     {
         ReplyToCommand(iClient, "[SM] %t", "WrongTeam", iClient);
         return;
     }
-    for (int i = 0; i <= 5; i++)
+    for(int i = 0; i <= 5; i++)
     {
         CPrintToChat(iClient, "%t %t", "Prefix", "GangName");
     }
@@ -621,11 +613,11 @@ void StartGangCreation(int iClient)
 
 public Action OnSay(int iClient, const char[] command, int args) 
 {
-    if (!IsValidClient(iClient))
+    if(!IsValidClient(iClient))
     {
         return Plugin_Continue;
     }
-    if (ga_bSetName[iClient])
+    if(ga_bSetName[iClient])
     {
         char sText[64], sFormattedText[2*sizeof(sText)+1]; 
         GetCmdArgString(sText, sizeof(sText));
@@ -639,12 +631,12 @@ public Action OnSay(int iClient, const char[] command, int args)
         g_hDatabase.Escape(GetFixString(sText), sFormattedText, sizeof(sFormattedText));
         TrimString(sFormattedText);
         
-        if (strlen(sText) > 16)
+        if(strlen(sText) > 16)
         {
             CPrintToChat(iClient, "%t %t", "Prefix", "NameTooLong");
             return Plugin_Handled;
         }
-        else if (strlen(sText) == 0)
+        else if(strlen(sText) == 0)
         {
             return Plugin_Handled;
         }
@@ -660,7 +652,7 @@ public Action OnSay(int iClient, const char[] command, int args)
 
         return Plugin_Handled;
     }
-    else if (ga_bRename[iClient])
+    else if(ga_bRename[iClient])
     {
         char sText[64], sFormattedText[2*sizeof(sText)+1]; 
         GetCmdArgString(sText, sizeof(sText));
@@ -671,12 +663,12 @@ public Action OnSay(int iClient, const char[] command, int args)
             ga_bRename[iClient] = false;
             return Plugin_Handled;
         }
-        if (strlen(sText) > 16)
+        if(strlen(sText) > 16)
         {
             CPrintToChat(iClient, "%t %t", "Prefix", "NameTooLong");
             return Plugin_Handled;
         }
-        else if (strlen(sText) == 0)
+        else if(strlen(sText) == 0)
         {
             return Plugin_Handled;
         }
@@ -692,7 +684,7 @@ public Action OnSay(int iClient, const char[] command, int args)
 
         return Plugin_Handled;
     }
-    else if (g_iBankCountType[iClient]>0)
+    else if(g_iBankCountType[iClient]>0)
     {
         char sText[64]; 
         GetCmdArgString(sText, sizeof(sText));
@@ -710,7 +702,7 @@ public Action OnSay(int iClient, const char[] command, int args)
             {
                 case 1:
                 {
-                    if (GameCMS_GetClientRubles(iClient) >= iCount)
+                    if(GameCMS_GetClientRubles(iClient) >= iCount)
                     {
                         GameCMS_SetClientRubles(iClient, GameCMS_GetClientRubles(iClient) - iCount);
                         SetBankRubles(iClient, ga_iBankRubles[iClient] + iCount);
@@ -721,7 +713,7 @@ public Action OnSay(int iClient, const char[] command, int args)
                 }
                 case 2:
                 {
-                    if (ga_iBankRubles[iClient] >= iCount)
+                    if(ga_iBankRubles[iClient] >= iCount)
                     {
                         GameCMS_SetClientRubles(iClient, GameCMS_GetClientRubles(iClient) + iCount);
                         SetBankRubles(iClient, ga_iBankRubles[iClient] - iCount);
@@ -732,7 +724,7 @@ public Action OnSay(int iClient, const char[] command, int args)
                 }
                 case 3:
                 {
-                    if (Shop_GetClientCredits(iClient) >= iCount)
+                    if(Shop_GetClientCredits(iClient) >= iCount)
                     {
                         Shop_SetClientCredits(iClient, Shop_GetClientCredits(iClient) - iCount);
                         SetBankCredits(iClient, ga_iBankCredits[iClient] + iCount);
@@ -743,7 +735,7 @@ public Action OnSay(int iClient, const char[] command, int args)
                 }
                 case 4:
                 {
-                    if (ga_iBankCredits[iClient] >= iCount)
+                    if(ga_iBankCredits[iClient] >= iCount)
                     {
                         Shop_SetClientCredits(iClient, Shop_GetClientCredits(iClient) + iCount);
                         SetBankCredits(iClient, ga_iBankCredits[iClient] - iCount);
@@ -754,7 +746,7 @@ public Action OnSay(int iClient, const char[] command, int args)
                 }
                 case 5:
                 {
-                    if (Shop_GetClientGold(iClient) >= iCount)
+                    if(Shop_GetClientGold(iClient) >= iCount)
                     {
                         Shop_SetClientGold(iClient, Shop_GetClientGold(iClient) - iCount);
                         SetBankCredits(iClient, ga_iBankCredits[iClient] + iCount);
@@ -765,7 +757,7 @@ public Action OnSay(int iClient, const char[] command, int args)
                 }
                 case 6:
                 {
-                    if (ga_iBankCredits[iClient] >= iCount)
+                    if(ga_iBankCredits[iClient] >= iCount)
                     {
                         Shop_SetClientGold(iClient, Shop_GetClientGold(iClient) + iCount);
                         SetBankCredits(iClient, ga_iBankCredits[iClient] - iCount);
@@ -776,7 +768,7 @@ public Action OnSay(int iClient, const char[] command, int args)
                 }
                 case 7:
                 {
-                    if (WCS_GetGold(iClient) >= iCount)
+                    if(WCS_GetGold(iClient) >= iCount)
                     {
                         WCS_TakeGold(iClient, iCount);
                         SetBankWCSGold(iClient, ga_iBankWCSGold[iClient] + iCount);
@@ -787,7 +779,7 @@ public Action OnSay(int iClient, const char[] command, int args)
                 }
                 case 8:
                 {
-                    if (ga_iBankWCSGold[iClient] >= iCount)
+                    if(ga_iBankWCSGold[iClient] >= iCount)
                     {
                         WCS_GiveGold(iClient, iCount);
                         SetBankWCSGold(iClient, ga_iBankWCSGold[iClient] - iCount);
@@ -798,7 +790,7 @@ public Action OnSay(int iClient, const char[] command, int args)
                 }
                 case 9:
                 {
-                    if (LK_GetClientCash(iClient) >= iCount)
+                    if(LK_GetClientCash(iClient) >= iCount)
                     {
                         LK_SetClientCash(iClient, LK_GetClientCash(iClient) - iCount);
                         SetBankLKRubles(iClient, ga_iBankLKRubles[iClient] + iCount);
@@ -809,7 +801,7 @@ public Action OnSay(int iClient, const char[] command, int args)
                 }
                 case 10:
                 {
-                    if (ga_iBankLKRubles[iClient] >= iCount)
+                    if(ga_iBankLKRubles[iClient] >= iCount)
                     {
                         LK_SetClientCash(iClient, LK_GetClientCash(iClient) + iCount);
                         SetBankLKRubles(iClient, ga_iBankLKRubles[iClient] - iCount);
@@ -820,7 +812,7 @@ public Action OnSay(int iClient, const char[] command, int args)
                 }
                 case 11:
                 {
-                    if (MyJailShop_GetCredits(iClient) >= iCount)
+                    if(MyJailShop_GetCredits(iClient) >= iCount)
                     {
                         MyJailShop_SetCredits(iClient, MyJailShop_GetCredits(iClient) - iCount);
                         SetBankMyJBCredits(iClient, ga_iBankMyJBCredits[iClient] + iCount);
@@ -831,7 +823,7 @@ public Action OnSay(int iClient, const char[] command, int args)
                 }
                 case 12:
                 {
-                    if (ga_iBankMyJBCredits[iClient] >= iCount)
+                    if(ga_iBankMyJBCredits[iClient] >= iCount)
                     {
                         MyJailShop_SetCredits(iClient, MyJailShop_GetCredits(iClient) + iCount);
                         SetBankMyJBCredits(iClient, ga_iBankMyJBCredits[iClient] - iCount);
@@ -854,7 +846,7 @@ public Action OnSay(int iClient, const char[] command, int args)
 
 public void SQL_Callback_CheckName(Database db, DBResultSet results, const char[] error, DataPack data)
 {
-    if (error[0])
+    if(error[0])
     {
         LogError("[SQL_Callback_CheckName] Error (%i): %s", data, error);
         return;
@@ -865,15 +857,15 @@ public void SQL_Callback_CheckName(Database db, DBResultSet results, const char[
     data.ReadString(sText, sizeof(sText));
     delete data;
 
-    if (!IsValidClient(iClient))
+    if(!IsValidClient(iClient))
     {
         return;
     }
     else
     {
-        if (ga_bSetName[iClient])
+        if(ga_bSetName[iClient])
         {
-            if (results.RowCount == 0)
+            if(results.RowCount == 0)
             {
                 strcopy(ga_sGangName[iClient], sizeof(ga_sGangName[]), sText);
                 if(CheckBadNameGang(ga_sGangName[iClient]))
@@ -953,18 +945,18 @@ public void SQL_Callback_CheckName(Database db, DBResultSet results, const char[
             
             ga_bSetName[iClient] = false;
         }
-        else if (ga_bRename[iClient])
+        else if(ga_bRename[iClient])
         {
-            if (results.RowCount == 0)
+            if(results.RowCount == 0)
             {
                 char sOldName[32];
                 strcopy(sOldName, sizeof(sOldName), ga_sGangName[iClient]);
                 strcopy(ga_sGangName[iClient], sizeof(ga_sGangName[]), sText);
                 if(CheckBadNameGang(ga_sGangName[iClient]))
                 {
-                    for (int i = 1; i <= MaxClients; i++)
+                    for(int i = 1; i <= MaxClients; i++)
                     {
-                        if (IsValidClient(i) && StrEqual(ga_sGangName[i], sOldName))
+                        if(IsValidClient(i) && StrEqual(ga_sGangName[i], sOldName))
                         {
                             strcopy(ga_sGangName[i], sizeof(ga_sGangName[]), sText);
                         }
@@ -1120,7 +1112,7 @@ public bool CheckBadNameGang(const char[] sName)
 ******************************************************************/
 void StartOpeningMembersMenu(int iClient)
 {
-    if (!StrEqual(ga_sGangName[iClient], ""))
+    if(!StrEqual(ga_sGangName[iClient], ""))
     {
         int iLen = 2*strlen(ga_sGangName[iClient])+1;
         char[] szEscapedGang = new char[iLen];
@@ -1134,14 +1126,14 @@ void StartOpeningMembersMenu(int iClient)
 
 public void SQLCallback_OpenMembersMenu(Database db, DBResultSet results, const char[] error, int data)
 {
-    if (error[0])
+    if(error[0])
     {
         LogError("[SQLCallback_OpenMembersMenu] Error (%i): %s", data, error);
         return;
     }
     
     int iClient = data;
-    if (!IsValidClient(iClient))
+    if(!IsValidClient(iClient))
     {
         return;
     }
@@ -1161,7 +1153,7 @@ public void SQLCallback_OpenMembersMenu(Database db, DBResultSet results, const 
             menu.AddItem("invite", sDisplayString, (GetClientRightStatus(iClient, "invite")	 && (ga_iGangSize[iClient] < g_iSize))?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
         
         
-        while (results.FetchRow())
+        while(results.FetchRow())
         {
             char a_sTempArray[6][128]; // 0 - SteamID | 1 - Name | 2 - Invited By | 3 - Rank | 4 - Date (UTF)
             results.FetchString(0, a_sTempArray[0], sizeof(a_sTempArray[])); // Steam-ID
@@ -1350,12 +1342,12 @@ public int IndividualManagementMemberMenu_Callback(Menu menu, MenuAction action,
                 CPrintToChatAll("%t %t", "Prefix", "GangMemberKick", sTempArray[2], ga_sGangName[iClient]);
                 
                 char sSteamID[64];
-                for (int i = 1; i <= MaxClients; i++)
+                for(int i = 1; i <= MaxClients; i++)
                 {
-                    if (IsValidClient(i))
+                    if(IsValidClient(i))
                     {
                         GetClientAuthId(i, AuthId_Steam2, sSteamID, sizeof(sSteamID));
-                        if (StrEqual(sSteamID, sTempArray[1]))
+                        if(StrEqual(sSteamID, sTempArray[1]))
                         {
                             API_OnExitFromGang(i);
                             ResetVariables(i, false);
@@ -1424,9 +1416,9 @@ void OpenInvitationMenu(int iClient)
     Format(sMenuString, sizeof(sMenuString), "%T", "InviteToGang", iClient);
     SetMenuTitle(menu, sMenuString);
 
-    for (int i = 1; i <= MaxClients; i++)
+    for(int i = 1; i <= MaxClients; i++)
     {
-        if (IsValidClient(i) && i != iClient)
+        if(IsValidClient(i) && i != iClient)
         {
             Format(sInfoString, sizeof(sInfoString), "%i", i);
             Format(sDisplayString, sizeof(sDisplayString), "%N", i);
@@ -1457,7 +1449,7 @@ public int InvitationMenu_Callback(Menu menu, MenuAction action, int param1, int
 
                 if(g_bModuleSizeExist)
                 {
-                    if (ga_iGangSize[param1] >= g_iSize + Gangs_Size_GetCurrectLvl(param1))
+                    if(ga_iGangSize[param1] >= g_iSize + Gangs_Size_GetCurrectLvl(param1))
                     {
                         CPrintToChat(param1, "%t %t", "Prefix", "GangIsFull");
                         return;
@@ -1465,14 +1457,14 @@ public int InvitationMenu_Callback(Menu menu, MenuAction action, int param1, int
                 }
                 else
                 {
-                    if (ga_iGangSize[param1] >= g_iSize)
+                    if(ga_iGangSize[param1] >= g_iSize)
                     {
                         CPrintToChat(param1, "%t %t", "Prefix", "GangIsFull");
                         return;
                     }
                 }
 
-                if (!g_bInviteStyle)
+                if(!g_bInviteStyle)
                 {
                     CPrintToChat(iUserID, "%t %t", "Prefix", "AcceptInstructions", ga_sGangName[param1]);
                     DataPack data = new DataPack();
@@ -1515,7 +1507,7 @@ public Action AcceptTimer(Handle timer, DataPack data)
 
 void OpenGangInvitationMenu(int iClient)
 {
-    if (!IsValidClient(iClient))
+    if(!IsValidClient(iClient))
     {
         return;
     }
@@ -1547,7 +1539,7 @@ void OpenGangInvitationMenu(int iClient)
 
 public int SentInviteMenu_Callback(Menu menu, MenuAction action, int param1, int param2)
 {
-    if (!IsValidClient(param1))
+    if(!IsValidClient(param1))
     {
         return;
     }
@@ -1559,7 +1551,7 @@ public int SentInviteMenu_Callback(Menu menu, MenuAction action, int param1, int
             GetMenuItem(menu, param2, sInfo, sizeof(sInfo));
             int sender = ga_iInvitation[param1];
             
-            if (StrEqual(sInfo, "yes"))
+            if(StrEqual(sInfo, "yes"))
             {
                 ga_sGangName[param1] = ga_sGangName[sender];
                 ga_iDateJoined[param1] = GetTime();
@@ -1587,7 +1579,7 @@ public int SentInviteMenu_Callback(Menu menu, MenuAction action, int param1, int
                 
                 CPrintToChatAll("%t %t", "Prefix", "GangJoined", szName, ga_sGangName[param1]);
             }
-            else if (StrEqual(sInfo, "no"))		
+            else if(StrEqual(sInfo, "no"))		
             {
                 ga_bInvitationSent[sender] = false;
             }
@@ -1612,18 +1604,18 @@ public int SentInviteMenu_Callback(Menu menu, MenuAction action, int param1, int
 
 public int MenuHandler_Bank(Handle menu, MenuAction action, int param1, int param2)
 {
-    if (action == MenuAction_End)
+    if(action == MenuAction_End)
     {
         delete(menu);
     }
-    else if (action == MenuAction_Cancel)
+    else if(action == MenuAction_Cancel)
     {
-        if (param2 == MenuCancel_ExitBack)
+        if(param2 == MenuCancel_ExitBack)
         {
             StartOpeningGangMenu(param1);
         }
     }
-    else if (action == MenuAction_Select)
+    else if(action == MenuAction_Select)
     {
         char info[32];
 
@@ -1699,14 +1691,14 @@ public int MenuHandler_Bank(Handle menu, MenuAction action, int param1, int para
 
 public void SQLCallback_OpenBankLogsMenu(Database db, DBResultSet results, const char[] error, int data)
 {
-    if (error[0])
+    if(error[0])
     {
         LogError("[SQLCallback_OpenBankLogsMenu] Error (%i): %s", data, error);
         return;
     }
     
     int iClient = data;
-    if (!IsValidClient(iClient))
+    if(!IsValidClient(iClient))
     {
         return;
     }
@@ -1748,18 +1740,18 @@ public void SQLCallback_OpenBankLogsMenu(Database db, DBResultSet results, const
 
 public int MenuHandler_BankLogs(Handle menu, MenuAction action, int param1, int param2)
 {
-    if (action == MenuAction_End)
+    if(action == MenuAction_End)
     {
         CloseHandle(menu);
     }
-    else if (action == MenuAction_Cancel)
+    else if(action == MenuAction_Cancel)
     {
-        if (param2 == MenuCancel_ExitBack)
+        if(param2 == MenuCancel_ExitBack)
         {
             StartOpeningMembersMenu(param1);
         }
     }
-    else if (action == MenuAction_DrawItem)
+    else if(action == MenuAction_DrawItem)
     {
         return ITEMDRAW_DISABLED;
     }
@@ -1868,7 +1860,7 @@ void OpenLeaveConfirmation(int iClient)
     
     Format(tempBuffer, sizeof(tempBuffer), "%T", "AreYouSure", iClient);
     menu.AddItem("", tempBuffer, ITEMDRAW_DISABLED);
-    if (ga_iRank[iClient] == 0)
+    if(ga_iRank[iClient] == 0)
     {
         Format(tempBuffer, sizeof(tempBuffer), "%T", "OwnerWarning", iClient);
         menu.AddItem("", tempBuffer, ITEMDRAW_DISABLED);
@@ -1893,11 +1885,11 @@ public int LeaveConfirmation_Callback(Menu menu, MenuAction action, int param1, 
         {
             char sInfo[64];
             GetMenuItem(menu, param2, sInfo, sizeof(sInfo));
-            if (StrEqual(sInfo, "yes"))
+            if(StrEqual(sInfo, "yes"))
             {
                 RemoveFromGang(param1);
             }
-            else if (StrEqual(sInfo, "no"))
+            else if(StrEqual(sInfo, "no"))
             {
                 StartOpeningGangMenu(param1);
             }
@@ -1924,7 +1916,7 @@ public int LeaveConfirmation_Callback(Menu menu, MenuAction action, int param1, 
 ******************************************************************/
 void OpenAdministrationMenu(int iClient)
 {
-    if (!IsValidClient(iClient))
+    if(!IsValidClient(iClient))
     {
         return;
     }
@@ -2020,7 +2012,7 @@ void OpenAdministrationMenu(int iClient)
 
 public int AdministrationMenu_Callback(Menu menu, MenuAction action, int param1, int param2)
 {
-    if (!IsValidClient(param1))
+    if(!IsValidClient(param1))
     {
         return;
     }
@@ -2030,37 +2022,37 @@ public int AdministrationMenu_Callback(Menu menu, MenuAction action, int param1,
         {
             char sInfo[64];
             GetMenuItem(menu, param2, sInfo, sizeof(sInfo));
-            //if (StrEqual(sInfo, "kick"))
+            //if(StrEqual(sInfo, "kick"))
             //{
             //	OpenAdministrationKickMenu(param1);
             //}
-            if (StrEqual(sInfo, "rename"))
+            if(StrEqual(sInfo, "rename"))
             {
-                for (int i = 1; i <= 5; i++)
+                for(int i = 1; i <= 5; i++)
                 {
                     CPrintToChat(param1, "%t %t", "Prefix", "GangName");
                 }
                 ga_bRename[param1] = true;
             }
-            //else if (StrEqual(sInfo, "promote"))
+            //else if(StrEqual(sInfo, "promote"))
             //{
             //	OpenAdministrationPromotionMenu(param1);
             //}
-            else if (StrEqual(sInfo, "disband"))
+            else if(StrEqual(sInfo, "disband"))
             {
                 OpenDisbandMenu(param1);
             }
-            else if (StrEqual(sInfo, "extend"))
+            else if(StrEqual(sInfo, "extend"))
             {
                 char szQuery[256];
                 Format( szQuery, sizeof( szQuery ),"SELECT end_date FROM gangs_groups WHERE gang = '%s' AND server_id = %i", ga_sGangName[param1], g_iServerID);
                 g_hDatabase.Query(SQLCallback_OpenExtendMenu, szQuery, param1);
             }
-            //else if (StrEqual(sInfo, "transferleader"))
+            //else if(StrEqual(sInfo, "transferleader"))
             //{
             //	OpenTransferLeaderMenu(param1);
             //}
-            //else if (StrEqual(sInfo, "invite"))
+            //else if(StrEqual(sInfo, "invite"))
             //{
             //	OpenInvitationMenu(param1);
             //}
@@ -2080,14 +2072,14 @@ public int AdministrationMenu_Callback(Menu menu, MenuAction action, int param1,
 
 public void SQLCallback_OpenExtendMenu(Database db, DBResultSet results, const char[] error, int data)
 {
-    if (error[0])
+    if(error[0])
     {
         LogError("[SQLCallback_OpenExtendMenu] Error (%i): %s", data, error);
         return;
     }
     
     int iClient = data;
-    if (!IsValidClient(iClient))
+    if(!IsValidClient(iClient))
     {
         return;
     }
@@ -2104,7 +2096,7 @@ public void SQLCallback_OpenExtendMenu(Database db, DBResultSet results, const c
 
 void OpenAdministrationMenuExtendGang(int iClient,int endtime)
 {
-    if (!IsValidClient(iClient))
+    if(!IsValidClient(iClient))
     {
         return;
     }
@@ -2230,7 +2222,7 @@ void OpenAdministrationMenuExtendGang(int iClient,int endtime)
 
 public int AdministrationMenuExtend_Callback(Menu menu, MenuAction action, int param1, int param2)
 {
-    if (!IsValidClient(param1))
+    if(!IsValidClient(param1))
     {
         return;
     }
@@ -2240,13 +2232,13 @@ public int AdministrationMenuExtend_Callback(Menu menu, MenuAction action, int p
         {
             char sInfo[64];
             GetMenuItem(menu, param2, sInfo, sizeof(sInfo));
-            if (StrEqual(sInfo, "yes"))
+            if(StrEqual(sInfo, "yes"))
             {
                 char szQuery[256];
                 Format( szQuery, sizeof( szQuery ),"SELECT end_date FROM gangs_groups WHERE gang = '%s' AND server_id = %i;", ga_sGangName[param1], g_iServerID);
                 g_hDatabase.Query(SQLCallback_ExtendGang, szQuery, param1);
             }
-            else if (StrEqual(sInfo, "no"))
+            else if(StrEqual(sInfo, "no"))
             {
                 OpenAdministrationMenu(param1);
             }
@@ -2266,14 +2258,14 @@ public int AdministrationMenuExtend_Callback(Menu menu, MenuAction action, int p
 
 public void SQLCallback_ExtendGang(Database db, DBResultSet results, const char[] error, int data)
 {
-    if (error[0])
+    if(error[0])
     {
         LogError("[SQLCallback_ExtendGang] Error (%i): %s", data, error);
         return;
     }
     
     int iClient = data;
-    if (!IsValidClient(iClient))
+    if(!IsValidClient(iClient))
     {
         return;
     }
@@ -2358,11 +2350,11 @@ public void SQLCallback_ExtendGang(Database db, DBResultSet results, const char[
             else CPrintToChat(iClient, "%t %t", "Prefix", "Error");
             
             ga_iExtendCount[iClient]++;
-            for (int i = 1; i <= MaxClients; i++)
+            for(int i = 1; i <= MaxClients; i++)
             {
-                if (IsValidClient(i) && iClient != i)
+                if(IsValidClient(i) && iClient != i)
                 {
-                    if (StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
+                    if(StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
                     {
                         ga_iExtendCount[i]++;
                     }
@@ -2411,7 +2403,7 @@ void OpenPromoteDemoteMenu(int iClient, const char[] sInfo)
                 Format(tempBuffer, sizeof(tempBuffer), "%T", sName, iClient);
                 menu.AddItem(sInfoString, tempBuffer, (StrEqual(sTempArray[2], szBuffer))?ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
             }
-        } while (ConfigRanks.GotoNextKey());
+        } while(ConfigRanks.GotoNextKey());
     }
     delete ConfigRanks;
     
@@ -2450,16 +2442,16 @@ public int AdministrationPromoDemoteMenu_CallBack(Menu menu, MenuAction action, 
             delete ConfigRanks;
             
             char sSteamID[32];
-            for (int i = 1; i <= MaxClients; i++)
+            for(int i = 1; i <= MaxClients; i++)
             {
-                if (IsValidClient(i))
+                if(IsValidClient(i))
                 {
                     if(StrEqual(ga_sGangName[i],sTempArray[2]))
                     {
                         CPrintToChat(i, "%t %t", "Prefix", "ChangeRank", sTempArray[3], sRank);
                     }
                     GetClientAuthId(i, AuthId_Steam2, sSteamID, sizeof(sSteamID));
-                    if (StrEqual(sSteamID, sTempArray[0]))
+                    if(StrEqual(sSteamID, sTempArray[0]))
                     {
                         LoadSteamID(i);
                         break;
@@ -2513,7 +2505,7 @@ public int DisbandMenu_CallBack(Menu menu, MenuAction action, int param1, int pa
         {
             char sInfo[256];
             GetMenuItem(menu, param2, sInfo, sizeof(sInfo));
-            if (StrEqual(sInfo, "disband"))
+            if(StrEqual(sInfo, "disband"))
             {
                 RemoveFromGang(param1);
             }
@@ -2594,7 +2586,7 @@ public int ShowStatisticMenu_CallBack(Menu hMenu, MenuAction action, int iClient
 ******************************************************************/
 void UpdateSQL(int iClient)
 {
-    if (ga_bHasGang[iClient])
+    if(ga_bHasGang[iClient])
     {
         GetClientAuthId(iClient, AuthId_Steam2, ga_sSteamID[iClient], sizeof(ga_sSteamID[]));
         
@@ -2607,7 +2599,7 @@ void UpdateSQL(int iClient)
 
 public void SQLCallback_CheckIfInDatabase_Player(Database db, DBResultSet results, const char[] error, int data)
 {
-    if (error[0])
+    if(error[0])
     {
         LogError("[SQLCallback_CheckIfInDatabase_Player] Error (%i): %s", data, error);
         return;
@@ -2615,11 +2607,11 @@ public void SQLCallback_CheckIfInDatabase_Player(Database db, DBResultSet result
 
     int iClient = data;
 
-    if (!IsValidClient(iClient))
+    if(!IsValidClient(iClient))
     {
         return;
     }
-    if (results.RowCount == 0)
+    if(results.RowCount == 0)
     {
         ga_bIsPlayerInDatabase[iClient] = false;
     }
@@ -2640,7 +2632,7 @@ public void SQLCallback_CheckIfInDatabase_Player(Database db, DBResultSet result
     char[] sEscapedGang = new char[iLen];
     g_hDatabase.Escape(GetFixString(ga_sGangName[iClient]), sEscapedGang, iLen);
     
-    if (!ga_bIsPlayerInDatabase[iClient])
+    if(!ga_bIsPlayerInDatabase[iClient])
     {
         Format(sQuery, sizeof(sQuery), "INSERT INTO gangs_players (gang, server_id, invitedby, rank, date, steamid, playername) VALUES('%s', '%i', '%s', '%i', '%i', '%s', '%s');", sEscapedGang, g_iServerID, ga_sInvitedBy[iClient], ga_iRank[iClient], ga_iDateJoined[iClient], ga_sSteamID[iClient], szEscapedName);
     }
@@ -2661,7 +2653,7 @@ public void SQLCallback_CheckIfInDatabase_Player(Database db, DBResultSet result
 
 public void SQLCALLBACK_GROUPS(Database db, DBResultSet results, const char[] error, int data)
 {
-    if (error[0])
+    if(error[0])
     {
         LogError("[SQLCALLBACK_GROUPS] Error (%i): %s", data, error);
         return;
@@ -2669,12 +2661,12 @@ public void SQLCALLBACK_GROUPS(Database db, DBResultSet results, const char[] er
 
     int iClient = data;
 
-    if (!IsValidClient(iClient))
+    if(!IsValidClient(iClient))
     {
         return;
     }
 
-    if (results.RowCount == 0)
+    if(results.RowCount == 0)
     {
         ga_bIsGangInDatabase[iClient] = false;
     }
@@ -2688,7 +2680,7 @@ public void SQLCALLBACK_GROUPS(Database db, DBResultSet results, const char[] er
     g_hDatabase.Escape(GetFixString(ga_sGangName[iClient]), szEscapedGang, iLen);
 
     char sQuery[300];
-    if (!ga_bIsGangInDatabase[iClient])
+    if(!ga_bIsGangInDatabase[iClient])
     {
         int created = GetTime();
         int ended = created+2629743;
@@ -2705,7 +2697,7 @@ public void SQLCALLBACK_GROUPS(Database db, DBResultSet results, const char[] er
 
 public void SQL_Callback_LoadStatistics(Database db, DBResultSet results, const char[] error, int data)
 {
-    if (error[0])
+    if(error[0])
     {
         LogError("[SQL_Callback_LoadStatistics] Error (%i): %s", data, error);
         return;
@@ -2713,12 +2705,12 @@ public void SQL_Callback_LoadStatistics(Database db, DBResultSet results, const 
 
     int iClient = data;
 
-    if (!IsValidClient(iClient))
+    if(!IsValidClient(iClient))
     {
         return;
     }
 
-    if (results.RowCount == 0)
+    if(results.RowCount == 0)
     {
         ga_bIsGangInDatabase[iClient] = false;
     }
@@ -2732,7 +2724,7 @@ public void SQL_Callback_LoadStatistics(Database db, DBResultSet results, const 
     g_hDatabase.Escape(GetFixString(ga_sGangName[iClient]), szEscapedGang, iLen);
 
     char sQuery[300];
-    if (!ga_bIsGangInDatabase[iClient])
+    if(!ga_bIsGangInDatabase[iClient])
         Format(sQuery, sizeof(sQuery), "INSERT INTO `gangs_statistics` (`gang`, `server_id`, `%s`) VALUES('%s', '%i', '%i');", g_sDbStatisticName, szEscapedGang, g_iServerID, ga_iScore[iClient]);
     else
         Format(sQuery, sizeof(sQuery), "UPDATE `gangs_statistics SET` `%s` = '%i' WHERE gang= '%s' AND `server_id` = %i;", g_sDbStatisticName, ga_iScore[iClient], szEscapedGang, g_iServerID);
@@ -2745,7 +2737,7 @@ public void SQL_Callback_LoadStatistics(Database db, DBResultSet results, const 
 
 public void SQL_Callback_LoadPerks(Database db, DBResultSet results, const char[] error, int data)
 {
-    if (error[0])
+    if(error[0])
     {
         LogError("[SQL_Callback_LoadPerks] Error (%i): %s", data, error);
         return;
@@ -2753,12 +2745,12 @@ public void SQL_Callback_LoadPerks(Database db, DBResultSet results, const char[
 
     int iClient = data;
 
-    if (!IsValidClient(iClient))
+    if(!IsValidClient(iClient))
     {
         return;
     }
 
-    if (results.RowCount == 0)
+    if(results.RowCount == 0)
     {
         ga_bIsGangInDatabase[iClient] = false;
     }
@@ -2768,7 +2760,7 @@ public void SQL_Callback_LoadPerks(Database db, DBResultSet results, const char[
     }
 
     char sQuery[300];
-    if (!ga_bIsGangInDatabase[iClient])
+    if(!ga_bIsGangInDatabase[iClient])
     {
         int iLen = 2*strlen(ga_sGangName[iClient])+1;
         char[] szEscapedGang = new char[iLen];
@@ -2786,7 +2778,7 @@ void RemoveFromGang(int iClient)
     char[] szEscapedGang = new char[iLen];
     g_hDatabase.Escape(GetFixString(ga_sGangName[iClient]), szEscapedGang, iLen);
 
-    if (ga_iRank[iClient] == 0)
+    if(ga_iRank[iClient] == 0)
     {
 
         char sQuery[300];
@@ -2804,9 +2796,9 @@ void RemoveFromGang(int iClient)
         char szName[MAX_NAME_LENGTH];
         GetClientName(iClient, szName, sizeof(szName));
         CPrintToChatAll("%t %t", "Prefix", "GangDisbanded", szName, szEscapedGang);
-        for (int i = 1; i <= MaxClients; i++)
+        for(int i = 1; i <= MaxClients; i++)
         {
-            if (IsValidClient(i) && StrEqual(ga_sGangName[i], ga_sGangName[iClient]) && i != iClient)
+            if(IsValidClient(i) && StrEqual(ga_sGangName[i], ga_sGangName[iClient]) && i != iClient)
             {
                 API_OnExitFromGang(i);
                 ResetVariables(i, false);
@@ -2838,17 +2830,17 @@ void PrintToGang(int iClient, bool bPrintToClient = false, const char[] sMsg, an
     char sFormattedMsg[256];
     VFormat(sFormattedMsg, sizeof(sFormattedMsg), sMsg, 4); 
 
-    for (int i = 1; i <= MaxClients; i++)
+    for(int i = 1; i <= MaxClients; i++)
     {
-        if (IsValidClient(i) && StrEqual(ga_sGangName[i], ga_sGangName[iClient]) && !StrEqual(ga_sGangName[iClient], ""))
+        if(IsValidClient(i) && StrEqual(ga_sGangName[i], ga_sGangName[iClient]) && !StrEqual(ga_sGangName[iClient], ""))
         {
-            if (bPrintToClient)
+            if(bPrintToClient)
             {
                 CPrintToChat(i, sFormattedMsg);
             }
             else
             {
-                if (i == iClient)
+                if(i == iClient)
                 {
                     // Do nothing
                 }
@@ -2886,7 +2878,7 @@ void ResetVariables(int iClient, bool full = true)
     ga_iEndTime[iClient] = -1;
     ga_bInvitationSent[iClient] = false;
     g_iBankCountType[iClient] = 0;
-    if (full)
+    if(full)
     {
         ga_sSteamID[iClient] = "";
         //ga_iProfileID[iClient] = -1;
@@ -2961,11 +2953,11 @@ public Action SetBankRubles(int iClient, int shilings)
     }
         
     ga_iBankRubles[iClient]=shilings;
-    for (int i = 1; i <= MaxClients; i++)
+    for(int i = 1; i <= MaxClients; i++)
     {
-        if (IsValidClient(i) && iClient != i)
+        if(IsValidClient(i) && iClient != i)
         {
-            if (StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
+            if(StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
             {
                 ga_iBankRubles[i]=ga_iBankRubles[iClient];
             }
@@ -2992,11 +2984,11 @@ public Action SetBankCredits(int iClient, int shilings)
     Format(sQuery, sizeof(sQuery), "INSERT INTO gangs_bank_logs (gang, nick, logs, date, server_id) VALUES('%s', '%N', '%s', %d, %i);", szEscapedGang, iClient, log, GetTime(), g_iServerID);
     g_hDatabase.Query(SQLCallback_Void, sQuery);
     ga_iBankCredits[iClient]=shilings;
-    for (int i = 1; i <= MaxClients; i++)
+    for(int i = 1; i <= MaxClients; i++)
     {
-        if (IsValidClient(i) && iClient != i)
+        if(IsValidClient(i) && iClient != i)
         {
-            if (StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
+            if(StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
             {
                 ga_iBankCredits[i]=ga_iBankCredits[iClient];
             }
@@ -3023,11 +3015,11 @@ public Action SetBankGold(int iClient, int shilings)
     Format(sQuery, sizeof(sQuery), "INSERT INTO gangs_bank_logs (gang, nick, logs, date, server_id) VALUES('%s', '%N', '%s', '%d', '%i');", szEscapedGang, iClient, log, GetTime(), g_iServerID);
     g_hDatabase.Query(SQLCallback_Void, sQuery);
     ga_iBankGold[iClient]=shilings;
-    for (int i = 1; i <= MaxClients; i++)
+    for(int i = 1; i <= MaxClients; i++)
     {
-        if (IsValidClient(i) && iClient != i)
+        if(IsValidClient(i) && iClient != i)
         {
-            if (StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
+            if(StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
             {
                 ga_iBankGold[i]=ga_iBankGold[iClient];
             }
@@ -3054,11 +3046,11 @@ public Action SetBankWCSGold(int iClient, int shilings)
     Format(sQuery, sizeof(sQuery), "INSERT INTO gangs_bank_logs (gang, nick, logs, date, server_id) VALUES('%s', '%N', '%s', '%d', '%i');", szEscapedGang, iClient, log, GetTime(), g_iServerID);
     g_hDatabase.Query(SQLCallback_Void, sQuery);
     ga_iBankWCSGold[iClient]=shilings;
-    for (int i = 1; i <= MaxClients; i++)
+    for(int i = 1; i <= MaxClients; i++)
     {
-        if (IsValidClient(i) && iClient != i)
+        if(IsValidClient(i) && iClient != i)
         {
-            if (StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
+            if(StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
             {
                 ga_iBankWCSGold[i]=ga_iBankWCSGold[iClient];
             }
@@ -3085,11 +3077,11 @@ public Action SetBankLKRubles(int iClient, int shilings)
     Format(sQuery, sizeof(sQuery), "INSERT INTO gangs_bank_logs (gang, nick, logs, date, server_id) VALUES('%s', '%N', '%s', '%d', '%i');", szEscapedGang, iClient, log, GetTime(), g_iServerID);
     g_hDatabase.Query(SQLCallback_Void, sQuery);
     ga_iBankLKRubles[iClient]=shilings;
-    for (int i = 1; i <= MaxClients; i++)
+    for(int i = 1; i <= MaxClients; i++)
     {
-        if (IsValidClient(i) && iClient != i)
+        if(IsValidClient(i) && iClient != i)
         {
-            if (StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
+            if(StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
             {
                 ga_iBankLKRubles[i]=ga_iBankLKRubles[iClient];
             }
@@ -3116,11 +3108,11 @@ public Action SetBankMyJBCredits(int iClient, int shilings)
     Format(sQuery, sizeof(sQuery), "INSERT INTO gangs_bank_logs (gang, nick, logs, date) VALUES('%s', '%N', '%s', '%d', '%i');", szEscapedGang, iClient, log, GetTime(), g_iServerID);
     g_hDatabase.Query(SQLCallback_Void, sQuery);
     ga_iBankMyJBCredits[iClient]=shilings;
-    for (int i = 1; i <= MaxClients; i++)
+    for(int i = 1; i <= MaxClients; i++)
     {
-        if (IsValidClient(i) && iClient != i)
+        if(IsValidClient(i) && iClient != i)
         {
-            if (StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
+            if(StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
             {
                 ga_iBankMyJBCredits[i]=ga_iBankMyJBCredits[iClient];
             }
