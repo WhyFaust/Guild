@@ -1,27 +1,27 @@
 "Ranks"
 {
-	//ВСЕ ПРАВА:
-	//all - доступ ко всем правам
-	//extend - продление банды, perks - покупка улучшений в банде, bank_take - разрешение на взятие из банка \
-	//bank_give - разрешение на положить в банк, bank_logs - разрешение на просмотр логов банка
-	//invite - приглашать игроков, kick - кикать игроков, rename - переименовать банду, ranks - управление рангами участников
+	// ALL RIGHTS:
+	// all - access to all rights
+	//extend - gang extension, perks - purchase improvements to the gang, bank_take - permission to take from the bank
+	//bank_give - permission to put into the bank, bank_logs - permission to view the logs of the bank
+	//invite - invite players, kick - kick players, rename - rename the gang, ranks - rank management
 	
-	"0" // Первая группа - обязательно для создателя (Не меняем)
+	"0" // The first group is mandatory for the creator (Do not change)
 	{
-		"Name" "Owner" //Название ранга (Нужно будет добавить фразу в перевод)
+		"Name" "Owner" // Name of the rank (You will need to add a phrase to the translation)
 		"rights" "all"
 	}
-	"1" // Любые цифры, главное без повторения
+	"1" // Any numbers, as long as they are not repeated
 	{
 		"Name" "Admin"
-		"rights" "kick;extend;bank_take;bank_give;bank_logs;invite;perks" //Перечесление через знак ;
+		"rights" "kick;extend;bank_take;bank_give;bank_logs;invite;perks" // Crossing over the sign ;
 	}
 	"2"
 	{
 		"Name" "Moderator"
 		"rights" "invite;bank_give"
 	}
-	"3" // Всем новым участникам выдается самый крайний ранг(Самый последний в списке).
+	"3" // All new participants are given the most extreme rank (the latest in the list).
 	{
 		"Name" "Member"
 		"rights" "bank_give"

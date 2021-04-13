@@ -1,43 +1,43 @@
 "Setting"
 {
-	"log" "1" //0 - выкл, 1 - вкл логирование в файл?
-	"debug" "1" //0 - выкл, 1 - вкл дебаг в файл?
+	"log" "1" // 0 - off, 1 - on logging to file?
+	"debug" "1" // 0 - off, 1 - on debug to file?
 	
-	"server_id" "0" //Сервер ИД
+	"server_id" "0" // Id server (Needed for multistatistics)
 
-	"gang" //Главные настройки
+	"gang" // Main settings
 	{
-		"menu_value" "2" // Какая валюта будет показываться в главном меню, 0 - ничего, 1 - GameCMS рубли, 2 - Shop кредиты, 3 - Shop голда, 4 - WCS голда, 5 - LK рубли
+		"menu_value" "2" // What currency will be displayed in the main menu, 0 - nothing, 1 - GameCMS ruble, 2 - Shop credits, 3 - Shop Gold, 4 - WCS Gold, 5 - LK rubles
 	
-		"menu_info" "0" //Если игрок не зареган на сайте, то (0 - убирать пункты из меню, 1 - показывать информацию)
+		"menu_info" "0" // If the player is not logged in on the site, then (0 - remove items from the menu, 1 - show information)
 	
-		"create_mode" "1" // 0 - создание за рубли(нужно "gamecms" "1"), 1 - за Shop кредиты, 2 - за Shop Gold, 3 - за WCS Gold, 4 - за LK Рубли
-		"create" "75000" //Стоимость создания
+		"create_mode" "1" // 0 - creation for Rubles (need "gamecms" "1"), 1 - for Shop Credits, 2 - for Shop Gold, 3 - for WCS Gold, 4 - for LK Rubles
+		"create" "75000" // Creation cost
 		
-		"rename_bank" "1" //0 - покупка с баланса игрока, 1 - покупка с баланса банка(Необходимо, чтобы банк был вкл.)
-		"rename_mode" "1" // 0 - переименование за рубли(нужно "gamecms" "1"), 1 - за Shop кредиты, 2 - за Shop Gold, 3 - за WCS Gold, 4 - за LK Рубли
-		"rename" "30000" //Стоимость переименования
+		"rename_bank" "1" // 0 - purchase from the player's balance, 1 - purchase from the bank's balance (It is necessary that the bank was on).
+		"rename_mode" "1" // 0 - rename for Rubles(need "gamecms" "1"), 1 - for Shop Credits, 2 - for Shop Gold, 3 - for WCS Gold, 4 - for LK Rubles
+		"rename" "30000" // The cost of renaming
 		
-		"num_slots" "5" //Кол-во слотов при создании
+		"num_slots" "5" // Number of slots when creating
 		
-		"exp_inc" "100" //На сколько повышать требования к уровню с повышением
+		"exp_inc" "100" // How much to raise the level requirements with the increase
 		
 		//Продление
-		"extend_bank" "0" //0 - покупка с баланса игрока, 1 - покупка с баланса банка(Необходимо, чтобы банк был вкл.)
-		"extend_mode" "1" // 0 - продление за рубли(нужно "gamecms" "1"), 1 - за Shop кредиты, 2 - за Shop Gold, 3 - за WCS Gold, 4 - за LK Рубли
-		"extend_formula" "1" // 0 - СТОИМОСТЬ = "extend_start" \ 1 - СТОИМОСТЬ = "extend_start"+LVL*"extend_modifier"
+		"extend_bank" "0" // 0 - purchase from the player's balance, 1 - purchase from the bank's balance (It is necessary that the bank was on).
+		"extend_mode" "1" // 0 - extension for rubles (need "gamecms" "1"), 1 - for Shop credits, 2 - for Shop Gold, 3 - for WCS Gold, 4 - for LK Rubles
+		"extend_formula" "1" // 0 - VALUE = "extend_start" \ 1 - VALUE = "extend_start "+LVL*"extend_modifier"
 		"extend_start" "100000"
 		"extend_modifier" "10000"
 	}
 
 	"bank" //Банк
 	{
-		"enable" "1" //0 - выкл, 1 - вкл
-		"rubles" "0" //0 - выкл, 1 - вкл GameCMS рубли
-		"shop" "1" //0 - выкл, 1 - вкл Shop кредиты
-		"shop_gold" "0" //0 - выкл, 1 - вкл Shop голду
-		"wcs_gold" "0" //0 - выкл, 1 - вкл WCS голду
-		"lk_rubles" "1" //0 - выкл, 1 - вкл LK рубли
-		"myjb_credits" "0" //0 - выкл, 1 - вкл MyJB Credits
+		"enable" "1" // 0 - off, 1 - on
+		"rubles" "0" // 0 - off, 1 - on GameCMS rubles
+		"shop" "1" // 0 - off, 1 - on Shop credits
+		"shop_gold" "0" // 0 - off, 1 - on Shop gold
+		"wcs_gold" "0" // 0 - off, 1 - on WCS gold
+		"lk_rubles" "1" // 0 - off, 1 - on LK rubles
+		"myjb_credits" "0" // 0 - off, 1 - on MyJB Credits
 	}
 }

@@ -2,116 +2,14 @@
 {
 	"cuddleleader" //Не должны повторяться, индификатор в бд
 	{
-		"name" "Капитан по обнимашкам" //Название в меню
-		"model" "models/player/custom_player/legacy/cuddleleader.mdl" //Путь к модельке скина
-		"arms" "models/weapons/cuddleleader_arms.mdl" //Путь к модельке рук скина
+		"name" "Cuddle Leader" //Name on the menu
+		"model" "models/player/custom_player/legacy/cuddleleader.mdl" //Path to the skin model
+		"arms" "models/weapons/cuddleleader_arms.mdl" //Path to the skin hand model
 	}
 	"yoshino"
 	{
-		"name" "Йошино"
+		"name" "Yoshino"
 		"model" "models/player/custom_player/monsterko/yoshino/yoshino.mdl"
 		"arms" "models/player/custom_player/monsterko/yoshino/yoshino_arms.mdl"
-	}
-	//"stormtrooper"
-	//{
-	//	"name" "Штурмовик(StarWars)"
-	//	"model" "models/player/custom_player/kuristaja/stormtrooper/stormtrooper.mdl"
-	//	"arms" "models/player/custom_player/kuristaja/stormtrooper/stormtrooper_arms.mdl"
-	//}
-	"miku_sea"
-	{
-		"name" "Мику(Морская)"
-		"model" "models/player/custom_player/monsterko/miku_sea/miku_blue.mdl"
-		"arms" "models/player/custom_player/monsterko/miku_sea/miku_sea_arms.mdl"
-	}
-	"fox_miku"
-	{
-		"name" "Мику(Fox)"
-		"model" "models/player/custom_player/monsterko/fox_miku/fox_miku.mdl"
-		"arms" "models/player/custom_player/monsterko/fox_miku/fox_miku_arms.mdl"
-	}
-	//"octodad"
-	//{
-	//	"name" "Папа осьминог"
-	//	"model" "models/player/custom_player/kuristaja/octodad/octodad_black.mdl"
-	//	"arms" "models/player/custom_player/kuristaja/octodad/octodad_black_arms.mdl"
-	//}
-	//"natalie_santagirl"
-	//{
-	//	"name" "Natalie Santagirl"
-	//	"model" "models/player/custom_player/kuristaja/cso2/natalie_santagirl/natalie.mdl"
-	//	"arms" "models/player/custom_player/kuristaja/cso2/natalie_santagirl/natalie_arms.mdl"
-	//}
-	//"miyu"
-	//{
-	//	"name" "Мию"
-	//	"model" "models/player/custom_player/kuristaja/cso2/miyu_schoolgirl/miyu.mdl"
-	//	"arms" "models/player/custom_player/kuristaja/cso2/miyu_schoolgirl/miyu_arms.mdl"
-	//}
-	//"harleyquinn"
-	//{
-	//	"name" "Харли Квинн"
-	//	"model" "models/player/custom_player/caleon1/harleyquinn/harleyquinn.mdl"
-	//	"arms" "models/player/custom_player/caleon1/harleyquinn/harleyquinn_arms.mdl"
-	//}
-	//"bikini_girl"
-	//{
-	//	"name" "Девушка в бикини(NO ARMS)"
-	//	"model" "models/player/custom_player/voikanaa/misc/bikini_girl.mdl"
-	//	"arms" ""
-	//}
-	"rocket_raccoon_red"
-	{
-		"name" "Ракета(NO ARMS)"
-		"model" "models/player/custom_player/stenli/rocket_raccoon_red.mdl"
-		"arms" ""
-	}
-	"gunslinger"
-	{
-		"name" "Ковбой"
-		"model" "models/player/custom_player/caleon1/gunslinger/gunslinger_red.mdl"
-		"arms" "models/player/custom_player/caleon1/gunslinger/gunslinger_red_arms.mdl"
-	}
-	//"snowman"
-	//{
-	//	"name" "Снеговик Джек"
-	//	"model" "models/player/custom_player/kodua/snowman/snowman2.mdl"
-	//	"arms" "models/player/custom_player/kodua/snowman/snowman_arms.mdl"
-	//}
-	"qinli"
-	{
-		"name" "Котори Ицука"
-		"model" "models/player/custom_player/monsterko/qinli/qinli.mdl"
-		"arms" "models/player/custom_player/monsterko/qinli/qinlihands.mdl"
-	}
-	"inori"
-	{
-		"name" "Инори Юдзуриха"
-		"model" "models/player/custom_player/monsterko/inori_yuzuriha/inori.mdl"
-		"arms" "models/player/custom_player/monsterko/inori_yuzuriha/inori_arms.mdl"
-	}
-	"kimono_luka"
-	{
-		"name" "Luka в кимоно"
-		"model" "models/player/custom_player/bbs_93x_net_2016/kimono_luka/update_2016_08_05/kimono_luka.mdl"
-		"arms" "models/player/custom_player/bbs_93x_net_2016/kimono_luka/update_2016_08_05/lukahands.mdl"
-	}
-	"coconut"
-	{
-		"name" "Coconut"
-		"model" "models/player/custom_player/bbs_93x_net_2016/coconut/update_2016_12_30/coconut.mdl"
-		"arms" "models/player/custom_player/bbs_93x_net_2016/coconut/update_2016_12_30/coconuthands.mdl"
-	}
-	"ram"
-	{
-		"name" "Рам"
-		"model" "models/player/custom_player/maoling/re0/ram/ram.mdl"
-		"arms" "models/player/custom_player/maoling/re0/ram/ram_arms.mdl"
-	}
-	"rem"
-	{
-		"name" "Рем"
-		"model" "models/player/custom_player/maoling/re0/rem/rem.mdl"
-		"arms" "models/player/custom_player/maoling/re0/rem/rem_arms.mdl"
 	}
 }
