@@ -52,7 +52,7 @@ public Action Command_SetScoreShavit(int client, int args)
 	char path[128];
 	KeyValues kfg = new KeyValues("ScoreShavit");
 	BuildPath(Path_SM, path, sizeof(path), "configs/gangs/gangs_module_score_shavit.ini");
-	if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][Score Standart] - Файл конфигураций не найден");
+	if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][Score Standart] - Configuration file not found");
 	kfg.Rewind();
 	kfg.SetNum("score", g_Item.Score);
 	delete kfg;
@@ -100,7 +100,7 @@ void KFG_load()
 	char path[128];
 	KeyValues kfg = new KeyValues("ScoreShavit");
 	BuildPath(Path_SM, path, sizeof(path), "configs/gangs/gangs_module_score_shavit.ini");
-	if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][Score Standart] - Файл конфигураций не найден");
+	if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][Score Standart] - Configuration file not found");
 	kfg.Rewind();
 	g_Item.Score = kfg.GetNum("score");
 	g_Item.Messages = kfg.GetNum("messages");

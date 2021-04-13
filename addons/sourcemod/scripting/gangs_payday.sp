@@ -202,7 +202,7 @@ public Action TimeTimer(Handle hTimer, int iUserID)
 					char path[128];
 					KeyValues kfg = new KeyValues("GANGS_MODULE");
 					BuildPath(Path_SM, path, sizeof(path), "configs/gangs/gangs_module_payday.ini");
-					if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][PayDay] - Файл конфигураций не найден");
+					if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][PayDay] - Configuration file not found");
 					kfg.Rewind();
 					
 					if(kfg.JumpToKey("Ranks"))
@@ -548,7 +548,7 @@ void KFG_load()
 	char path[128];
 	KeyValues kfg = new KeyValues("GANGS_MODULE");
 	BuildPath(Path_SM, path, sizeof(path), "configs/gangs/gangs_module_payday.ini");
-	if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][PayDay] - Файл конфигураций не найден");
+	if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][PayDay] - Configuration file not found");
 	kfg.Rewind();
 	g_Item.Bank = kfg.GetNum("bank", 0);
 	g_Item.SellMode = kfg.GetNum("sell_mode", 1);

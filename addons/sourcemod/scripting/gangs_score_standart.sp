@@ -112,7 +112,7 @@ void KFG_load()
 	char path[128];
 	KeyValues kfg = new KeyValues("ScoreStandart");
 	BuildPath(Path_SM, path, sizeof(path), "configs/gangs/gangs_module_score_standart.ini");
-	if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][Score Standart] - Файл конфигураций не найден");
+	if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][Score Standart] - Configuration file not found");
 	kfg.Rewind();
 	g_iScore.Kill = kfg.GetNum("kill");
 	g_iScore.Death = kfg.GetNum("death");

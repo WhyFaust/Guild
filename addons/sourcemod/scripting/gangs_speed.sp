@@ -408,7 +408,7 @@ void KFG_load()
 	char path[128];
 	KeyValues kfg = new KeyValues("GANGS_MODULE");
 	BuildPath(Path_SM, path, sizeof(path), "configs/gangs/gangs_module_speed.ini");
-	if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][Speed] - Файл конфигураций не найден");
+	if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][Speed] - Configuration file not found");
 	kfg.Rewind();
 	g_Item.Bank = kfg.GetNum("bank");
 	g_Item.SellMode = kfg.GetNum("sell_mode");

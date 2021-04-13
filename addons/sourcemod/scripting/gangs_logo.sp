@@ -56,7 +56,7 @@ void OnThinkPost(int iEnt)
 			char path[128];
 			KeyValues kfg = new KeyValues("GANGS_MODULE");
 			BuildPath(Path_SM, path, sizeof(path), "configs/gangs/gangs_module_logo.ini");
-			if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][Logo] - Файл конфигураций не найден");
+			if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][Logo] - Configuration file not found");
 			kfg.Rewind();
 			if(kfg.JumpToKey(sGangName)) // Попытка перейти к ключу "key1"
 			{
@@ -92,7 +92,7 @@ void KFG_load()
 	char path[128];
 	KeyValues kfg = new KeyValues("GANGS_MODULE");
 	BuildPath(Path_SM, path, sizeof(path), "configs/gangs/gangs_module_logo.ini");
-	if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][Logo] - Файл конфигураций не найден");
+	if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][Logo] - Configuration file not found");
 	kfg.Rewind();
 	if(kfg.GotoFirstSubKey()) // Переходим к первому ключу внутри "GlobalKey"
 	{

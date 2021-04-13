@@ -805,7 +805,7 @@ void KFG_load()
     char path[128];
     KeyValues kfg = new KeyValues("GANGS_GAME");
     BuildPath(Path_SM, path, sizeof(path), "configs/gangs/gangs_game_point_race.ini");
-    if(!kfg.ImportFromFile(path)) SetFailState("[GANGS GAME][POINT RACE] - Файл конфигураций не найден");
+    if(!kfg.ImportFromFile(path)) SetFailState("[GANGS GAME][POINT RACE] - Configuration file not found");
     kfg.Rewind();
     g_Item.Time = kfg.GetNum("time");
     g_Item.StartMode = kfg.GetNum("start_mode");

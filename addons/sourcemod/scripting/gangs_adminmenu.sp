@@ -368,7 +368,7 @@ public int MenuHandlerGangName3(Menu menu, MenuAction action, int param1, int pa
 					char path[128];
 					KeyValues kfg = new KeyValues("GangAdmin");
 					BuildPath(Path_SM, path, sizeof(path), "configs/gangs/gangs_adminmenu.ini");
-					if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][AdminMenu] - Файл конфигураций не найден");
+					if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][AdminMenu] - Configuration file not found");
 					kfg.Rewind();
 					
 					Menu menu1 = new Menu(MenuHandlerGangName4);
@@ -398,7 +398,7 @@ public int MenuHandlerGangName3(Menu menu, MenuAction action, int param1, int pa
 					char path[128];
 					KeyValues kfg = new KeyValues("GangAdmin");
 					BuildPath(Path_SM, path, sizeof(path), "configs/gangs/gangs_adminmenu.ini");
-					if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][AdminMenu] - Файл конфигураций не найден");
+					if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][AdminMenu] - Configuration file not found");
 					kfg.Rewind();
 					
 					Menu menu1 = new Menu(MenuHandlerGangName5);
