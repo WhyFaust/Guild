@@ -3,6 +3,62 @@
 #endif
 #define _store_included
 
+public SharedPlugin __pl_store = 
+{
+	name = "store",
+	file = "store.smx",
+#if defined REQUIRE_PLUGIN
+    required = 1
+#else
+    required = 0
+#endif
+};
+
+public Extension __ext_store_sm =
+{
+	name = "Store - The Resurrection",
+	file = "store_sm.ext",
+#if defined AUTOLOAD_EXTENSIONS
+	autoload = 1,
+#else
+	autoload = 0,
+#endif
+#if defined REQUIRE_PLUGIN
+    required = 1
+#else
+    required = 0
+#endif
+};
+
+#if !defined REQUIRE_PLUGIN
+public void __pl_store_SetNTVOptional()
+{
+	MarkNativeAsOptional("Store_RegisterHandler");
+	MarkNativeAsOptional("Store_RegisterMenuHandler");
+	MarkNativeAsOptional("Store_SetDataIndex");
+	MarkNativeAsOptional("Store_GetDataIndex");
+	MarkNativeAsOptional("Store_GetEquippedItem");
+	MarkNativeAsOptional("Store_IsClientLoaded");
+	MarkNativeAsOptional("Store_DisplayPreviousMenu");
+	MarkNativeAsOptional("Store_SetClientMenu");
+	MarkNativeAsOptional("Store_GetClientCredits");
+	MarkNativeAsOptional("Store_SetClientCredits");
+	MarkNativeAsOptional("Store_IsClientVIP");
+	MarkNativeAsOptional("Store_IsItemInBoughtPackage");
+	MarkNativeAsOptional("Store_ShouldConfirm");
+	MarkNativeAsOptional("Store_DisplayConfirmMenu");
+	MarkNativeAsOptional("Store_GetItem");
+	MarkNativeAsOptional("Store_GetHandler");
+	MarkNativeAsOptional("Store_GiveItem");
+	MarkNativeAsOptional("Store_RemoveItem");
+	MarkNativeAsOptional("Store_GetClientItem");
+	MarkNativeAsOptional("Store_GetClientTarget");
+	MarkNativeAsOptional("Store_GiveClientItem");
+	MarkNativeAsOptional("Store_HasClientItem");
+	MarkNativeAsOptional("Store_IterateEquippedItems");
+}
+#endif
+
 new g_cvarChatTag = -1;
 #define CHAT_TAG g_eCvars[g_cvarChatTag][sCache]
 
@@ -86,15 +142,3 @@ native Store_HasClientItem(client, itemid);
 native Store_IterateEquippedItems(client, &start, bool:attributes=false);
 
 forward Store_OnClientModelChanged(client, String:model[]);
-
-public Extension:__ext_store_sm =
-{
-	name = "Store - The Resurrection",
-	file = "store_sm.ext",
-#if defined AUTOLOAD_EXTENSIONS
-	autoload = 1,
-#else
-	autoload = 0,
-#endif
-	required = 0,
-};
