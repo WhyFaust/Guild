@@ -21,7 +21,7 @@ int g_iMapUser[MAXPLAYERS+1] = 0;
 public Plugin myinfo =
 {
 	name = "[GANGS MODULE] Score Shavit",
-	author = "BaFeR",
+	author = "baferpro",
 	version = GANGS_VERSION
 };
 

@@ -13,8 +13,8 @@ int m_nPersonaDataPublicLevel;
 public Plugin myinfo = 
 {
 	name = "[Gangs] Logo", 
-	author = "BaFeR", 
-	version = "1.1"
+	author = "baferpro", 
+	version = GANGS_VERSION
 }
 
 public void OnPluginStart()

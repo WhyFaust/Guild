@@ -16,7 +16,7 @@ bool g_bModuleSizeExist = false;
 public Plugin myinfo =
 {
 	name = "[GANGS MODULE] Statistic Standart",
-	author = "BaFeR",
+	author = "baferpro",
 	version = GANGS_VERSION
 };
 

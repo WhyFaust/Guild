@@ -11,7 +11,7 @@
 public Plugin myinfo = 
 {
 	name = "[Gangs] Admin Menu", 
-	author = "BaFeR", 
+	author = "baferpro", 
 	version = GANGS_VERSION
 }
 

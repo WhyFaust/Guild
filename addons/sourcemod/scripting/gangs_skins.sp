@@ -69,7 +69,7 @@ public void OnLibraryAdded(const char[] name)
 public Plugin myinfo =
 {
 	name = "[GANGS MODULE] Skins",
-	author = "BaFeR",
+	author = "baferpro",
 	version = GANGS_VERSION
 };
 

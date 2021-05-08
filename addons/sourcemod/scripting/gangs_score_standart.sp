@@ -18,7 +18,7 @@ Scores g_iScore;
 public Plugin myinfo =
 {
 	name = "[GANGS MODULE] Score Standart",
-	author = "BaFeR",
+	author = "baferpro",
 	version = GANGS_VERSION
 };
 

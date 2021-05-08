@@ -8,6 +8,13 @@
 bool g_bChatTagMode;
 ConVar g_cvChatCommand;
 
+public Plugin myinfo = 
+{
+	name = "[Gangs] Chat", 
+	author = "baferpro", 
+	version = GANGS_VERSION
+}
+
 public void OnPluginStart()
 {		
 	LoadTranslations("gangs.phrases");

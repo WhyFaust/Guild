@@ -62,11 +62,11 @@ public void OnLibraryAdded(const char[] name)
 {
     if(StrEqual(name, "shop"))
     {
-        g_bShopLoaded = false;
+        g_bShopLoaded = true;
     }
     if(StrEqual(name, "store"))
     {
-        g_bStoreLoaded = false;
+        g_bStoreLoaded = true;
     }
     if(StrEqual(name, "lk"))
     {
@@ -92,8 +92,8 @@ public void OnLibraryAdded(const char[] name)
 
 public Plugin myinfo =
 {
-    name = "Gangs",
-    author = "Faust [PUBLIC]",
+    name = "GANGS CORE",
+    author = "baferpro",
     description = "Gang system for server cs",
     version = GANGS_VERSION
 };
@@ -2681,7 +2681,7 @@ public void SQLCallback_CheckIfInDatabase_Player(Database db, DBResultSet result
     {
         Format(sQuery, sizeof(sQuery), "UPDATE gangs_players SET gang = '%s', invitedby = '%s', playername = '%s', rank = '%i', date = '%i' WHERE steamid = '%s' AND server_id = %i;", sEscapedGang, ga_sInvitedBy[iClient], szEscapedName, ga_iRank[iClient], ga_iDateJoined[iClient], ga_sSteamID[iClient], g_iServerID);
     }
-    if(iClient<=MaxClients && iClient > 0)
+    if(IsValidClient(iClient))
     {
         API_OnGoToGang(iClient, ga_sGangName[iClient], ga_iInvitation[iClient]);
     }
@@ -2942,6 +2942,8 @@ void SetTimeEndGang(char[] gang,int time)
 }
 
 void API_OnGoToGang(int iClient, char[] sGang, int Inviter) {
+    if(Inviter == -1)
+        Inviter = iClient;
     Call_StartForward(g_hOnGangGoToGang);
     Call_PushCell(iClient);
     Call_PushString(sGang);

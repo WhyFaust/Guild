@@ -1,8 +1,17 @@
 #include <socket>
+#include <gangs>
 
 #define PLUGIN "gangs"
 #define SITE    "uwu-party.ru"
 #define PHP    "statistic.php"
+
+public Plugin myinfo =
+{
+	name = "[GANGS MODULE] Site Statistic",
+	author = "baferpro",
+	description = "uwu-party.ru/plugins/",
+	version = GANGS_VERSION
+};
 
 public void OnPluginStart()
 {

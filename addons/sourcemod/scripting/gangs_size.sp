@@ -76,7 +76,7 @@ public int Native_GetCurrectLvl(Handle plugin, int numParams)
 public Plugin myinfo =
 {
 	name = "[GANGS MODULE] Size",
-	author = "BaFeR",
+	author = "baferpro",
 	version = GANGS_VERSION
 };
 
