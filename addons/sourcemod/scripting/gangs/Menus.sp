@@ -118,8 +118,10 @@ void OpenGangsMenu(int iClient)
 		}
 		else if(g_bMenuValue == 2)
 		{
-			Format(sString, sizeof(sString), "%s%T %i\n", sString
-												, "shop", iClient, Shop_GetClientCredits(iClient));
+			if(g_bShopLoaded)
+				Format(sString, sizeof(sString), "%s%T %i\n", sString, "shop", iClient, Shop_GetClientCredits(iClient));
+			else if(g_bStoreLoaded)
+				Format(sString, sizeof(sString), "%s%T %i\n", sString, "shop", iClient, Store_GetClientCredits(iClient));
 		}
 		else if(g_bMenuValue == 3 && g_bLShopGoldExist)
 		{
@@ -170,7 +172,10 @@ void OpenGangsMenu(int iClient)
 			else if(g_bCreateGangSellMode == 1)
 			{
 				Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T", "CreateAGang", iClient, g_iCreateGangPrice, "shop");
-				menu.AddItem("create", sDisplayBuffer, (Shop_GetClientCredits(iClient) < g_iCreateGangPrice)?ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
+				if(g_bShopLoaded)
+					menu.AddItem("create", sDisplayBuffer, (Shop_GetClientCredits(iClient) < g_iCreateGangPrice)?ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
+				else if(g_bStoreLoaded)
+					menu.AddItem("create", sDisplayBuffer, (Store_GetClientCredits(iClient) < g_iCreateGangPrice)?ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
 			}
 			else if(g_bCreateGangSellMode == 2 && g_bLShopGoldExist)
 			{

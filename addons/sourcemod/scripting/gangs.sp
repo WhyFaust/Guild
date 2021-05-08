@@ -1,5 +1,3 @@
-#pragma newdecls required
-
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
@@ -10,12 +8,15 @@
 #undef REQUIRE_PLUGIN
 #tryinclude <gamecms_system>
 #tryinclude <shop>
+#tryinclude <store>
 #tryinclude <wcs>
 #tryinclude <lk>
 #tryinclude <gangs_size>
 #tryinclude <myjailshop>
 #tryinclude <gangs_statistic_rating>
 #define REQUIRE_PLUGIN
+
+#pragma newdecls required
 
 #include "gangs/Globals.sp"
 #include "gangs/Natives.sp"
@@ -27,6 +28,14 @@
 
 public void OnLibraryRemoved(const char[] name)
 {
+    if(StrEqual(name, "shop"))
+    {
+        g_bShopLoaded = false;
+    }
+    if(StrEqual(name, "store"))
+    {
+        g_bStoreLoaded = false;
+    }
     if(StrEqual(name, "lk"))
     {
         g_bLKLoaded = false;
@@ -51,6 +60,14 @@ public void OnLibraryRemoved(const char[] name)
 
 public void OnLibraryAdded(const char[] name)
 {
+    if(StrEqual(name, "shop"))
+    {
+        g_bShopLoaded = false;
+    }
+    if(StrEqual(name, "store"))
+    {
+        g_bStoreLoaded = false;
+    }
     if(StrEqual(name, "lk"))
     {
         g_bLKLoaded = true;
@@ -898,9 +915,16 @@ public void SQL_Callback_CheckName(Database db, DBResultSet results, const char[
                         if(g_bLog)
                             LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i рублей", iClient, ga_sGangName[iClient], Colculate(iClient, g_iCreateGangPrice, Discount));
                     }
-                    if(g_bCreateGangSellMode == 1)
+                    else if(g_bCreateGangSellMode == 1)
                     {
-                        Shop_SetClientCredits(iClient, Shop_GetClientCredits(iClient) - g_iCreateGangPrice);
+                        if(g_bShopLoaded)
+                        {
+                            Shop_SetClientCredits(iClient, Shop_GetClientCredits(iClient) - g_iCreateGangPrice);
+                        }
+                        else if(g_bStoreLoaded)
+                        {
+                            Store_SetClientCredits(iClient, Store_GetClientCredits(iClient) - g_iCreateGangPrice);
+                        }
                         if(g_bLog)
                             LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i кредитов", iClient, ga_sGangName[iClient], g_iCreateGangPrice);
                     }
@@ -994,18 +1018,21 @@ public void SQL_Callback_CheckName(Database db, DBResultSet results, const char[
                     }
                     else if(g_bRenamePriceSellMode == 1)
                     {
-                        //Shop_SetClientCredits(iClient, Shop_GetClientCredits(iClient) - g_iRenamePrice);
                         if(g_bEnableBank && g_bBankShop && g_bRenameBank)
                             SetBankCredits(iClient, ga_iBankCredits[iClient] - g_iRenamePrice);
                         else
-                            Shop_SetClientCredits(iClient, Shop_GetClientCredits(iClient) - g_iRenamePrice);
+                        {
+                            if(g_bShopLoaded)
+                                Shop_SetClientCredits(iClient, Shop_GetClientCredits(iClient) - g_iRenamePrice);
+                            else if(g_bStoreLoaded)
+                                Store_SetClientCredits(iClient, Store_GetClientCredits(iClient) - g_iRenamePrice);
+                        }
                         
                         if(g_bLog)
                             LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N изменил название банды с %s на %s за %i кредитов", iClient, sOldName, sText, g_iRenamePrice);
                     }
                     else if(g_bRenamePriceSellMode == 2 && g_bLShopGoldExist)
                     {
-                        //Shop_SetClientCredits(iClient, Shop_GetClientCredits(iClient) - g_iRenamePrice);
                         if(g_bEnableBank && g_bBankShopGold && g_bRenameBank)
                             SetBankGold(iClient, ga_iBankGold[iClient] - g_iRenamePrice);
                         else
@@ -1017,7 +1044,6 @@ public void SQL_Callback_CheckName(Database db, DBResultSet results, const char[
                     //else if(g_bRenamePriceSellMode == 3 && g_bWCSLoaded)
                     else if(g_bRenamePriceSellMode == 3)
                     {
-                        //Shop_SetClientCredits(iClient, Shop_GetClientCredits(iClient) - g_iRenamePrice);
                         if(g_bEnableBank && g_bBankWcsGold && g_bRenameBank)
                             SetBankWCSGold(iClient, ga_iBankWCSGold[iClient] - g_iRenamePrice);
                         else
@@ -1956,7 +1982,12 @@ void OpenAdministrationMenu(int iClient)
         if(g_bEnableBank && g_bBankShop && g_bRenameBank)
             menu.AddItem("rename", sDisplayString, (GetClientRightStatus(iClient, "rename") && ga_iBankCredits[iClient] >= g_iRenamePrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
         else
-            menu.AddItem("rename", sDisplayString, (GetClientRightStatus(iClient, "rename") && Shop_GetClientCredits(iClient) >= g_iRenamePrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+        {
+            if(g_bShopLoaded)
+                menu.AddItem("rename", sDisplayString, (GetClientRightStatus(iClient, "rename") && Shop_GetClientCredits(iClient) >= g_iRenamePrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+            else if(g_bStoreLoaded)
+                menu.AddItem("rename", sDisplayString, (GetClientRightStatus(iClient, "rename") && Store_GetClientCredits(iClient) >= g_iRenamePrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+        }
     }
     else if(g_bRenamePriceSellMode == 2 && g_bLShopGoldExist)
     {
@@ -2146,7 +2177,12 @@ void OpenAdministrationMenuExtendGang(int iClient,int endtime)
         if(g_bEnableBank && g_bBankShop && g_bExtendBank)
             menu.AddItem("yes", sDisplayString, (ga_iBankCredits[iClient] >= iPrice && days<=7)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
         else
-            menu.AddItem("yes", sDisplayString, (Shop_GetClientCredits(iClient) >= iPrice && days<=7)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+        {
+            if(g_bShopLoaded)
+                menu.AddItem("yes", sDisplayString, (Shop_GetClientCredits(iClient) >= iPrice && days<=7)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+            else if(g_bStoreLoaded)
+                menu.AddItem("yes", sDisplayString, (Store_GetClientCredits(iClient) >= iPrice && days<=7)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+        }
     }
     else if(g_iExtendPriceSellMode == 2 && g_bLShopGoldExist)
     {
@@ -2301,7 +2337,12 @@ public void SQLCallback_ExtendGang(Database db, DBResultSet results, const char[
                 if(g_bEnableBank && g_bBankShop && g_bExtendBank)
                     SetBankCredits(iClient, ga_iBankCredits[iClient] - iPrice);
                 else
-                    Shop_SetClientCredits(iClient, Shop_GetClientCredits(iClient) - iPrice);
+                {
+                    if(g_bShopLoaded)
+                        Shop_SetClientCredits(iClient, Shop_GetClientCredits(iClient) - iPrice);
+                    else if(g_bStoreLoaded)
+                        Store_SetClientCredits(iClient, Store_GetClientCredits(iClient) - iPrice);
+                }
             
                 if(g_bLog)
                     LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N продлил банду за %i кредитов", iClient, iPrice);

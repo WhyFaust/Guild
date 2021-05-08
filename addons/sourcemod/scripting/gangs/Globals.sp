@@ -106,7 +106,8 @@ int ga_iEndTime[MAXPLAYERS + 1] = {-1, ...};
 /* Database Globals */
 Database g_hDatabase;
 
-//bool g_bShopLoaded = false;
+bool g_bShopLoaded = false;
+bool g_bStoreLoaded = false;
 //bool g_bWCSLoaded = false;
 bool g_bLKLoaded = false;
 bool g_bLShopGoldExist = false;

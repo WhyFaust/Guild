@@ -201,7 +201,10 @@ public int Native_GetClientCash(Handle plugin, int numParams)
 	}
 	else if(StrEqual(sPerk, "shop"))
 	{
-		return Shop_GetClientCredits(iClient);
+		if(g_bShopLoaded)
+			return Shop_GetClientCredits(iClient);
+		else if(g_bStoreLoaded)
+			return Store_GetClientCredits(iClient);
 	}
 	else if(StrEqual(sPerk, "shopgold"))
 	{
@@ -241,7 +244,10 @@ public int Native_TakeClientCash(Handle plugin, int numParams)
 	}
 	else if(StrEqual(sPerk, "shop"))
 	{
-		Shop_SetClientCredits(iClient, Shop_GetClientCredits(iClient)-Cash);
+		if(g_bShopLoaded)
+			Shop_SetClientCredits(iClient, Shop_GetClientCredits(iClient)-Cash);
+		else if(g_bStoreLoaded)
+			Store_SetClientCredits(iClient, Store_GetClientCredits(iClient)-Cash);
 	}
 	else if(StrEqual(sPerk, "shopgold"))
 	{
@@ -280,7 +286,10 @@ public int Native_GiveClientCash(Handle plugin, int numParams)
 	}
 	else if(StrEqual(sPerk, "shop"))
 	{
-		Shop_SetClientCredits(iClient, Shop_GetClientCredits(iClient)+Cash);
+		if(g_bShopLoaded)
+			Shop_SetClientCredits(iClient, Shop_GetClientCredits(iClient)+Cash);
+		else if(g_bStoreLoaded)
+			Store_SetClientCredits(iClient, Store_GetClientCredits(iClient)+Cash);
 	}
 	else if(StrEqual(sPerk, "shopgold"))
 	{
