@@ -38,8 +38,20 @@ public int OnSocketReceive(Handle socket, char[] receiveData, const int dataSize
 		if(StrEqual(szTheContent, "\r\n\r\ntrue", false))
 		{
 			PrintToServer("Successful!");
-		} 
-		else if(StrEqual(szTheContent, "\r\n\r\nfalse", false))
+		}
+		else if(StrEqual(szTheContent, "\r\n\r\nbadIP", false))
+		{
+			PrintToServer("Wrong IP!");
+		}
+		else if(StrEqual(szTheContent, "\r\n\r\nbadPort", false))
+		{
+			PrintToServer("Wrong Port!");
+		}
+		else if(StrEqual(szTheContent, "\r\n\r\nbadPlugin", false))
+		{
+			PrintToServer("Wrong Plugin!");
+		}
+		else if(StrEqual(szTheContent, "\r\n\r\nfail", false))
 		{
 			SetFailState("Fail connect.");
 		}
