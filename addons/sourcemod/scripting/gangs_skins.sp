@@ -9,7 +9,7 @@
 
 #undef REQUIRE_PLUGIN
 #tryinclude <vip_core>
-#include <gamecms_system>
+#tryinclude <gamecms_system>
 #define REQUIRE_PLUGIN
 
 enum struct enum_Item
@@ -35,14 +35,15 @@ Handle SkinMenu;
 bool g_bUse[MAXPLAYERS +1];
 int g_iEntity[MAXPLAYERS +1];
 
-
 bool g_bVipCoreExist = false;
 bool g_bGangCoreExist = false;
+bool g_bGameCMSSystemExist = false;
  
 public void OnAllPluginsLoaded()
 {
 	g_bVipCoreExist = LibraryExists("vip_core");
 	g_bGangCoreExist = LibraryExists("gangs");
+	g_bGameCMSSystemExist = LibraryExists("gamecms_system");
 }
  
 public void OnLibraryRemoved(const char[] name)
@@ -51,6 +52,8 @@ public void OnLibraryRemoved(const char[] name)
 		g_bVipCoreExist = false;
 	if (StrEqual(name, "gangs"))
 		g_bGangCoreExist = false;
+	if (StrEqual(name, "gamecms_system"))
+		g_bGameCMSSystemExist = false;
 }
  
 public void OnLibraryAdded(const char[] name)
@@ -59,6 +62,8 @@ public void OnLibraryAdded(const char[] name)
 		g_bVipCoreExist = true;
 	if (StrEqual(name, "gangs"))
 		g_bGangCoreExist = true;
+	if (StrEqual(name, "gamecms_system"))
+		g_bGameCMSSystemExist = true;
 }
 
 public Plugin myinfo =
@@ -91,21 +96,13 @@ public Action AddToPerkMenu(Handle timer)
 
 public void SQLCallback_CheckPerk(Database db, DBResultSet hResults, const char[] sError, any iDataPack)
 {
-	DataPack hPack = view_as<DataPack>(iDataPack); // Получаем наш DataPack
-	hPack.Reset(); // Переводим указатель на начало датапака
-	
-	char ItemName[64];
-	hPack.ReadString(ItemName, sizeof(ItemName));
-	
-	delete hPack;
-
 	if(sError[0]) // Если произошла ошибка
 	{
 		if(StrContains(sError, "Duplicate column name", false))
 		{
 			char sQuery[256];
 			if(Gangs_GetDatabaseDriver())
-			Format(sQuery, sizeof(sQuery), "ALTER TABLE gangs_perks ADD COLUMN %s varchar(32) NULL DEFAULT NULL;", PerkName);
+				Format(sQuery, sizeof(sQuery), "ALTER TABLE gangs_perks ADD COLUMN %s varchar(32) NULL DEFAULT NULL;", PerkName);
 			else
 				Format(sQuery, sizeof(sQuery), "ALTER TABLE gangs_perks ADD COLUMN %s TEXT(32) NULL DEFAULT NULL;", PerkName);
 			db.Query(SQLCallback_Void, sQuery);
@@ -216,7 +213,8 @@ public void SQLCallback_GetPerkLvl(Database db, DBResultSet results, const char[
 
 public void OnPluginEnd()
 {
-	Gangs_DeleteFromPerkMenu(PerkName);
+	if(g_bGangCoreExist)
+		Gangs_DeleteFromPerkMenu(PerkName);
 }
 
 public void OnPluginStart()
@@ -694,7 +692,7 @@ public void SQLCallback_CheckSkin(Database db, DBResultSet results, const char[]
 				//PrintToChatAll("%s-%s", szBuffer, sGangName[iClient]); 
 				Database hDatabase = Gangs_GetDatabase();
 				hDatabase.Query(SQLCallback_Void, sQuery);
-				if(g_Item.Notification)
+				if(g_Item.Notification && g_bGameCMSSystemExist)
 				{
 					char sMessage[256], sProfileName[128];
 					GameCMS_GetClientName(iClient, sProfileName, sizeof(sProfileName));

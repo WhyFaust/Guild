@@ -1,7 +1,7 @@
 "Setting"
 {
 	"log" "1" // 0 - off, 1 - on logging to file?
-	"debug" "1" // 0 - off, 1 - on debug to file?
+	"debug" "0" // 0 - off, 1 - on debug to file?
 	
 	"server_id" "0" // Id server (Needed for multistatistics)
 
