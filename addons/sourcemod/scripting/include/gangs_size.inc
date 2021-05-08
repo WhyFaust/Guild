@@ -33,7 +33,7 @@ public SharedPlugin __pl_gangs  =
 };
 
 #if !defined REQUIRE_PLUGIN
-public __pl_gangs_size_SetNTVOptional()
+public void __pl_gangs_size_SetNTVOptional()
 {
 	MarkNativeAsOptional("Gangs_Size_GetMaxLvl");
 	MarkNativeAsOptional("Gangs_Size_GetCurrectLvl");

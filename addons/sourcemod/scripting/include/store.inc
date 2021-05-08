@@ -14,51 +14,51 @@ new g_cvarChatTag = -1;
 
 enum Item_Plan
 {
-	String:szName[ITEM_NAME_LENGTH],
-	iPrice,
-	iTime
+	String:sl_ItemName[ITEM_NAME_LENGTH],
+	il_ItemPrice,
+	il_Time
 }
 
 enum Store_Item
 {
-	String:szName[ITEM_NAME_LENGTH],
-	String:szUniqueId[PLATFORM_MAX_PATH],
-	String:szShortcut[64],
-	iId,
-	iPrice,
-	iParent,
-	iHandler,
-	iFlagBits,
-	iData,
-	iPlans,
-	bool:bBuyable,
-	bool:bIgnoreVIP,
-	Handle:hAttributes
+	String:sl_StoreName[ITEM_NAME_LENGTH],
+	String:sl_UniqueId[PLATFORM_MAX_PATH],
+	String:sl_Shortcut[64],
+	il_StoreId,
+	il_StorePrice,
+	il_Parent,
+	il_Handler,
+	il_FlagBits,
+	il_Data,
+	il_Plans,
+	bool:bl_Buyable,
+	bool:bl_IgnoreVIP,
+	Handle:hl_Attributes
 }
 
 enum Type_Handler
 {
-	String:szType[64],
-	String:szUniqueKey[32],
-	bool:bEquipable,
-	bool:bRaw,
-	Handle:hPlugin,
-	Function:fnMapStart,
-	Function:fnReset,
-	Function:fnConfig,
-	Function:fnUse,
-	Function:fnRemove
+	String:sl_Type[64],
+	String:sl_UniqueKey[32],
+	bool:bl_Equipable,
+	bool:bl_Raw,
+	Handle:hl_Plugin,
+	Function:fnl_MapStart,
+	Function:fnl_Reset,
+	Function:fnl_Config,
+	Function:fnl_Use,
+	Function:fnl_Remove
 }
 
 enum Client_Item
 {
-	iId,
-	iUniqueId,
-	bool:bSynced,
-	bool:bDeleted,
-	iDateOfPurchase,
-	iDateOfExpiration,
-	iPriceOfPurchase,
+	il_ClientId,
+	il_UniqueId,
+	bool:bl_Synced,
+	bool:bl_Deleted,
+	il_DateOfPurchase,
+	il_DateOfExpiration,
+	il_PriceOfPurchase,
 }
 
 native Store_RegisterHandler(String:type[], String:uniquekey[], Function:mapstart, Function:reset, Function:config, Function:use, Function:remove, bool:equipable = true, bool:raw = false);

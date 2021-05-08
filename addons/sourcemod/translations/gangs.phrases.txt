@@ -446,12 +446,6 @@
 		"ru"		"Передача лидерства"
 	}
 
-	"TransferLeader"
-	{
-		"en"		"Leadership Transfer"
-		"ru"		"Передача лидерства"
-	}
-
 	"LeaderTransfered"
 	{
 		"#format"	"{1:s},{2:s}"

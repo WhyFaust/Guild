@@ -14,8 +14,6 @@ public void OnPluginStart()
 
 public int OnSocketConnected(Handle socket, any arg) 
 {
-	#emit load.s.pri 0
-
 	char szPort[8], szRequest[256];
 	char szIP[18];
 
