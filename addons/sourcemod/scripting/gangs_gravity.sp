@@ -25,14 +25,13 @@ enum struct enum_Item
 
 #define PerkName    "gravity"
 
-int ga_iTimer[MAXPLAYERS + 1] = {0, ...};
-float ga_fChangedGravity[MAXPLAYERS + 1] = {0.0, ...};
 enum_Item g_Item;
 int g_iPerkLvl[MAXPLAYERS + 1] = -1;
 bool g_bOnlyTerrorist;
 bool g_bVipCoreExist = false;
 bool g_bGangCoreExist = false;
 bool g_bGameCMSSystemExist = false;
+Handle g_hTimerGravity[MAXPLAYERS+1];
  
 public void OnAllPluginsLoaded()
 {
@@ -93,20 +92,19 @@ public Action AddToPerkMenu(Handle timer)
 	Gangs_AddToPerkMenu(PerkName, GRAVITY_CallBack, true);
 }
 
-public void OnClientConnected(int iClient)
-{
-	ResetVariables(iClient);
-}
-
 public void OnClientDisconnect(int iClient)
 {
-	ResetVariables(iClient);
+	g_iPerkLvl[iClient] = -1;
+	if(g_hTimerGravity[iClient] != INVALID_HANDLE)
+	{
+		KillTimer(g_hTimerGravity[iClient]);
+		g_hTimerGravity[iClient] = INVALID_HANDLE;
+	}
 }
 
 public void OnClientPutInServer(int iClient)
 {
-	if(g_bGangCoreExist)
-		CreateTimer(2.0, LoadPerkLvl, iClient, TIMER_FLAG_NO_MAPCHANGE);
+	if(g_bGangCoreExist) CreateTimer(2.0, LoadPerkLvl, iClient, TIMER_FLAG_NO_MAPCHANGE);
 	else CreateTimer(5.0, ReLoadPerkLvl, iClient, TIMER_FLAG_NO_MAPCHANGE);
 }
 
@@ -134,7 +132,7 @@ public void SQLCallback_GetPerkLvl(Database db, DBResultSet results, const char[
 {
 	if(error[0])
 	{
-		LogError(error);
+		LogError("SQLCallback_GetPerkLvl: %s", error); // Выводим в лог
 		return;
 	}
 
@@ -172,8 +170,6 @@ public void OnPluginStart()
 	HookEvent("player_spawn", Event_PlayerSpawn);
 	KFG_load();
 	
-	Gangs_OnLoaded();
-	
 	for(int i = 1; i <= MaxClients; i++)
 	{
 		if(IsValidClient(i))
@@ -203,35 +199,25 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
 		
 		if(g_iPerkLvl[iClient] > 0)
 		{
-			ga_iTimer[iClient] = 0;
-			SetEntPropFloat(iClient, Prop_Data, "m_flGravity", GetClientGravityAmmount(iClient));
-			CreateTimer(0.4, Timer_CheckSetGravity, iClient, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+			SetEntityGravity(iClient, GetClientGravityAmmount(iClient));
+			if(g_hTimerGravity[iClient] == INVALID_HANDLE)
+				g_hTimerGravity[iClient] = CreateTimer(3.0, Timer_CheckSetGravity, iClient, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 		}
 	}
 }
 
 public Action Timer_CheckSetGravity(Handle hHandle, int iClient)
 {
-	if (ga_iTimer[iClient] == 0)
-	{
-		if (GetEntityGravity(iClient) != 1.0 && GetEntityGravity(iClient) != GetClientGravityAmmount(iClient))
-			ga_fChangedGravity[iClient] = GetEntityGravity(iClient);
-	}
-	else
-	{
-		if(GetEntityGravity(iClient) != ga_fChangedGravity[iClient])
-		{
-			SetEntityGravity(iClient, GetClientGravityAmmount(iClient));
-			return Plugin_Stop;
-		}
-	}
-	ga_iTimer[iClient]++;
-	return Plugin_Continue;
+	if(IsValidClient(iClient))
+		SetEntityGravity(iClient, GetClientGravityAmmount(iClient));
 }
 
 public void GRAVITY_CallBack(int iClient, int ItemID, const char[] ItemName)
 {
-	ShowMenuModule(iClient);
+	if(g_iPerkLvl[iClient] > -1)
+		ShowMenuModule(iClient);
+	else
+		PrintToChat(iClient, "Error load lvl, reconnect");
 }
 
 void ShowMenuModule(int iClient)
@@ -466,14 +452,12 @@ float GetClientGravityAmmount(int iClient)
 {
 	float fGravityAmmount;
 	fGravityAmmount = (1.0 - (g_Item.ModifierPerk * g_iPerkLvl[iClient]));
+	if(fGravityAmmount <= 0)
+	{
+		fGravityAmmount = 0.01;
+		PrintToChat(iClient, "You have the wrong gravity value, tell that to the creator");
+	}
 	return fGravityAmmount;
-}
-
-void ResetVariables(int iClient)
-{
-	ga_iTimer[iClient] = 0;
-	ga_fChangedGravity[iClient] = 0.0;
-	g_iPerkLvl[iClient] = -1;
 }
 
 public void SQLCallback_Void(Database db, DBResultSet results, const char[] error, int data)

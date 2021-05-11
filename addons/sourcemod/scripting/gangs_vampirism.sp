@@ -233,7 +233,10 @@ public void OnMapStart()
 
 public void VAMPIRISM_CallBack(int iClient, int ItemID, const char[] ItemName)
 {
-	ShowMenuModule(iClient);
+	if(g_iPerkLvl[iClient] > -1)
+		ShowMenuModule(iClient);
+	else
+		PrintToChat(iClient, "Error load lvl, reconnect");
 }
 
 void ShowMenuModule(int iClient)

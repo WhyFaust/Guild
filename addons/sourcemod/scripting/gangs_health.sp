@@ -206,7 +206,10 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
 
 public void HEALTH_CallBack(int iClient, int ItemID, const char[] ItemName)
 {
-	ShowMenuModule(iClient);
+	if(g_iPerkLvl[iClient] > -1)
+		ShowMenuModule(iClient);
+	else
+		PrintToChat(iClient, "Error load lvl, reconnect");
 }
 
 void ShowMenuModule(int iClient)
