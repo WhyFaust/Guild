@@ -1496,6 +1496,7 @@ public int InvitationMenu_Callback(Menu menu, MenuAction action, int param1, int
                     DataPack data = new DataPack();
                     data.WriteCell(param1);
                     data.WriteCell(iUserID);
+                    data.Reset();
                     CreateTimer(15.0, AcceptTimer, data);
                 }
                 else
@@ -1524,6 +1525,7 @@ public Action AcceptTimer(Handle timer, DataPack data)
 {
     int iClient = data.ReadCell();
     int iTarget = data.ReadCell();
+    delete data;
     if(IsValidClient(iClient) && ga_bInvitationSent[iClient])
         ga_bInvitationSent[iClient] = false;
     if(IsValidClient(iTarget) && ga_iInvitation[iTarget])
@@ -2768,7 +2770,7 @@ public void SQL_Callback_LoadStatistics(Database db, DBResultSet results, const 
     if(!ga_bIsGangInDatabase[iClient])
         Format(sQuery, sizeof(sQuery), "INSERT INTO `gangs_statistics` (`gang`, `server_id`, `%s`) VALUES('%s', '%i', '%i');", g_sDbStatisticName, szEscapedGang, g_iServerID, ga_iScore[iClient]);
     else
-        Format(sQuery, sizeof(sQuery), "UPDATE `gangs_statistics SET` `%s` = '%i' WHERE gang= '%s' AND `server_id` = %i;", g_sDbStatisticName, ga_iScore[iClient], szEscapedGang, g_iServerID);
+        Format(sQuery, sizeof(sQuery), "UPDATE `gangs_statistics` SET `%s` = '%i' WHERE gang= '%s' AND `server_id` = %i;", g_sDbStatisticName, ga_iScore[iClient], szEscapedGang, g_iServerID);
 
     g_hDatabase.Query(SQLCallback_Void, sQuery, 333);
 
