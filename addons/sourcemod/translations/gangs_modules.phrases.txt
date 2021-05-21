@@ -60,6 +60,12 @@
 		"en"		"PayDay"
 	}
 	
+	"rpg_booster"
+	{
+		"ru"		"РПГ буст"
+		"en"		"RPG Booster"
+	}
+	
 	"point_race_not_enough_allies"
 	{
 		"ru"		"Недостаточно союзников с банды для игры"
