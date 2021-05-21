@@ -8,7 +8,6 @@
 
 #undef REQUIRE_PLUGIN
 #tryinclude <vip_core>
-#tryinclude <gamecms_system>
 #define REQUIRE_PLUGIN
 
 enum struct enum_Item
@@ -20,7 +19,6 @@ enum struct enum_Item
 	int MaxLvl;
 	int NoVip;
 	int ProcentSell;
-	int Notification;
 }
 
 #define PerkName    "damage"
@@ -30,13 +28,11 @@ int g_iPerkLvl[MAXPLAYERS + 1] = -1;
 bool g_bOnlyTerrorist;
 bool g_bVipCoreExist = false;
 bool g_bGangCoreExist = false;
-bool g_bGameCMSSystemExist = false;
  
 public void OnAllPluginsLoaded()
 {
 	g_bVipCoreExist = LibraryExists("vip_core");
 	g_bGangCoreExist = LibraryExists("gangs");
-	g_bGameCMSSystemExist = LibraryExists("gamecms_system");
 }
  
 public void OnLibraryRemoved(const char[] name)
@@ -45,8 +41,6 @@ public void OnLibraryRemoved(const char[] name)
 		g_bVipCoreExist = false;
 	if (StrEqual(name, "gangs"))
 		g_bGangCoreExist = false;
-	if (StrEqual(name, "gamecms_system"))
-		g_bGameCMSSystemExist = false;
 }
  
 public void OnLibraryAdded(const char[] name)
@@ -55,8 +49,6 @@ public void OnLibraryAdded(const char[] name)
 		g_bVipCoreExist = true;
 	if (StrEqual(name, "gangs"))
 		g_bGangCoreExist = true;
-	if (StrEqual(name, "gamecms_system"))
-		g_bGameCMSSystemExist = true;
 }
 
 public Plugin myinfo =
@@ -318,13 +310,6 @@ public int MenuHandler_MainMenu(Menu hMenu, MenuAction action, int iClient, int 
 							Gangs_TakeClientCash(iClient, "myjb", g_Item.Price);
 					}
 				}
-				if(g_Item.Notification && g_bGameCMSSystemExist)
-				{
-					char sMessage[256], sProfileName[128];
-					GameCMS_GetClientName(iClient, sProfileName, sizeof(sProfileName));
-					Format(sMessage, sizeof(sMessage), "%s, поздравляем с успешной покупкой %T", sProfileName, PerkName, iClient);
-					GameCMS_SendNotification(iClient, sMessage);
-				}
 				ShowMenuModule(iClient);
 			}
 			else if(StrEqual(sInfo, "sell"))
@@ -424,7 +409,6 @@ void KFG_load()
 			g_Item.ProcentSell = -1;
 		else
 			g_Item.ProcentSell = 0;
-	g_Item.Notification = kfg.GetNum("notification");
 	delete kfg;
 }
 
