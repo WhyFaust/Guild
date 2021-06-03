@@ -1,6 +1,5 @@
 #pragma newdecls required
 
-#include <sourcemod>
 #include <gangs>
 #include <gifts_core>
 

@@ -1,4 +1,3 @@
-#include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
 #include <autoexecconfig>
@@ -741,14 +740,28 @@ public Action OnSay(int iClient, const char[] command, int args)
                 }
                 case 3:
                 {
-                    if(Shop_GetClientCredits(iClient) >= iCount)
+                    if(g_bShopLoaded)
                     {
-                        Shop_SetClientCredits(iClient, Shop_GetClientCredits(iClient) - iCount);
-                        SetBankCredits(iClient, ga_iBankCredits[iClient] + iCount);
-                        CPrintToChat(iClient, "%t %t", "Prefix", "BankSuccessfullyAction");
+                        if(Shop_GetClientCredits(iClient) >= iCount)
+                        {
+                            Shop_SetClientCredits(iClient, Shop_GetClientCredits(iClient) - iCount);
+                            SetBankCredits(iClient, ga_iBankCredits[iClient] + iCount);
+                            CPrintToChat(iClient, "%t %t", "Prefix", "BankSuccessfullyAction");
+                        }
+                        else
+                            CPrintToChat(iClient, "%t %t", "Prefix", "BankNotEnoughAction");
                     }
-                    else
-                        CPrintToChat(iClient, "%t %t", "Prefix", "BankNotEnoughAction");
+                    else if(g_bStoreLoaded)
+                    {
+                        if(Store_GetClientCredits(iClient) >= iCount)
+                        {
+                            Store_SetClientCredits(iClient, Store_GetClientCredits(iClient) - iCount);
+                            SetBankCredits(iClient, ga_iBankCredits[iClient] + iCount);
+                            CPrintToChat(iClient, "%t %t", "Prefix", "BankSuccessfullyAction");
+                        }
+                        else
+                            CPrintToChat(iClient, "%t %t", "Prefix", "BankNotEnoughAction");
+                    }
                 }
                 case 4:
                 {

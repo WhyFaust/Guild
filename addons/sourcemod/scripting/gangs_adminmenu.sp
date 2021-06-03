@@ -1,12 +1,6 @@
 #pragma newdecls required
 
-#include <sourcemod>
-
-#include <sdkhooks>
-#include <sdktools>
 #include <gangs>
-
-#pragma newdecls required
 
 public Plugin myinfo = 
 {

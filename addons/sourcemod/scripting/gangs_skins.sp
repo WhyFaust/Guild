@@ -1,7 +1,5 @@
 #pragma newdecls required
 
-#include <sourcemod>
-#include <cstrike>
 #include <gangs>
 #include <sdktools>
 #include <sdkhooks>

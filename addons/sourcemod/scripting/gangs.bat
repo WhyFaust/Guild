@@ -1,0 +1,23 @@
+spcomp gangs.sp -o../plugins/gangs.smx
+spcomp gangs_adminmenu.sp -o../plugins/gangs_adminmenu.smx
+spcomp gangs_chat.sp -o../plugins/gangs_chat.smx
+spcomp gangs_damage.sp -o../plugins/gangs_damage.smx
+spcomp gangs_fast_reload.sp -o../plugins/gangs_fast_reload.smx
+spcomp gangs_game_point_race.sp -o../plugins/gangs_game_point_race.smx
+spcomp gangs_gravity.sp -o../plugins/gangs_gravity.smx
+spcomp gangs_health.sp -o../plugins/gangs_health.smx
+spcomp gangs_logo.sp -o../plugins/gangs_logo.smx
+spcomp gangs_payday.sp -o../plugins/gangs_payday.smx
+spcomp gangs_rpg_booster.sp -o../plugins/gangs_rpg_booster.smx
+spcomp gangs_score_gift.sp -o../plugins/gangs_score_gift.smx
+spcomp gangs_score_shavit.sp -o../plugins/gangs_score_shavit.smx
+spcomp gangs_score_standart.sp -o../plugins/gangs_score_standart.smx
+spcomp gangs_site_statistic.sp -o../plugins/gangs_site_statistic.smx
+spcomp gangs_size.sp -o../plugins/gangs_size.smx
+spcomp gangs_skins.sp -o../plugins/gangs_skins.smx
+spcomp gangs_speed.sp -o../plugins/gangs_speed.smx
+spcomp gangs_statistic_rating.sp -o../plugins/gangs_statistic_rating.smx
+spcomp gangs_statistic_standart.sp -o../plugins/gangs_statistic_standart.smx
+spcomp gangs_tag.sp -o../plugins/gangs_tag.smx
+spcomp gangs_vampirism.sp -o../plugins/gangs_vampirism.smx
+pause

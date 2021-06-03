@@ -1,6 +1,5 @@
 #pragma newdecls required
 
-#include <sourcemod>
 #include <csgocolors>
 #include <gangs>
 #include <autoexecconfig>
