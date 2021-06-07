@@ -18,6 +18,7 @@
 #pragma newdecls required
 
 #include "gangs/Globals.sp"
+#include "gangs/Config.sp"
 #include "gangs/Natives.sp"
 #include "gangs/Forwards.sp"
 #include "gangs/Cmds.sp"
@@ -99,7 +100,6 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
-    //#emit load.s.pri 0
     BuildPath(Path_SM, g_sFile, sizeof(g_sFile), "configs/gangs/info.ini");
 
     LoadTranslations("gangs.phrases");
@@ -127,7 +127,7 @@ public void OnPluginStart()
     AutoExecConfig_CleanFile();
     
     CreateArrays();
-    CreateForwardss();
+    CreateForwards();
     RegAllCmds();
     
     RegConsoleCmd("gangs_config_reload", Command_Gang_Config_Reload, "Reload config file!");
@@ -192,55 +192,10 @@ public void OnMapStart()
 {
     if(g_bPluginEnabled)
     {
-        LoadConfigSettings("Setting", "configs/gangs/settings.txt");
-    
-        ConfigSettings.Rewind();
-
-        g_bLog = ConfigSettings.GetNum("log");
-        g_bDebug = ConfigSettings.GetNum("debug");
+        LoadConfig();
         
-        g_iServerID = ConfigSettings.GetNum("server_id");
-        
-        if(ConfigSettings.JumpToKey("gang"))
-        {
-            g_bMenuValue = ConfigSettings.GetNum("menu_value");
-            
-            g_bMenuInfo = ConfigSettings.GetNum("menu_info");
-        
-            g_bCreateGangSellMode = ConfigSettings.GetNum("create_mode");
-            g_iCreateGangPrice = ConfigSettings.GetNum("create");
-            
-            g_bRenameBank = ConfigSettings.GetNum("rename_bank");
-            g_bRenamePriceSellMode = ConfigSettings.GetNum("rename_mode");
-            g_iRenamePrice = ConfigSettings.GetNum("rename");
-            
-            g_iSize = ConfigSettings.GetNum("num_slots");
-            
-            g_iScoreExpInc = ConfigSettings.GetNum("exp_inc");
-            
-            g_bExtendBank = ConfigSettings.GetNum("extend_bank");
-            g_iExtendPriceSellMode = ConfigSettings.GetNum("extend_mode");
-            g_bExtendCostFormula = ConfigSettings.GetNum("extend_formula");
-            g_iExtendCostPrice = ConfigSettings.GetNum("extend_start");
-            g_iExtendModifier = ConfigSettings.GetNum("extend_modifier");
-        }
-        
-        ConfigSettings.Rewind();
-        if(ConfigSettings.JumpToKey("bank"))
-        {
-            g_bEnableBank = ConfigSettings.GetNum("enable");
-            g_bBankRubles = ConfigSettings.GetNum("rubles");
-            g_bBankShop = ConfigSettings.GetNum("shop");
-            g_bBankShopGold = ConfigSettings.GetNum("shop_gold");
-            g_bBankWcsGold = ConfigSettings.GetNum("wcs_gold");
-            g_bBankLkRubles = ConfigSettings.GetNum("lk_rubles");
-            g_bBankMyJBCredits = ConfigSettings.GetNum("myjb_credits");
-        }
-        
-        CreateTimer(10.0, Timer_CheckGangEnd);
-        
-        if(g_bDebug)
-            LogToFile("addons/sourcemod/logs/gangs_debug.txt", "Config Loaded");
+        if(g_iCreateGangDays>0)
+            CreateTimer(10.0, Timer_CheckGangEnd);
     }
 }
 
@@ -1888,8 +1843,6 @@ void DisplayBankMenu(int iClient)
 /*****************************************************************
 *******************	   LEAVE CONFIRMATION	  ********************
 ******************************************************************/
-
-
 void OpenLeaveConfirmation(int iClient)
 {
     Menu menu = CreateMenu(LeaveConfirmation_Callback, MenuAction_Select | MenuAction_End | MenuAction_DisplayItem | MenuAction_Cancel);
@@ -2043,9 +1996,11 @@ void OpenAdministrationMenu(int iClient)
     Format(sDisplayString, sizeof(sDisplayString), "%T", "Disband", iClient);
     menu.AddItem("disband", sDisplayString, (ga_iRank[iClient] == 0)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 
-    Format(sDisplayString, sizeof(sDisplayString), "%T", "Extend", iClient);
-    //menu.AddItem("extend", sDisplayString, (ga_iRank[iClient] < Rank_Admin || (!g_bMenuInfo && g_bGameCMSExist && !GameCMS_Registered(iClient)))?ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
-    menu.AddItem("extend", sDisplayString, (GetClientRightStatus(iClient, "extend"))?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+    if(g_iCreateGangDays > 0)
+    {
+        Format(sDisplayString, sizeof(sDisplayString), "%T", "Extend", iClient);
+        menu.AddItem("extend", sDisplayString, (GetClientRightStatus(iClient, "extend"))?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+    }
     
     //Format(sDisplayString, sizeof(sDisplayString), "%T", "TransferLeader", iClient);
     //menu.AddItem("transferleader", sDisplayString, (ga_iRank[iClient] == 0)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
@@ -2135,12 +2090,10 @@ public void SQLCallback_OpenExtendMenu(Database db, DBResultSet results, const c
         {
             OpenAdministrationMenuExtendGang(iClient, results.FetchInt(0));
         }
-        
     }
-
 }
 
-void OpenAdministrationMenuExtendGang(int iClient,int endtime)
+void OpenAdministrationMenuExtendGang(int iClient, int endtime)
 {
     if(!IsValidClient(iClient))
     {
@@ -2150,7 +2103,7 @@ void OpenAdministrationMenuExtendGang(int iClient,int endtime)
     
     char tempBuffer[512], sDisplayString[128];
     
-    int days = (endtime-GetTime())/86400;
+    int days = (endtime - GetTime())/86400;
     if(days<0) days = 0;
     
     int iPrice;
@@ -2166,98 +2119,100 @@ void OpenAdministrationMenuExtendGang(int iClient,int endtime)
             Discount = GameCMS_GetGlobalDiscount();
         else Discount = GameCMS_GetClientDiscount(iClient);
         
-        Format(tempBuffer, sizeof(tempBuffer), "%T %T\n%T\n%T", "GangExtend", iClient,days, Colculate(iClient, iPrice, Discount), "rubles", iClient, "Want?", iClient, "YourDiscount", iClient, Discount);		
+        Format(tempBuffer, sizeof(tempBuffer), "%T %T\n%T\n%T", "GangExtend", iClient, days, Colculate(iClient, iPrice, Discount), "rubles", iClient, "Want?", iClient, "YourDiscount", iClient, Discount);		
     
-        if(days>7)
-            Format(tempBuffer, sizeof(tempBuffer), "%s\n%T", tempBuffer, "ExtendedAvailable", iClient, days-7);
+        //if(days>7)
+        //    Format(tempBuffer, sizeof(tempBuffer), "%s\n%T", tempBuffer, "ExtendedAvailable", iClient, days-7);
         SetMenuTitle(menu, tempBuffer);
     
         Format(sDisplayString, sizeof(sDisplayString), "%T", "Yes", iClient);
         
         if(g_bEnableBank && g_bBankRubles && g_bExtendBank)
-            menu.AddItem("yes", sDisplayString, (ga_iBankRubles[iClient] >= Colculate(iClient, iPrice, Discount) && days<=7)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+            menu.AddItem("yes", sDisplayString, (ga_iBankRubles[iClient] >= Colculate(iClient, iPrice, Discount))?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
         else
-            menu.AddItem("yes", sDisplayString, (GameCMS_GetClientRubles(iClient) >= Colculate(iClient, iPrice, Discount) && days<=7)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+            menu.AddItem("yes", sDisplayString, (GameCMS_GetClientRubles(iClient) >= Colculate(iClient, iPrice, Discount))?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
     }
     else if(g_iExtendPriceSellMode == 1)
     {
         Format(tempBuffer, sizeof(tempBuffer), "%T %T\n%T", "GangExtend", iClient, days, iPrice, "shop", iClient, "Want?", iClient);		
     
-        if(days>7)
-            Format(tempBuffer, sizeof(tempBuffer), "%s\n%T", tempBuffer, "ExtendedAvailable", iClient, days-7);
+        //if(days>7)
+        //    Format(tempBuffer, sizeof(tempBuffer), "%s\n%T", tempBuffer, "ExtendedAvailable", iClient, days-7);
         SetMenuTitle(menu, tempBuffer);
     
         Format(sDisplayString, sizeof(sDisplayString), "%T", "Yes", iClient);
         
         if(g_bEnableBank && g_bBankShop && g_bExtendBank)
-            menu.AddItem("yes", sDisplayString, (ga_iBankCredits[iClient] >= iPrice && days<=7)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+        {
+            menu.AddItem("yes", sDisplayString, (ga_iBankCredits[iClient] >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+        }
         else
         {
             if(g_bShopLoaded)
-                menu.AddItem("yes", sDisplayString, (Shop_GetClientCredits(iClient) >= iPrice && days<=7)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+                menu.AddItem("yes", sDisplayString, (Shop_GetClientCredits(iClient) >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
             else if(g_bStoreLoaded)
-                menu.AddItem("yes", sDisplayString, (Store_GetClientCredits(iClient) >= iPrice && days<=7)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+                menu.AddItem("yes", sDisplayString, (Store_GetClientCredits(iClient) >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
         }
     }
     else if(g_iExtendPriceSellMode == 2 && g_bLShopGoldExist)
     {
         Format(tempBuffer, sizeof(tempBuffer), "%T %T\n%T", "GangExtend", iClient, days, iPrice, "shopgold", iClient, "Want?", iClient);		
     
-        if(days>7)
-            Format(tempBuffer, sizeof(tempBuffer), "%s\n%T", tempBuffer, "ExtendedAvailable", iClient, days-7);
+        //if(days>7)
+        //    Format(tempBuffer, sizeof(tempBuffer), "%s\n%T", tempBuffer, "ExtendedAvailable", iClient, days-7);
         SetMenuTitle(menu, tempBuffer);
     
         Format(sDisplayString, sizeof(sDisplayString), "%T", "Yes", iClient);
         
         if(g_bEnableBank && g_bBankShopGold && g_bExtendBank)
-            menu.AddItem("yes", sDisplayString, (ga_iBankGold[iClient] >= iPrice && days<=7)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+            menu.AddItem("yes", sDisplayString, (ga_iBankGold[iClient] >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
         else
-            menu.AddItem("yes", sDisplayString, (Shop_GetClientGold(iClient) >= iPrice && days<=7)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+            menu.AddItem("yes", sDisplayString, (Shop_GetClientGold(iClient) >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
     }
     else if(g_iExtendPriceSellMode == 3)
     {
         Format(tempBuffer, sizeof(tempBuffer), "%T %T\n%T", "GangExtend", iClient, days, iPrice, "wcsgold", iClient, "Want?", iClient);		
     
-        if(days>7)
-            Format(tempBuffer, sizeof(tempBuffer), "%s\n%T", tempBuffer, "ExtendedAvailable", iClient, days-7);
+        //if(days>7)
+        //    Format(tempBuffer, sizeof(tempBuffer), "%s\n%T", tempBuffer, "ExtendedAvailable", iClient, days-7);
         SetMenuTitle(menu, tempBuffer);
     
         Format(sDisplayString, sizeof(sDisplayString), "%T", "Yes", iClient);
         
         if(g_bEnableBank && g_bBankWcsGold && g_bExtendBank)
-            menu.AddItem("yes", sDisplayString, (ga_iBankWCSGold[iClient] >= iPrice && days<=7)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+            menu.AddItem("yes", sDisplayString, (ga_iBankWCSGold[iClient] >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
         else
-            menu.AddItem("yes", sDisplayString, (WCS_GetGold(iClient) >= iPrice && days<=7)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+            menu.AddItem("yes", sDisplayString, (WCS_GetGold(iClient) >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
     }
     else if(g_iExtendPriceSellMode == 4 && g_bLKLoaded)
     {
         Format(tempBuffer, sizeof(tempBuffer), "%T %T\n%T", "GangExtend", iClient, days, iPrice, "lkrubles", iClient, "Want?", iClient);		
     
-        if(days>7)
-            Format(tempBuffer, sizeof(tempBuffer), "%s\n%T", tempBuffer, "ExtendedAvailable", iClient, days-7);
+        //if(days>7)
+        //    Format(tempBuffer, sizeof(tempBuffer), "%s\n%T", tempBuffer, "ExtendedAvailable", iClient, days-7);
         SetMenuTitle(menu, tempBuffer);
     
         Format(sDisplayString, sizeof(sDisplayString), "%T", "Yes", iClient);
         
         if(g_bEnableBank && g_bBankLkRubles && g_bExtendBank)
-            menu.AddItem("yes", sDisplayString, (ga_iBankLKRubles[iClient] >= iPrice && days<=7)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+            menu.AddItem("yes", sDisplayString, (ga_iBankLKRubles[iClient] >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
         else
-            menu.AddItem("yes", sDisplayString, (LK_GetClientCash(iClient) >= iPrice && days<=7)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+            menu.AddItem("yes", sDisplayString, (LK_GetClientCash(iClient) >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
     }
     else if(g_iExtendPriceSellMode == 5 && g_bMyJBShopExist)
     {
         Format(tempBuffer, sizeof(tempBuffer), "%T %T\n%T", "GangExtend", iClient, days, iPrice, "myjb", iClient, "Want?", iClient);		
     
-        if(days>7)
-            Format(tempBuffer, sizeof(tempBuffer), "%s\n%T", tempBuffer, "ExtendedAvailable", iClient, days-7);
+        //if(days>7)
+        //    Format(tempBuffer, sizeof(tempBuffer), "%s\n%T", tempBuffer, "ExtendedAvailable", iClient, days-7);
         SetMenuTitle(menu, tempBuffer);
     
         Format(sDisplayString, sizeof(sDisplayString), "%T", "Yes", iClient);
         
         if(g_bEnableBank && g_bBankMyJBCredits && g_bExtendBank)
-            menu.AddItem("yes", sDisplayString, (ga_iBankMyJBCredits[iClient] >= iPrice && days<=7)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+            menu.AddItem("yes", sDisplayString, (ga_iBankMyJBCredits[iClient] >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
         else
-            menu.AddItem("yes", sDisplayString, (MyJailShop_GetCredits(iClient) >= iPrice && days<=7)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+            menu.AddItem("yes", sDisplayString, (MyJailShop_GetCredits(iClient) >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
     }
     else CPrintToChat(iClient, "%t %t", "Prefix", "Error");
     
@@ -2324,7 +2279,8 @@ public void SQLCallback_ExtendGang(Database db, DBResultSet results, const char[
     {
         while(results.FetchRow())
         {
-            SetTimeEndGang(ga_sGangName[iClient],results.FetchInt(0)+2629743);
+            //SetTimeEndGang(ga_sGangName[iClient],results.FetchInt(0)+2629743);
+            SetTimeEndGang(ga_sGangName[iClient], GetTime()+2629743);
             CPrintToChat(iClient, "%t %t", "Prefix", "GangExtended");
             char sQuery[300];
             int iPrice;
@@ -2337,7 +2293,8 @@ public void SQLCallback_ExtendGang(Database db, DBResultSet results, const char[
                 int Discount;
                 if(GameCMS_GetGlobalDiscount() > GameCMS_GetClientDiscount(iClient))
                     Discount = GameCMS_GetGlobalDiscount();
-                else Discount = GameCMS_GetClientDiscount(iClient);
+                else 
+                    Discount = GameCMS_GetClientDiscount(iClient);
                 
                 if(g_bEnableBank && g_bBankRubles && g_bExtendBank)
                     SetBankRubles(iClient, ga_iBankRubles[iClient] - Colculate(iClient, iPrice, Discount));
@@ -2948,8 +2905,7 @@ void ResetVariables(int iClient, bool full = true)
     }
 }
 
-
-void SetTimeEndGang(char[] gang,int time)
+void SetTimeEndGang(char[] gang, int time)
 {
     char szQuery[256];
     Format( szQuery, sizeof( szQuery ),"UPDATE gangs_groups SET end_date = '%i' WHERE gang = '%s' AND server_id = %i;", time, gang, g_iServerID);
@@ -3178,20 +3134,4 @@ public Action SetBankMyJBCredits(int iClient, int shilings)
     }
     
     return;
-}
-
-public int Colculate(int iClient, int Number, int Discount)
-{
-    int Sale = RoundToNearest((float(Number) * float(Discount))/100.0);
-    
-    return Number-Sale;
-}
-
-void LoadConfigSettings(char kvName[256],char file[256])
-{
-    delete ConfigSettings;
-    ConfigSettings = new KeyValues(kvName);
-    char SzBuffer[256];
-    BuildPath(Path_SM, SzBuffer,256, file);
-    ConfigSettings.ImportFromFile(SzBuffer);
 }

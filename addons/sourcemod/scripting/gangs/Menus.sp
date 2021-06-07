@@ -92,7 +92,6 @@ void OpenGangsMenu(int iClient)
 		Menu menu = CreateMenu(GangsMenu_Callback, MenuAction_Select | MenuAction_End | MenuAction_DisplayItem);
 		
 		char sString[256];
-		
 		Format(sString, sizeof(sString), "%T\n", "GangsMenuTitle", iClient);
 		
 		if(g_bMenuValue == 1 && g_bGameCMSExist)
@@ -100,20 +99,13 @@ void OpenGangsMenu(int iClient)
 			if(!g_bMenuInfo)
 			{
 				if(g_bGameCMSExist && !GameCMS_Registered(iClient))
-				{
-					Format(sString, sizeof(sString), "%s%T N/A\n", sString
-												, "rubles", iClient);
-				}
+					Format(sString, sizeof(sString), "%s%T N/A\n", sString, "rubles", iClient);
 				else
-				{
-					Format(sString, sizeof(sString), "%s%T %i\n", sString
-												, "rubles", iClient, GameCMS_GetClientRubles(iClient));
-				}
+					Format(sString, sizeof(sString), "%s%T %i\n", sString, "rubles", iClient, GameCMS_GetClientRubles(iClient));
 			}
 			else
 			{
-				Format(sString, sizeof(sString), "%s%T %i\n", sString
-											, "rubles", iClient, GameCMS_GetClientRubles(iClient));
+				Format(sString, sizeof(sString), "%s%T %i\n", sString, "rubles", iClient, GameCMS_GetClientRubles(iClient));
 			}
 		}
 		else if(g_bMenuValue == 2)
@@ -125,34 +117,36 @@ void OpenGangsMenu(int iClient)
 		}
 		else if(g_bMenuValue == 3 && g_bLShopGoldExist)
 		{
-			Format(sString, sizeof(sString), "%s%T %i\n", sString
-												, "shopgold", iClient, Shop_GetClientGold(iClient));
+			Format(sString, sizeof(sString), "%s%T %i\n", sString, "shopgold", iClient, Shop_GetClientGold(iClient));
 		}
 		else if(g_bMenuValue == 4)
 		{
-			Format(sString, sizeof(sString), "%s%T %i\n", sString
-												, "wcsgold", iClient, WCS_GetGold(iClient));
+			Format(sString, sizeof(sString), "%s%T %i\n", sString, "wcsgold", iClient, WCS_GetGold(iClient));
 		}
 		else if(g_bMenuValue == 5 && g_bLKLoaded)
 		{
-			Format(sString, sizeof(sString), "%s%T %i\n", sString
-												, "lkrubles", iClient, LK_GetClientCash(iClient));
+			Format(sString, sizeof(sString), "%s%T %i\n", sString, "lkrubles", iClient, LK_GetClientCash(iClient));
 		}
 		else if(g_bMenuValue == 6 && g_bMyJBShopExist)
 		{
-			Format(sString, sizeof(sString), "%s%T %i\n", sString
-												, "myjb", iClient, MyJailShop_GetCredits(iClient));
+			Format(sString, sizeof(sString), "%s%T %i\n", sString, "myjb", iClient, MyJailShop_GetCredits(iClient));
 		}
 		
 		if(ga_bHasGang[iClient])
 		{
 			Format(sString, sizeof(sString), "%s%T \n", sString, "CurrentGang", iClient, ga_sGangName[iClient], "Level", GetGangLvl(ga_iScore[iClient]));
-			int days= (ga_iEndTime[iClient]-GetTime())/86400;
-			if(days<0) days = 0;
-			Format(sString, sizeof(sString), "%s%T \n", sString, "GangExpired", iClient, days);
+			if(g_iCreateGangDays>0)
+			{
+				int days= (ga_iEndTime[iClient]-GetTime())/86400;
+				if(days<0) 
+					days = 0;
+				Format(sString, sizeof(sString), "%s%T \n", sString, "GangExpired", iClient, days);
+			}
 		}
 		else
+		{
 			Format(sString, sizeof(sString), "%s%T", sString, "NoGang", iClient);
+		}
 		
 		SetMenuTitle(menu, sString);
 		
@@ -165,7 +159,8 @@ void OpenGangsMenu(int iClient)
 				int Discount;
 				if(GameCMS_GetGlobalDiscount() > GameCMS_GetClientDiscount(iClient))
 					Discount = GameCMS_GetGlobalDiscount();
-				else Discount = GameCMS_GetClientDiscount(iClient);
+				else 
+					Discount = GameCMS_GetClientDiscount(iClient);
 				Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T (%T %i%%)", "CreateAGang", iClient, Colculate(iClient, g_iCreateGangPrice, Discount), "rubles", iClient, "Sale", Discount);
 				menu.AddItem("create", sDisplayBuffer, (GameCMS_GetClientRubles(iClient) < g_iCreateGangPrice)?ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
 			}
@@ -239,13 +234,9 @@ void OpenGangsMenu(int iClient)
 		if(!ga_bHasGang[iClient])
 		{
 			if (!ga_bBlockInvites[iClient])
-			{
 				Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T", "BlockInvites", iClient);
-			}
 			else
-			{
 				Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T", "UnblockInvites", iClient);
-			}
 			
 			menu.AddItem("blockinvites", sDisplayBuffer);
 		}
@@ -269,9 +260,7 @@ void OpenGangsMenu(int iClient)
 	
 		Handle file = OpenFile(g_sFile, "r");
 		if (file == INVALID_HANDLE)
-		{
 			SetFailState("[Gangs] Error opening info file (addons/sourcemod/configs/gangs/info.ini)");
-		}
 	
 		if(!IsEndOfFile(file)) 
 		{
@@ -290,8 +279,10 @@ public int Handler_NoDustupPanel(Handle hPanel, MenuAction action, int iClient, 
 {
 	switch(action)
 	{
-		case MenuAction_End:	// Меню завершилось
+		case MenuAction_End:
+		{
 			delete hPanel;
+		}
 		case MenuAction_Select:
 		{
 			if(option == 1)
@@ -301,9 +292,13 @@ public int Handler_NoDustupPanel(Handle hPanel, MenuAction action, int iClient, 
 				CPrintToChat(iClient, "%t Ваш SteamID: %s", "Prefix", sSteamID);
 			}
 			else if(option == 2)
+			{
 				CPrintToChat(iClient, "%t Всего доброго ♥", "Prefix");
+			}
 			else if(option == 3)
+			{
 				StartOpeningTopGangsMenu(iClient);
+			}
 		}
 	}
 }
@@ -311,9 +306,7 @@ public int Handler_NoDustupPanel(Handle hPanel, MenuAction action, int iClient, 
 public int GangsMenu_Callback(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (!IsValidClient(param1))
-	{
 		return;
-	}
 	
 	switch (action)
 	{
@@ -323,7 +316,6 @@ public int GangsMenu_Callback(Menu menu, MenuAction action, int param1, int para
 			GetMenuItem(menu, param2, sInfo, sizeof(sInfo));
 			if (StrEqual(sInfo, "create"))
 			{
-				//LK_LogMSG("Игрок %s купил банду за %i рублей",param1,g_iCreateGangPrice);
 				StartGangCreation(param1);
 			}
 			else if (StrEqual(sInfo, "bank"))
@@ -334,10 +326,6 @@ public int GangsMenu_Callback(Menu menu, MenuAction action, int param1, int para
 			{
 				StartOpeningStatMenu(param1);
 			}
-			//else if (StrEqual(sInfo, "members"))
-			//{
-			//	StartOpeningMembersMenu(param1);
-			//}
 			else if (StrEqual(sInfo, "perks"))
 			{
 				StartOpeningPerkMenu(param1);
@@ -375,9 +363,7 @@ public int GangsMenu_Callback(Menu menu, MenuAction action, int param1, int para
 void BlockInvites(int iClient)
 {
 	if (!IsValidClient(iClient))
-	{
 		return;
-	}
 	
 	ga_bBlockInvites[iClient] = !ga_bBlockInvites[iClient]; // toggle
 	
@@ -423,8 +409,10 @@ public int ShowPerkMenu_CallBack(Menu hMenu, MenuAction action, int iClient, int
 {
 	switch(action)
 	{
-		case MenuAction_End: 
+		case MenuAction_End:
+		{
 			delete hMenu;
+		}
 		case MenuAction_Select:
         {
 			char sInfo[128], sBuffers[2][64];
@@ -449,8 +437,10 @@ public int ShowPerkMenu_CallBack(Menu hMenu, MenuAction action, int iClient, int
 			}
         }
 		case MenuAction_Cancel:
+		{
 			if(iItem == MenuCancel_ExitBack)
 				StartOpeningGangMenu(iClient);
+		}
 	}
 }
 
@@ -482,8 +472,10 @@ public int ShowGamesMenu_CallBack(Menu hMenu, MenuAction action, int iClient, in
 {
 	switch(action)
 	{
-		case MenuAction_End: 
+		case MenuAction_End:
+		{
 			delete hMenu;
+		}
 		case MenuAction_Select:
         {
 			char sInfo[128], sBuffers[2][64];
@@ -508,8 +500,10 @@ public int ShowGamesMenu_CallBack(Menu hMenu, MenuAction action, int iClient, in
 			}
         }
 		case MenuAction_Cancel:
+		{
 			if(iItem == MenuCancel_ExitBack)
 				StartOpeningGangMenu(iClient);
+		}
 	}
 }
 
@@ -552,9 +546,7 @@ public void SQL_Callback_StatMenu(Database db, DBResultSet results, const char[]
 			if(!StrEqual(sGangName,ga_sGangName[iClient],true) && !status)
 				ga_iTempInt2[iClient]++;
 			else
-			{
 				status = true;
-			}
 			
 			if(StrEqual(sGangName, ga_sGangName[iClient], true))
 				ga_iTempInt1[iClient] = results.FetchInt(1);

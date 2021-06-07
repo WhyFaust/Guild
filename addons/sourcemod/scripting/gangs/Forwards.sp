@@ -1,4 +1,4 @@
-void CreateForwardss()
+void CreateForwards()
 {
 	hGangs_OnLoaded = CreateGlobalForward("Gangs_OnLoaded", ET_Ignore);
 	

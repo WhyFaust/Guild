@@ -481,7 +481,7 @@ stock bool CheckRankImmune(int ClientRank, char[] ReqRank)
 	return Status;
 }
 
-char[] GetFixString(char[] sText)
+stock char[] GetFixString(char[] sText)
 {
 	char sNewText[2*MAX_NAME_LENGTH+1];
 	strcopy(sNewText, sizeof(sNewText), sText);
@@ -499,4 +499,11 @@ char[] GetFixString(char[] sText)
 		else i += CharBytes;
 	}
 	return sNewText;
+}
+
+stock int Colculate(int iClient, int Number, int Discount)
+{
+    int Sale = RoundToNearest((float(Number) * float(Discount))/100.0);
+    
+    return Number-Sale;
 }

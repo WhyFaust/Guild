@@ -13,6 +13,7 @@
 	
 		"create_mode" "1" // 0 - creation for Rubles (need "gamecms" "1"), 1 - for Shop Credits, 2 - for Shop Gold, 3 - for WCS Gold, 4 - for LK Rubles
 		"create" "75000" // Creation cost
+		"create_days" "30" // 0 - for infinity
 		
 		"rename_bank" "1" // 0 - purchase from the player's balance, 1 - purchase from the bank's balance (It is necessary that the bank was on).
 		"rename_mode" "1" // 0 - rename for Rubles(need "gamecms" "1"), 1 - for Shop Credits, 2 - for Shop Gold, 3 - for WCS Gold, 4 - for LK Rubles
@@ -22,7 +23,7 @@
 		
 		"exp_inc" "100" // How much to raise the level requirements with the increase
 		
-		//Продление
+		//Extend (Doesn't work when create_days = 0)
 		"extend_bank" "0" // 0 - purchase from the player's balance, 1 - purchase from the bank's balance (It is necessary that the bank was on).
 		"extend_mode" "1" // 0 - extension for rubles (need "gamecms" "1"), 1 - for Shop credits, 2 - for Shop Gold, 3 - for WCS Gold, 4 - for LK Rubles
 		"extend_formula" "1" // 0 - VALUE = "extend_start" \ 1 - VALUE = "extend_start "+LVL*"extend_modifier"

@@ -39,6 +39,7 @@ int g_bMenuInfo;
 
 int g_bCreateGangSellMode;
 int g_iCreateGangPrice;
+int g_iCreateGangDays;
 
 int g_bRenameBank;
 int g_iRenamePrice;
