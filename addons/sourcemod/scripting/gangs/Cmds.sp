@@ -1,5 +1,6 @@
 void RegAllCmds()
 {
+	RegConsoleCmd("gangs_config_reload", Command_Gang_Config_Reload, "Reload config file!");
 	if (!g_bInviteStyle)
 	{
 		RegConsoleCmd("sm_accept", Command_Accept, "Accept an invitation!");
@@ -73,4 +74,26 @@ public Action Command_Accept(int iClient, int args)
 	GetClientName(iClient, szName, sizeof(szName));
 	CPrintToChatAll("%t %t", "Prefix", "GangJoined", szName, ga_sGangName[iClient]);
 	return Plugin_Handled;
+}
+
+public Action Command_Gang(int iClient, int args)
+{
+	if (!IsValidClient(iClient))
+	{
+		ReplyToCommand(iClient, "[SM] %t", "PlayerNotInGame");
+		return Plugin_Handled;
+	}
+	if (g_bTerroristOnly && GetClientTeam(iClient) != 2)
+	{
+		ReplyToCommand(iClient, "[SM] %t", "WrongTeam");
+		return Plugin_Handled;
+	}
+	StartOpeningGangMenu(iClient);
+	return Plugin_Handled;
+}
+
+public Action Command_Gang_Config_Reload(int iClient, int args)
+{
+    OnMapStart();
+    return Plugin_Handled;
 }
