@@ -3,10 +3,331 @@
 #endif
 #define _lk_core_included
 
+#define SIZE_ITEM 32
+#define SIZE_ITEMNAME 64
+#define SIZE_INFOITEM 256
+
+enum LK_CurrenyType
+{
+	LK_Cash = 0,			//Р‘Р°Р»Р°РЅСЃ РёРіСЂРѕРєР°
+	LK_AllCash				//РЎСѓРјРјР° РѕР±С‰РµРіРѕ РґРѕРЅР°С‚Р°
+};
+
+enum LK_ChangeType
+{
+	LK_Add = 0,				//Р”РѕР±Р°РІРёС‚СЊ
+	LK_Take,				//РћС‚РЅСЏС‚СЊ
+	LK_Set					//РЈСЃС‚Р°РЅРѕРІРёС‚СЊ
+};
+
+enum LK_ItemInfoType
+{
+	LK_Item = 0,				//РљР»СЋС‡ С‚РѕРІР°СЂР°, РїСЂРёРјРµСЂ: "vip1d"
+	LK_ItemName,				//РРјСЏ С‚РѕРІР°СЂР°, РєР°Рє РІ РјРµРЅСЋ
+	LK_InfoItem					//РћРїРёСЃР°РЅРёРµ С‚РѕРІР°СЂР°
+};
+
+/*
+ * РЈРїСЂР°РІР»РµРЅРёРµ Р±Р°Р»Р°РЅСЃРѕРј РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+ *
+ * @param iClient 			РёРЅРґРµРєСЃ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.
+ * @param CurrenyType 		-
+ * @param ChangeType 		-
+ * @param iValue 			Р—РЅР°С‡РµРЅРёРµ
+ *
+ * @return
+ * true 					СѓСЃРїРµС€РЅРѕ.
+ * false 					РёРіСЂРѕРє РЅРµ РїСЂРѕС€РµР» РїСЂРѕРІРµСЂРєСѓ(Р±РѕС‚ РёР»Рё РЅРµ РІ РёРіСЂРµ)
+ */
+native bool LK_ChangeBalance(int iClient, LK_CurrenyType CurrenyType, LK_ChangeType ChangeType, int iValue);
+
+/*
+ * РћР±РЅСѓР»РµРЅРёРµ Р±Р°Р»Р°РЅСЃР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+ *
+ * @param iClient 			РёРЅРґРµРєСЃ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.
+ * @param CurrenyType 		-
+ *
+ * @return
+ * true 					СѓСЃРїРµС€РЅРѕ.
+ * false 					РёРіСЂРѕРє РЅРµ РїСЂРѕС€РµР» РїСЂРѕРІРµСЂРєСѓ(Р±РѕС‚ РёР»Рё РЅРµ РІ РёРіСЂРµ)
+ */
+native bool LK_ResetBalance(int iClient, LK_CurrenyType CurrenyType);
+
+/*
+ * РџРѕР»СѓС‡РµРЅРёРµ Р±Р°Р»Р°РЅСЃР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+ *
+ * @param iClient 			РёРЅРґРµРєСЃ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.
+ * @param CurrenyType 		-
+ *
+ * @return value			Р·РЅР°С‡РµРЅРёРµ
+ *							-1, РµСЃР»Рё РїСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР°
+ */
+native int LK_GetBalance(int iClient, LK_CurrenyType CurrenyType);
+
+/*
+ * РџРѕР»СѓС‡Р°РµС‚ Title РіР»Р°РІРЅРѕРіРѕ РјРµРЅСЋ c Р±Р°Р»Р°РЅСЃРѕРј РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ, РІР·СЏС‚РѕРµ РёР· РїРµСЂРµРІРѕРґР°
+ *
+ * @param iClient 			РёРЅРґРµРєСЃ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.
+ * @param sTitle			Р‘СѓС„РµСЂ, РІ РєРѕС‚РѕСЂС‹Р№ Р±СѓРґРµС‚ РїРѕРјРµС‰РµРЅ СЂРµР·СѓР»СЊС‚Р°С‚.
+ * @param iMaxLength		Р Р°Р·РјРµСЂ Р±СѓС„РµСЂР°.
+ *
+ * @return
+ * true 					СѓСЃРїРµС€РЅРѕ.
+ * false 					РёРіСЂРѕРє РЅРµ РїСЂРѕС€РµР» РїСЂРѕРІРµСЂРєСѓ(Р±РѕС‚ РёР»Рё РЅРµ РІ РёРіСЂРµ)
+ */
+native bool LK_GetMainMenuTitle(int iClient, char[] sTitle, int iMaxLength);
+
+/*
+ * РџРѕР»СѓС‡Р°РµС‚ Currency(РІР°Р»СЋС‚Р°) РїРµСЂРµРІРµРґРµРЅРЅРѕРµ РїРѕРґ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ, РІР·СЏС‚РѕРµ РёР· РїРµСЂРµРІРѕРґР°
+ *
+ * @param iClient 			РёРЅРґРµРєСЃ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.
+ * @param sTitle			Р‘СѓС„РµСЂ, РІ РєРѕС‚РѕСЂС‹Р№ Р±СѓРґРµС‚ РїРѕРјРµС‰РµРЅ СЂРµР·СѓР»СЊС‚Р°С‚.
+ * @param iMaxLength		Р Р°Р·РјРµСЂ Р±СѓС„РµСЂР°.
+ *
+ * @return
+ * true 					СѓСЃРїРµС€РЅРѕ.
+ * false 					РёРіСЂРѕРє РЅРµ РїСЂРѕС€РµР» РїСЂРѕРІРµСЂРєСѓ(Р±РѕС‚ РёР»Рё РЅРµ РІ РёРіСЂРµ)
+ */
+native bool LK_GetCurrency(int iClient, char[] sTitle, int iMaxLength);
+
+/*
+ * Р’РѕР·РІСЂР°С‰Р°РµС‚ Database(Р±Р°Р·Сѓ РґР°РЅРЅС‹С…), РґР»СЏ СЂР°Р±РѕС‚С‹ РјРѕРґСѓР»РµР№, РµСЃР»Рё СЌС‚Рѕ РЅРµРѕР±С…РѕРґРёРјРѕ
+ *
+ * @return					РџРѕРґРєР»СЋС‡РµРЅРёРµ Рє Р±Р°Р·Рµ РґР°РЅРЅС‹С… (РєРѕРїРёСЏ). 0 РµСЃР»Рё РЅРµС‚ РїРѕРґРєР»СЋС‡РµРЅРёСЏ.
+ */
+native Database LK_GetDatabase();
+
+/*
+ * РћС‚РєСЂС‹С‚СЊ РіР»Р°РІРЅРѕРµ РјРµРЅСЋ
+ *
+ * @return
+ * true 					СѓСЃРїРµС€РЅРѕ.
+ * false  					РёРіСЂРѕРє РЅРµ РїСЂРѕС€РµР» РїСЂРѕРІРµСЂРєСѓ(Р±РѕС‚ РёР»Рё РЅРµ РІ РёРіСЂРµ)
+ */
+native bool LK_ShowMainMenu(int iClient);
+
+/*
+ * РџРѕР»СѓС‡РµРЅРёРµ РІРµСЂСЃРёРё СЏРґСЂР° С‡РёСЃР»РѕРј(int)
+ *
+ * @return value
+ */
+native int LK_GetVersion();
+
+/*
+ * РџРѕР»СѓС‡Р°РµС‚ С†РµРЅСѓ С‚РѕРІР°СЂР°, СЃ СѓС‡РµС‚РѕРј СЃРєРёРґРєРё
+ *
+ * @param iItemID 			id Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅРѕРіРѕ С‚РѕРІР°СЂР°
+ * @return value			РІРѕР·РІСЂР°С‰Р°РµС‚ С†РµРЅСѓ С‚РѕРІР°СЂР° СЃ СѓС‡РµС‚РѕРј СЃРєРёРґРєРё
+ *		   -1				РµСЃР»Рё РїСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР°
+ */
+native int LK_GetItemPrice(int iItemID);
+
+/*
+ * РџРѕР»СѓС‡РёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ РїРѕ С‚РѕРІР°СЂСѓ, РїРѕ РµРіРѕ iItemID
+ *
+ * @param iItemID 			id Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅРѕРіРѕ С‚РѕРІР°СЂР°
+ * @param ItemInfoType 		-
+ * @param sBuffer 			Р‘СѓС„РµСЂ, РІ РєРѕС‚РѕСЂС‹Р№ Р±СѓРґРµС‚ РїРѕРјРµС‰РµРЅ СЂРµР·СѓР»СЊС‚Р°С‚.
+ * @param iMaxLength 		Р Р°Р·РјРµСЂ Р±СѓС„РµСЂР°.
+ *
+ * @return
+ * true 					СѓСЃРїРµС€РЅРѕ
+ * false 					РѕС€РёР±РєР°
+ */
+native bool LK_GetItemInfo(int iItemID, LK_ItemInfoType ItemInfoType, char[] sBuffer, int iMaxLength);
+
+/**
+ *
+ * РЎРѕР·РґР°С‚СЊ С‚РѕСЂРІР°СЂ (РѕРїС†РёСЋ РІ !lk РјРµРЅСЋ)
+ *
+ * @param sItem  			СѓРЅРёРєР°Р»СЊРЅРѕРµ РёРјСЏ, РЅР°РїСЂРёРјРµСЂ "vip30d" (С‚РѕР»СЊРєРѕ Р»Р°С‚РёРЅСЃРєРёРµ СЃРёРјРІРѕР»С‹)
+ * @param sItemName  		РќР°Р·РІР°РЅРёРµ С‚РѕРІР°СЂР°, РєРѕС‚РѕСЂРѕРµ Р±СѓРґРµС‚ РѕС‚РѕР±СЂР°Р¶Р°С‚СЊСЃСЏ РІ СЃРїРёСЃРєРµ С‚РѕРІР°СЂРѕРІ
+ * @param sInfoItem 		РћРїРёСЃР°РЅРёРµ С‚РѕРІР°СЂР°, РєРѕС‚РѕСЂРѕРµ Р±СѓРґРµС‚ РѕС‚РѕР±СЂР°Р¶Р°С‚СЊСЃСЏ РїСЂРё РїРѕРєСѓРїРєРµ С‚РѕРІР°СЂР°
+ * @param iPrice 			Р¦РµРЅР° С‚РѕРІР°СЂР°
+ * 
+ * @return
+ * iItemID					id Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅРЅРѕРіРѕ С‚РѕРІР°СЂР°
+**/
+native int LK_RegisterItem(const char[] sItem, const char[] sItemName, const char[] sInfoItem, int iPrice);
+
+/**
+ *
+ * РЈРґР°Р»РёС‚СЊ С‚РѕРІР°СЂ РёР· СЃРїРёСЃРєР° С‚РѕРІР°СЂРѕРІ
+ * @param sItem - СѓРЅРёРєР°Р»СЊРЅРѕРµ РёРјСЏ, РЅР°РїСЂРёРјРµСЂ "vip30d" (С‚РѕР»СЊРєРѕ Р»Р°С‚РёРЅСЃРєРёРµ СЃРёРјРІРѕР»С‹)
+ *
+**/
+native int LK_UnRegisterItem(const char[] sItem);
+
+/**
+ *
+ *	Р—Р°РїРёСЃС‹РІР°РµС‚ СЃРѕРѕР±С‰РµРЅРёРµ РІ Р»РѕРі.
+ *	-
+ * @param sMessage			CРѕРѕР±С‰РµРЅРёРµ.
+ * @param ...				РџР°СЂР°РјРµС‚СЂС‹.
+ *
+*/
+native int LK_LogMessage(const char[] sMessage, any ...);
+
+/**
+ *
+ *	Р—Р°РїРёСЃС‹РІР°РµС‚ СЃРѕРѕР±С‰РµРЅРёРµ РІ Р»РѕРі РѕС€РёР±РѕРє.
+ *	-
+ * @param sMessage			CРѕРѕР±С‰РµРЅРёРµ.
+ * @param ...				РџР°СЂР°РјРµС‚СЂС‹.
+ *
+*/
+native int LK_LogError(const char[] sMessage, any ...);
+
+/**
+ *
+ *	РџРµС‡Р°С‚Р°РµС‚ РІ С‡Р°С‚ РІСЃРµРј РїРѕР»СЊР·РѕРІР°С‚РµР»СЏРј(РїСЂРѕС…РѕРґРёС‚ РїСЂРѕРІРµСЂРєСѓ РЅР° С‚Рѕ РєР°РєР°СЏ РёРіСЂР°, С‚Р°Рє РєР°Рє Сѓ СЏРґСЂР° РЅРµСЃРєРѕР»СЊРєРѕ Р±РёР±Р»РµРѕС‚РµРє РЅР° С†РІРµС‚Р°),
+ *  РµСЃР»Рё Сѓ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РІ РЅР°СЃС‚СЂРѕР№РєР°С… РІС‹РєР»СЋС‡РµРЅС‹ СѓРІРµРґРѕРјР»РµРЅРёСЏ, С‚Рѕ РІ С‡Р°С‚ РќР• РЅР°РїРµС‡Р°С‚Р°РµС‚.
+ *  p.s. sMessage СѓР¶Рµ РІРєР»СЋС‡Р°РµС‚ РІ СЃРµР±СЏ Chat_Prefix РёР· С„Р°Р№Р»Р° РїРµСЂРµРІРѕРґР°, lk.prhases.txt
+ *	-
+ * @param sMessage			CРѕРѕР±С‰РµРЅРёРµ.
+ * @param ...				РџР°СЂР°РјРµС‚СЂС‹.
+ *
+*/
+native int LK_PrintToChat(int iClient, const char[] sMessage, any ...);
+
+/**
+ *
+ *	РџРµС‡Р°С‚Р°РµС‚ РІ С‡Р°С‚ РІСЃРµРј РїРѕР»СЊР·РѕРІР°С‚РµР»СЏРј(РїСЂРѕС…РѕРґРёС‚ РїСЂРѕРІРµСЂРєСѓ РЅР° С‚Рѕ РєР°РєР°СЏ РёРіСЂР°, С‚Р°Рє РєР°Рє Сѓ СЏРґСЂР° РЅРµСЃРєРѕР»СЊРєРѕ Р±РёР±Р»РµРѕС‚РµРє РЅР° С†РІРµС‚Р°)
+ *  p.s. sMessage СѓР¶Рµ РІРєР»СЋС‡Р°РµС‚ РІ СЃРµР±СЏ Chat_Prefix РёР· С„Р°Р№Р»Р° РїРµСЂРµРІРѕРґР°, lk.prhases.txt
+ *	-
+ * @param sMessage			CРѕРѕР±С‰РµРЅРёРµ.
+ * @param ...				РџР°СЂР°РјРµС‚СЂС‹.
+ *
+**/
+native int LK_PrintToChatAll(const char[] sMessage, any ...);
+
+/**
+ *
+ * Р—Р°РіСЂСѓР¶РµРЅРѕ Р»Рё СЏРґСЂРѕ
+ *
+ * @return
+ * true 					Р·Р°РіСЂСѓР¶РµРЅРѕ
+ * false					РЅРµ Р·Р°РіСЂСѓР¶РµРЅРѕ
+**/
+native bool LK_IsLoaded();
+
+/**
+ * РџРµСЂРµР·Р°РіСЂСѓР·РёС‚СЊ РєРѕРЅС„РёРі СЏРґСЂР°
+**/
+native void LK_ReloadConfigs();
+
+/*
+ * РћР±РЅСѓР»РµРЅРёРµ РёСЃС‚РѕСЂРёРё РїРѕРєСѓРїРѕРє Сѓ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+ *
+ * @param iClient 			РёРЅРґРµРєСЃ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.
+ *
+ * @return
+ * true						СѓСЃРїРµС€РЅРѕ.
+ * false					РёРіСЂРѕРє РЅРµ РїСЂРѕС€РµР» РїСЂРѕРІРµСЂРєСѓ(Р±РѕС‚ РёР»Рё РЅРµ РІ РёРіСЂРµ)
+ */
+native bool LK_ResetHistory(int iClient);
+
+/*
+ * РџРѕР»СѓС‡Р°РµС‚ РЅРёРє РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ, РґР»СЏ РєРѕСЂРµРєС‚РЅРѕР№ СЂР°Р±РѕС‚С‹ СЃ Р±Р°Р·РѕР№ (РЅСѓР¶РµРЅ РґР»СЏ РєСЂРёРІС‹С… РЅРёРєРѕРІ, Р±Р°Рі СЃРј 1.9)
+ *
+ * @param iClient 			РёРЅРґРµРєСЃ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.
+ * @param sName				Р‘СѓС„РµСЂ, РІ РєРѕС‚РѕСЂС‹Р№ Р±СѓРґРµС‚ РїРѕРјРµС‰РµРЅ СЂРµР·СѓР»СЊС‚Р°С‚.
+ * @param iMaxLength		Р Р°Р·РјРµСЂ Р±СѓС„РµСЂР°.
+ *
+ * @return
+ * true						СѓСЃРїРµС€РЅРѕ.
+ * false					РёРіСЂРѕРє РЅРµ РїСЂРѕС€РµР» РїСЂРѕРІРµСЂРєСѓ(Р±РѕС‚ РёР»Рё РЅРµ РІ РёРіСЂРµ)
+ */
+native bool LK_GetNameUser(int iClient, char[] sName, int iMaxLength);
+
+/*
+ * РћС‚РїСЂР°РІР»СЏРµС‚ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РЅР° РїСЂРѕРІРµСЂРєСѓ РІР°Р»РёРґРЅРѕСЃС‚Рё (РЅРµ Р±РѕС‚, РІ РёРіСЂРµ)
+ *
+ * @param iClient 			РёРЅРґРµРєСЃ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.
+ *
+ * @return
+ * true						СѓСЃРїРµС€РЅРѕ.
+ * false					РёРіСЂРѕРє РЅРµ РїСЂРѕС€РµР» РїСЂРѕРІРµСЂРєСѓ(Р±РѕС‚ РёР»Рё РЅРµ РІ РёРіСЂРµ)
+ */
+native bool LK_IsValidPlayer(int iClient);
+
+/**
+ *
+ * Р”РѕР±Р°РІРёС‚СЊ РІ РёСЃС‚РѕСЂРёСЋ РїРѕРєСѓРїРѕРє РєР»РёРµРЅС‚Р°, РєР°СЃС‚РѕРјРЅС‹Р№ С‚РѕРІР°СЂ
+ *
+ * @param iClient			РёРЅРґРµРєСЃ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.
+ * @param sItemName			РќР°Р·РІР°РЅРёРµ, РєРѕС‚РѕСЂРѕРµ Р±СѓРґРµС‚ РѕС‚РѕР±СЂР°Р¶Р°С‚СЊСЃСЏ РІ СЃРїРёСЃРєРµ РёСЃС‚РѕСЂРёРё(РєР°Рє С‚РѕРІР°СЂ)
+ * @param iPrice			Р¦РµРЅР°, РєРѕС‚РѕСЂР°СЏ Р±СѓРґРµС‚ РѕС‚РѕР±СЂР°Р¶Р°С‚СЊСЃСЏ РІ СЃРїРёСЃРєРµ РёСЃС‚РѕСЂРёРё(РєР°Рє С†РµРЅР° С‚РѕРІР°СЂР°)
+ * 
+**/
+native void LK_AddHistory(int iClient, const char[] sItemName, int iPrice);
+
+/**
+ *
+ * Р’С‹Р·С‹РІР°РµС‚ Forward `LK_OnItemBuyPost`
+ *
+ * @param iClient 			РёРЅРґРµРєСЃ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.
+ * @param iItemID 			id Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅРЅРѕРіРѕ С‚РѕРІР°СЂР°
+ * @param sItemName 		РёРјСЏ С‚РѕРІР°СЂР°
+ * @param iPrice 			С†РµРЅР°, РєРѕС‚РѕСЂСѓСЋ Р·Р°РїР»Р°С‚РёР» РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ
+ * 
+ * @return
+ * true						Forward СѓСЃРїРµС€РЅРѕ Р±С‹Р» СЃРѕР·РґР°РЅ
+ * false					Forward РќР• Р±С‹Р» СЃРѕР·РґР°РЅ
+**/
+native bool LK_FakeOnItemBuyPost(int iClient, int iItemID, const char[] sItemName, int iPrice);
+
+/**
+ *
+ * РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РїСЂРёРѕР±СЂРµС‚Р°РµС‚ С‚РѕРІР°СЂ(pre)
+ *	-
+ * @param iClient 			РёРЅРґРµРєСЃ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.
+ * @param iItemID 			id Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅРЅРѕРіРѕ С‚РѕРІР°СЂР°
+ *
+ *	-
+ * @return					Plugin_Stop - РЅРµ СЃРїРёС€РёС‚ РґРµРЅСЊРіРё Р·Р° РїРѕРєСѓРїРєСѓ(РѕС‚РјРµРЅРёС‚), Р·Р°РєСЂРѕРµС‚ РјРµРЅСЋ;
+ *							Plugin_Handled  - РЅРµ СЃРїРёС€РёС‚ РґРµРЅСЊРіРё Р·Р° РїРѕРєСѓРїРєСѓ(РѕС‚РјРµРЅРёС‚), РѕС‚РєСЂРѕРµС‚ РјРµРЅСЋ С‚РѕРІР°СЂРѕРІ;
+ * 							Plugin_Continue - СЂР°Р·СЂРµС€РёС‚ Р±РµР· РёР·РјРµРЅРµРЅРёР№.
+**/
+forward Action LK_OnItemBuy(int iClient, int iItemID);
+
+/**
+ *
+ * РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ СѓСЃРїРµС€РЅРѕ РїСЂРёРѕР±СЂРµР» С‚РѕРІР°СЂ
+ *	-
+ * @param iClient 			РёРЅРґРµРєСЃ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.
+ * @param iItemID 			id Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅРЅРѕРіРѕ С‚РѕРІР°СЂР°
+ * @param sItemName 		РёРјСЏ С‚РѕРІР°СЂР°
+ * @param iPrice 			С†РµРЅР°, РєРѕС‚РѕСЂСѓСЋ Р·Р°РїР»Р°С‚РёР» РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ
+**/
+forward void LK_OnItemBuyPost(int iClient, int iItemID, const char[] sItemName, int iPrice);
+
+/**
+ *	Р’С‹Р·С‹РІР°РµС‚СЃСЏ РєРѕРіРґР° СЏРґСЂРѕ LK Р·Р°РіСЂСѓР·РёР»РѕСЃСЊ.
+*/
+forward void LK_OnLoaded();
+
+/**
+ *	Р’С‹Р·С‹РІР°РµС‚СЃСЏ РєРѕРіРґР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ РѕС‚РєСЂС‹РІР°РµС‚ РјРµРЅСЋ
+*/
+forward void LK_OnPreShowMainMenu(int iClient);
+
+/**
+ *	Р’С‹Р·С‹РІР°РµС‚СЃСЏ РєРѕРіРґР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ РїСЂРѕС€РµР» Р·Р°РіСЂСѓР·РєСѓ Р›Рљ РёР· Р±Р°Р·С‹
+*/
+forward void LK_OnClientLoaded(int iClient);
+
+/**
+ *	РЎРѕР±С‹С‚РёРµ РїРѕРґРєР»СЋС‡РµРЅРёРµ Рє Р±Рґ.
+ *
+ *  @param db				Р±Рґ.
+*/
+forward void LK_OnConnectDatabase(Database db);
+
 public SharedPlugin __pl_lk_core = 
 {
 	name = "lk",
-	file = "lk_core.smx",
+	file = "LK_Core.smx",
 #if defined REQUIRE_PLUGIN
     required = 1
 #else
@@ -21,227 +342,24 @@ public void __pl_lk_core_SetNTVOptional()
 	MarkNativeAsOptional("LK_GetCurrency");
 	MarkNativeAsOptional("LK_GetDatabase");
 	MarkNativeAsOptional("LK_ShowMainMenu");
-	MarkNativeAsOptional("LK_GameCMS_Mode");
 	MarkNativeAsOptional("LK_GetVersion");
-	MarkNativeAsOptional("LK_GetClientCash");
-	MarkNativeAsOptional("LK_SetClientCash");
-	MarkNativeAsOptional("LK_AddClientCash");
-	MarkNativeAsOptional("LK_TakeClientCash");
-	MarkNativeAsOptional("LK_ResetClientCash");
-	MarkNativeAsOptional("LK_GetClientAllCash");
-	MarkNativeAsOptional("LK_AddClientAllCash");
-	MarkNativeAsOptional("LK_ResetClientAllCash");
 	MarkNativeAsOptional("LK_RegisterItem");
 	MarkNativeAsOptional("LK_UnRegisterItem");
 	MarkNativeAsOptional("LK_LogMessage");
+	MarkNativeAsOptional("LK_LogError");
 	MarkNativeAsOptional("LK_PrintToChat");
 	MarkNativeAsOptional("LK_PrintToChatAll");
+	MarkNativeAsOptional("LK_ReloadConfigs");
+	MarkNativeAsOptional("LK_ResetHistory");
+	MarkNativeAsOptional("LK_GetNameUser");
+	MarkNativeAsOptional("LK_IsValidPlayer");
+	MarkNativeAsOptional("LK_AddHistory");
+	MarkNativeAsOptional("LK_FakeOnItemBuyPost");
+	MarkNativeAsOptional("LK_GetItemPrice");
+	MarkNativeAsOptional("LK_ChangeBalance");
+	MarkNativeAsOptional("LK_ResetBalance");
+	MarkNativeAsOptional("LK_GetBalance");
+	MarkNativeAsOptional("LK_IsLoaded");
+	MarkNativeAsOptional("LK_GetItemInfo");
 }
 #endif
-
-/*
- * Получает Title главного меню c балансом игрока, взятое из перевода
- *
- * @param iClient 			индекс игрока.
- * @param sTitle			Буфер, в который будет помещен результат.
- * @param iMaxLength		Размер буфера.
- *
- * @return
- * true - успешно.
- * false - игрок не прошел проверку(бот или не в игре)
- */
-native bool LK_GetMainMenuTitle(int iClient, char[] sTitle, int iMaxLength);
-
-/*
- * Получает Currency(валюта) переведенное под игрока, взятое из перевода
- *
- * @param iClient 			индекс игрока.
- * @param sTitle			Буфер, в который будет помещен результат.
- * @param iMaxLength		Размер буфера.
- *
- * @return
- * true - успешно.
- * false - игрок не прошел проверку(бот или не в игре)
- */
-native bool LK_GetCurrency(int iClient, char[] sTitle, int iMaxLength);
-
-/*
- * Возвращает Database(базу данных), для работы модулей, если это необходимо
- */
-native Database LK_GetDatabase();
-
-/*
- * Открыть главное меню
- */
-native int LK_ShowMainMenu(int iClient);
-
-/*
- * Возращает в каком режиме работает ядро
- *
- * @return
- *
- * false - Как отдельный плагин
- * true - Режим совместимости с GameCMS
- */
-native bool LK_GameCMS_Mode();
-
-/*
- * Получение версии ядра числом(int)
- *
- * @return value
- *
- */
-native int LK_GetVersion();
-
-/*
- * Получение количества денег на счету у игрока
- *
- * @param iClient 			индекс игрока.
- * @return value
- *
- */
-native int LK_GetClientCash(int iClient);
-
-/*
- * Устанавить значение денег на счету у игрока
- *
- * @param iClient 			индекс игрока.
- * @param amount 			кол-во денег
- *
- */
-
-native int LK_SetClientCash(int iClient, int amount);
-
-/*
- * Добавить значение денег на счет игрока
- *
- * @param iClient 			индекс игрока.
- * @param amount 			кол-во денег
- *
- */
-
-native int LK_AddClientCash(int iClient, int amount);
-
-/*
- * Отнять значение денег со счета игрока
- *
- * @param iClient 			индекс игрока.
- * @param amount 			кол-во денег
- */
-
-native int LK_TakeClientCash(int iClient, int amount);
-
-/*
- * Обнуление количества денег на счету у игрока
- *
- * @param iClient 			индекс игрока.
- * @noreturn
- */
-
-native int LK_ResetClientCash(int iClient);
-
-/*
- * Получение количество денег за все время
- * AllCash - Количество всех денег "задоначеных" игроков за все время(если не обнуляли)
- *
- * @param iClient 			индекс игрока.
- * @return value
- */
-
-native int LK_GetClientAllCash(int iClient);
-
-/*
- * Добавить количество денег за все время
- *
- * @param iClient 			индекс игрока.
- * @param amount 			кол-во денег
- */
-
-native int LK_AddClientAllCash(int iClient, int amount);
-
-/*
- * Обнуление счетчика у игрока (allcash)
- *
- * @param iClient 			индекс игрока.
- * @return value
- */
-
-native int LK_ResetClientAllCash(int iClient);
-
-/**
- *
- * Создать функцию (опцию в !lk меню)
- *
- * sItemName - уникальное имя, например "top10", этот ключ будет переводится в lk.phrases.txt
- * RegisterCallback - Callback фукции, когда игрок нажал в главном меню на ваш sItemName
- *
-**/
-native void LK_RegisterItem(const char[] sItemName, RegisterCallback callback);
-
-/**
- *
- * RegisterCallback
- *
- * @param iClient 			индекс игрока.
- * @param iItemID 			порядковый номер в главном меню (уже прошел сортировку)
- * @param sItemName 		уникальное имя, например "top10", этот ключ будет переводится в lk.phrases.txt
- *
-**/
-typedef RegisterCallback = function void (int iClient, int iItemID, const char[] sItemName);
-
-/**
- *
- * Удалить функцию из !lk меню
- *
-**/
-native int LK_UnRegisterItem(const char[] sItemName);
-
-/**
- *
- *	Записывает сообщение в лог.
- *	-
- * @param sMessage			Cообщение.
- * @param ...				Параметры.
- *
-*/
-native int LK_LogMessage(const char[] sMessage, any:...);
-
-/**
- *
- *	Печатает в чат всем игрокам(проходит проверку на то какая игра, так как у ядра несколько библеотек на цвета)
- *  p.s. sMessage уже включает в себя Chat_Prefix из файла перевода, lk.prhases.txt
- *	-
- * @param sMessage			Cообщение.
- * @param ...				Параметры.
- *
-*/
-native int LK_PrintToChat(int iClient, const char[] sMessage, any:...);
-
-/**
- *
- *	Печатает в чат всем игрокам(проходит проверку на то какая игра, так как у ядра несколько библеотек на цвета)
- *  p.s. sMessage уже включает в себя Chat_Prefix из файла перевода, lk.prhases.txt
- *	-
- * @param sMessage			Cообщение.
- * @param ...				Параметры.
- *
-**/
-native int LK_PrintToChatAll(const char[] sMessage, any:...);
-
-/**
- *
- * Игрок успешно использовал ключ
- *	-
- * @param iClient 			индекс игрока.
- * @param szAuth			SteamID.
- * @param sKey				ключ.
- *
-**/
-forward void LK_OnKeyWasUsed(int iClient, const char[] szAuth, const char[] sKey);
-
-/**
- *
- *	Вызывается когда ядро LK загрузилось.
- *
-*/
-forward void LK_OnLoaded();

@@ -366,9 +366,9 @@ public Action OnSay(int iClient, const char[] command, int args)
                 }
                 case 9:
                 {
-                    if(LK_GetClientCash(iClient) >= iCount)
+                    if(LK_GetBalance(iClient, LK_Cash) >= iCount)
                     {
-                        LK_SetClientCash(iClient, LK_GetClientCash(iClient) - iCount);
+                        LK_ChangeBalance(iClient, LK_Cash, LK_Take, iCount);
                         SetBankLKRubles(iClient, ga_iBankLKRubles[iClient] + iCount);
                         CPrintToChat(iClient, "%t %t", "Prefix", "BankSuccessfullyAction");
                     }
@@ -379,7 +379,7 @@ public Action OnSay(int iClient, const char[] command, int args)
                 {
                     if(ga_iBankLKRubles[iClient] >= iCount)
                     {
-                        LK_SetClientCash(iClient, LK_GetClientCash(iClient) + iCount);
+                        LK_ChangeBalance(iClient, LK_Cash, LK_Add, iCount);
                         SetBankLKRubles(iClient, ga_iBankLKRubles[iClient] - iCount);
                         CPrintToChat(iClient, "%t %t", "Prefix", "BankSuccessfullyAction");
                     }

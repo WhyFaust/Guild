@@ -110,7 +110,7 @@ void OpenGangsMenu(int iClient)
 		}
 		else if(g_bMenuValue == 5 && g_bLKLoaded)
 		{
-			Format(sString, sizeof(sString), "%s%T %i\n", sString, "lkrubles", iClient, LK_GetClientCash(iClient));
+			Format(sString, sizeof(sString), "%s%T %i\n", sString, "lkrubles", iClient, LK_GetBalance(iClient, LK_Cash));
 		}
 		else if(g_bMenuValue == 6 && g_bMyJBShopExist)
 		{
@@ -170,7 +170,7 @@ void OpenGangsMenu(int iClient)
 			else if(g_bCreateGangSellMode == 4 && g_bLKLoaded)
 			{
 				Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T", "CreateAGang", iClient, g_iCreateGangPrice, "lkrubles");
-				menu.AddItem("create", sDisplayBuffer, (LK_GetClientCash(iClient) < g_iCreateGangPrice)?ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
+				menu.AddItem("create", sDisplayBuffer, (LK_GetBalance(iClient, LK_Cash) < g_iCreateGangPrice)?ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
 			}
 			else if(g_bCreateGangSellMode == 5 && g_bMyJBShopExist)
 			{
@@ -1695,7 +1695,7 @@ void OpenAdministrationMenu(int iClient)
 		if(g_bEnableBank && g_bBankLkRubles && g_bRenameBank)
 			menu.AddItem("rename", sDisplayString, (GetClientRightStatus(iClient, "rename") && ga_iBankLKRubles[iClient] >= g_iRenamePrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		else
-			menu.AddItem("rename", sDisplayString, (GetClientRightStatus(iClient, "rename") && LK_GetClientCash(iClient) >= g_iRenamePrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+			menu.AddItem("rename", sDisplayString, (GetClientRightStatus(iClient, "rename") && LK_GetBalance(iClient, LK_Cash) >= g_iRenamePrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 	}
 	else if(g_bRenamePriceSellMode == 5 && g_bMyJBShopExist)
 	{
@@ -1913,7 +1913,7 @@ void OpenAdministrationMenuExtendGang(int iClient, int endtime)
 		if(g_bEnableBank && g_bBankLkRubles && g_bExtendBank)
 			menu.AddItem("yes", sDisplayString, (ga_iBankLKRubles[iClient] >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		else
-			menu.AddItem("yes", sDisplayString, (LK_GetClientCash(iClient) >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+			menu.AddItem("yes", sDisplayString, (LK_GetBalance(iClient, LK_Cash) >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 	}
 	else if(g_iExtendPriceSellMode == 5 && g_bMyJBShopExist)
 	{
@@ -2060,7 +2060,7 @@ public void SQLCallback_ExtendGang(Database db, DBResultSet results, const char[
 				if(g_bEnableBank && g_bBankLkRubles && g_bExtendBank)
 					SetBankLKRubles(iClient, ga_iBankLKRubles[iClient] - iPrice);
 				else
-					LK_SetClientCash(iClient, LK_GetClientCash(iClient) - iPrice);
+					LK_ChangeBalance(iClient, LK_Cash, LK_Take, iPrice);
 							
 				if(g_bLog)
 					LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N продлил банду за %i lk рублей", iClient, iPrice);

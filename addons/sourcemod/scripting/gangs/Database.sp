@@ -645,7 +645,7 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 					}
 					else if(g_bCreateGangSellMode == 4 && g_bLKLoaded)
 					{
-						LK_SetClientCash(iClient, LK_GetClientCash(iClient) - g_iCreateGangPrice);
+						LK_ChangeBalance(iClient, LK_Cash, LK_Take, g_iCreateGangPrice);
 									
 						if(g_bLog)
 							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i MyJailShop Creditss", iClient, ga_sGangName[iClient], g_iCreateGangPrice);
@@ -754,7 +754,7 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 						if(g_bEnableBank && g_bBankLkRubles && g_bRenameBank)
 							SetBankLKRubles(iClient, ga_iBankLKRubles[iClient] - g_iRenamePrice);
 						else
-							LK_SetClientCash(iClient, LK_GetClientCash(iClient) - g_iRenamePrice);
+							LK_ChangeBalance(iClient, LK_Cash, LK_Take, g_iRenamePrice);
 									
 						if(g_bLog)
 							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N изменил название банды на %s за %i LK рублей", iClient, sText, g_iRenamePrice);

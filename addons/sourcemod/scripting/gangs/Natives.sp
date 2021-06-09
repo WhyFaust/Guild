@@ -43,16 +43,12 @@ public APLRes AskPluginLoad2(Handle hMyself, bool bLate, char[] sError, int err_
 	
 	RegPluginLibrary("gangs");
 	
-	//Модули
+	//Modules
 	MarkNativeAsOptional("AddOptionToMainMenu");
 	MarkNativeAsOptional("HexTags_ResetClientTags");
 	MarkNativeAsOptional("WCS_GetGold");
 	MarkNativeAsOptional("WCS_GiveGold");
 	MarkNativeAsOptional("WCS_TakeGold");
-	MarkNativeAsOptional("LK_GetClientCash");
-	MarkNativeAsOptional("LK_GetClientMoney");
-	MarkNativeAsOptional("LK_SetClientCash");
-	MarkNativeAsOptional("LK_SetClientMoney");
 	MarkNativeAsOptional("MyJailShop_GetCredits");
 	MarkNativeAsOptional("MyJailShop_SetCredits");
 
@@ -229,7 +225,7 @@ public int Native_GetClientCash(Handle plugin, int numParams)
 	}
 	else if(StrEqual(sPerk, "lkrubles"))
 	{
-		return LK_GetClientCash(iClient);
+		return LK_GetBalance(iClient, LK_Cash);
 	}
 	else if(StrEqual(sPerk, "myjb"))
 	{
@@ -272,7 +268,7 @@ public int Native_TakeClientCash(Handle plugin, int numParams)
 	}
 	else if(StrEqual(sPerk, "lkrubles"))
 	{
-		LK_SetClientCash(iClient, LK_GetClientCash(iClient)-Cash);
+		LK_ChangeBalance(iClient, LK_Cash, LK_Take, Cash);
 	}
 	else if(StrEqual(sPerk, "myjb"))
 	{
@@ -314,7 +310,7 @@ public int Native_GiveClientCash(Handle plugin, int numParams)
 	}
 	else if(StrEqual(sPerk, "lkrubles"))
 	{
-		LK_SetClientCash(iClient, LK_GetClientCash(iClient)+Cash);
+		LK_ChangeBalance(iClient, LK_Cash, LK_Add, Cash);
 	}
 	else if(StrEqual(sPerk, "myjb"))
 	{
