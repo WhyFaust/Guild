@@ -685,7 +685,7 @@ public void SQLCallback_CheckSkin(Database db, DBResultSet results, const char[]
 
 				char sQuery[300];
 				Format(sQuery, sizeof(sQuery), "UPDATE gang_perk \
-												SET %s = '%s' 
+												SET %s = '%s' \
 												WHERE gang_id = %i;", 
 												PerkName, szBuffer, iGangID);
 				Database hDatabase = Gangs_GetDatabase();

@@ -99,7 +99,7 @@ public Action LoadPerkLvl(Handle hTimer, int iUserID)
 		int iGangID = Gangs_GetClientGangId(iClient);
 		char sQuery[300];
 		Format(sQuery, sizeof(sQuery), "SELECT %s \
-										FROM gang_perk 
+										FROM gang_perk \
 										WHERE gang_id = %i;", 
 										PerkName, iGangID);
 		Database hDatabase = Gangs_GetDatabase();
