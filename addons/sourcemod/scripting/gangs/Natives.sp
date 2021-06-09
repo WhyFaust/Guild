@@ -7,7 +7,8 @@ public APLRes AskPluginLoad2(Handle hMyself, bool bLate, char[] sError, int err_
 	CreateNative("Gangs_ReloadClient", Native_ReloadClient);
 	
 	CreateNative("Gangs_ClientHasGang", Native_ClientHasGang);
-	CreateNative("Gangs_GetClientGangName", Native_GetCliengGangName);
+	CreateNative("Gangs_GetClientGangId", Native_GetClientGangId);
+	CreateNative("Gangs_GetClientGangName", Native_GetClientGangName);
 	CreateNative("Gangs_GetGangLvl", Native_GetGangLvl);
 	CreateNative("Gangs_GetGangSize", Native_GetGangSize);
 	CreateNative("Gangs_GetGangReqScore", Native_GetGangReqScore);
@@ -171,14 +172,26 @@ public int Native_DeleteFromStatsMenu(Handle hPlugin, int iNumParams)
 	}
 }
 
-public int Native_GetCliengGangName(Handle plugin, int numParams)
+public int Native_GetClientGangId(Handle plugin, int numParams)
 {
 	int iClient = GetNativeCell(1);
 	
-	//if (!IsValidClient(iClient))
-	//{
-	//	return ThrowNativeError(SP_ERROR_NATIVE, "Invalid iClient index (%i)", iClient);
-	//}
+	if (!IsValidClient(iClient))
+	{
+		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid iClient index (%i)", iClient);
+	}
+
+	return ga_iGangId[iClient];
+}
+
+public int Native_GetClientGangName(Handle plugin, int numParams)
+{
+	int iClient = GetNativeCell(1);
+	
+	if (!IsValidClient(iClient))
+	{
+		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid iClient index (%i)", iClient);
+	}
 
 	SetNativeString(2, ga_sGangName[iClient], GetNativeCell(3));
 	return 0;
@@ -429,10 +442,8 @@ public int Native_GiveBankClientCash(Handle plugin, int numParams)
 
 public int Native_DissolveGang(Handle plugin, int numParams)
 {
-	char sGang[256];
-	GetNativeString(1, sGang, sizeof(sGang));
-	
-	DissolveGang(sGang);
+	int gangid = GetNativeCell(1);
+	DissolveGang(gangid);
 	
 	return 0;
 }
@@ -446,11 +457,11 @@ public int Native_KickMember(Handle plugin, int numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid iClient index (%i)", iClient);
 	}
 
-	char sQuery[128];
-	char sSteamID[64];
-	GetClientAuthId(iClient, AuthId_Steam2, sSteamID, sizeof(sSteamID));
-	Format(sQuery, sizeof(sQuery), "DELETE FROM gangs_players WHERE steamid = '%s' AND server_id = %i;", sSteamID, g_iServerID);
-	g_hDatabase.Query(SQLCallback_Void, sQuery);
+	char sQuery[300];
+	Format(sQuery, sizeof(sQuery), "DELETE FROM gang_player \
+									WHERE id = %i;", 
+									ga_iPlayerId[iClient], g_iServerID);
+	g_hDatabase.Query(SQLCallback_Void, sQuery, 31);
 	API_OnExitFromGang(iClient);
 	ResetVariables(iClient, false);
 	
@@ -565,30 +576,21 @@ public int Native_SetClientGangScore(Handle plugin, int numParams)
 	int iValue = GetNativeCell(2);
 	
 	if (!IsValidClient(iClient))
-	{
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid iClient index (%i)", iClient);
-	}
 	
 	ga_iScore[iClient] = iValue;
-	
-	int iLen = 2*strlen(ga_sGangName[iClient])+1;
-	char[] szEscapedGang = new char[iLen];
-	g_hDatabase.Escape(GetFixString(ga_sGangName[iClient]), szEscapedGang, iLen);
 
 	char sQuery[300];
-	Format(sQuery, sizeof(sQuery), "UPDATE gangs_statistics SET %s = '%i' WHERE gang = '%s' AND server_id = %i;", g_sDbStatisticName, ga_iScore[iClient], szEscapedGang, g_iServerID);
-	
+	Format(sQuery, sizeof(sQuery), "UPDATE gang_statistic \
+									SET %s = %i \
+									WHERE gang_id = %i;", 
+									g_sDbStatisticName, ga_iScore[iClient], ga_iGangId[iClient]);
+	g_hDatabase.Query(SQLCallback_Void, sQuery, 32);
+
 	for (int i = 1; i <= MaxClients; i++)
-	{
 		if (IsValidClient(i) && iClient != i)
-		{
 			if (StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
-			{
 				ga_iScore[i] = ga_iScore[iClient];
-			}
-		}
-	}
-	g_hDatabase.Query(SQLCallback_Void, sQuery);
 	
 	return 0;
 }

@@ -16,7 +16,7 @@ Scores g_iScore;
 public Plugin myinfo =
 {
 	name = "[GANGS MODULE] Score Standart",
-	author = "baferpro",
+	author = "Faust",
 	version = GANGS_VERSION
 };
 
@@ -60,13 +60,10 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
 	{
 		if (IsValidClient(attacker) && IsValidClient(iClient) && iClient != attacker && Gangs_ClientHasGang(attacker))
 		{
-			char sGangName[256], sGangName1[256];
-			Gangs_GetClientGangName(attacker, sGangName, sizeof(sGangName));
-			Gangs_GetClientGangName(iClient, sGangName1, sizeof(sGangName1));
-			if (!StrEqual(sGangName, sGangName1))
-			{
+			int iGangIdAttacker = Gangs_GetClientGangId(attacker);
+			int iGangIdClient = Gangs_GetClientGangId(iClient);
+			if (iGangIdAttacker != iGangIdClient)
 				Gangs_SetClientGangScore(attacker, Gangs_GetClientGangScore(attacker)+g_iScore.Kill);
-			}
 		}
 	}
 	
@@ -80,13 +77,10 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
 			}
 			else
 			{
-				char sGangName[256], sGangName1[256];
-				Gangs_GetClientGangName(attacker, sGangName, sizeof(sGangName));
-				Gangs_GetClientGangName(iClient, sGangName1, sizeof(sGangName1));
-				if (!StrEqual(sGangName, sGangName1))
-				{
+				int iGangIdAttacker = Gangs_GetClientGangId(attacker);
+				int iGangIdClient = Gangs_GetClientGangId(iClient);
+				if (iGangIdAttacker != iGangIdClient)
 					Gangs_SetClientGangScore(iClient, Gangs_GetClientGangScore(iClient)-g_iScore.Suicide);
-				}
 			}
 		}
 	}

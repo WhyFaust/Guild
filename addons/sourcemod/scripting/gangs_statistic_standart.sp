@@ -76,17 +76,22 @@ void StartOpeningStatMenu(int iClient)
 	{
 		Database hDatabase = Gangs_GetDatabase();
 		char sQuery[256];
-		Format(sQuery, sizeof(sQuery), "SELECT `gang`, `%s` FROM gangs_statistics ORDER BY `%s` DESC;", g_sDbStatisticName, g_sDbStatisticName);
-		hDatabase.Query(SQL_Callback_StatMenu, sQuery, iClient);
+		Format(sQuery, sizeof(sQuery), "SELECT group_table.name, statistic_table.%s, statistic_table.gang_id \
+										FROM gang_statistic AS statistic_table \
+										INNER JOIN gang_group AS group_table \
+										ON group_table.id = statistic_table.gang_id \
+										ORDER BY statistic_table.%s DESC;", 
+										g_sDbStatisticName, g_sDbStatisticName);
+		hDatabase.Query(SQLCallback_StatMenu, sQuery, iClient);
 		delete hDatabase;
 	}
 }
 
-public void SQL_Callback_StatMenu(Database db, DBResultSet results, const char[] error, int data)
+public void SQLCallback_StatMenu(Database db, DBResultSet results, const char[] error, int data)
 {
 	if (error[0])
 	{
-		LogError("[SQL_Callback_StatMenu] Error (%i): %s", data, error);
+		LogError("[SQLCallback_StatMenu] Error (%i): %s", data, error);
 		return;
 	}
 
@@ -120,8 +125,9 @@ public void SQL_Callback_StatMenu(Database db, DBResultSet results, const char[]
 			results.FetchString(0, sGangName, sizeof(sGangName));
 			iGangRank++;
 			iScore = results.FetchInt(1);
+			int gang_id = results.FetchInt(2);
 
-			Format(sInfoString, sizeof(sInfoString), "%s;%i;%i;%i", sGangName, iGangRank, iGangAmmount, iScore);
+			Format(sInfoString, sizeof(sInfoString), "%s;%i;%i;%i;%i", sGangName, iGangRank, iGangAmmount, iScore, gang_id);
 			menu.AddItem(sInfoString, sGangName);
 		}   
 
@@ -139,10 +145,10 @@ public int StatisticStandartMenu_Callback(Menu menu, MenuAction action, int para
 		{
 			char sInfo[300];
 			char sQuery[300];
-			char sTempArray[4][128];
+			char sTempArray[5][128];
 			GetMenuItem(menu, param2, sInfo, sizeof(sInfo));
 
-			ExplodeString(sInfo, ";", sTempArray, sizeof(sTempArray), sizeof(sTempArray[])); // 0 - GangName \ 1 - GangPosition \ 2 - Count Gangs \ 3 - Gang Score
+			ExplodeString(sInfo, ";", sTempArray, sizeof(sTempArray), sizeof(sTempArray[])); // 0 - GangName \ 1 - GangPosition \ 2 - Count Gangs \ 3 - Gang Score \ 4 - Gang id
 			
 			DataPack pack = new DataPack(); // 0 - Client \ 1 - GangPosition \ 2 - Count Gangs \ 3 - Gang Score
 			pack.WriteCell(param1);
@@ -151,8 +157,14 @@ public int StatisticStandartMenu_Callback(Menu menu, MenuAction action, int para
 			pack.WriteCell(StringToInt(sTempArray[3]));
 
 			Database hDatabase = Gangs_GetDatabase();
-			Format(sQuery, sizeof(sQuery), "SELECT `gang`, `playername`, `date`, (SELECT COUNT(*) FROM `gangs_players` WHERE `gang` = '%s' AND `server_id` = %i) FROM gangs_players WHERE `gang` = '%s' AND `rank` = 0 AND `server_id` = %i;", sTempArray[0], Gangs_GetServerID(), sTempArray[0], Gangs_GetServerID());
-			hDatabase.Query(SQL_Callback_GangStatistics, sQuery, pack);
+			Format(sQuery, sizeof(sQuery), "SELECT group_table.id, group_table.name, player_table.name, group_table.create_date, \
+											(SELECT COUNT(*) FROM gang_player WHERE gang_id = %i) \
+											FROM gang_player AS player_table \
+											INNER JOIN gang_group AS group_table \
+											ON group_table.id = player_table.gang_id \
+											WHERE gang_id = %i AND rank = 0;", 
+											StringToInt(sTempArray[4]), StringToInt(sTempArray[4]));
+			hDatabase.Query(SQLCallback_GangStatistics, sQuery, pack);
 			delete hDatabase;
 		}
 		case MenuAction_Cancel:
@@ -165,14 +177,16 @@ public int StatisticStandartMenu_Callback(Menu menu, MenuAction action, int para
 			delete menu;
 		}
 	}
+
 	return;
 }
 
-public void SQL_Callback_GangStatistics(Database db, DBResultSet results, const char[] error, DataPack data)
+public void SQLCallback_GangStatistics(Database db, DBResultSet results, const char[] error, DataPack data)
 {
 	if (error[0])
 	{
-		LogError("[SQL_Callback_GangStatistics] Error (%i): %s", data, error);
+		LogError("[SQLCallback_GangStatistics] Error (%i): %s", data, error);
+
 		return;
 	}
 
@@ -188,10 +202,11 @@ public void SQL_Callback_GangStatistics(Database db, DBResultSet results, const 
 	results.FetchRow();
 
 	char sGangName[128], sCreatedName[128];
-	results.FetchString(0, sGangName, sizeof(sGangName)); // Gang Name
-	results.FetchString(1, sCreatedName, sizeof(sCreatedName)); // Created by
-	int iDate = results.FetchInt(2); // Create Date
-	int iMembersCount = results.FetchInt(3); // Members Count
+	int iGangId = results.FetchInt(0);
+	results.FetchString(1, sGangName, sizeof(sGangName)); // Gang Name
+	results.FetchString(2, sCreatedName, sizeof(sCreatedName)); // Created by
+	int iDate = results.FetchInt(3); // Create Date
+	int iMembersCount = results.FetchInt(4); // Members Count
 
 	Menu menu = CreateMenu(StatMenuCallback_Void, MenuAction_Select | MenuAction_End | MenuAction_DisplayItem);
 	char sTitleString[64];
@@ -206,6 +221,7 @@ public void SQL_Callback_GangStatistics(Database db, DBResultSet results, const 
 	
 	Format(sDisplayString, sizeof(sDisplayString), "%T", "NumMemb", iClient, iMembersCount
 												, (g_bModuleSizeExist) ? Gangs_GetGangSize() + Gangs_Size_GetCurrectLvl(iClient) : Gangs_GetGangSize());
+	Format(sGangName, sizeof(sGangName), "%i", iGangId);
 	menu.AddItem(sGangName, sDisplayString);
 
 	FormatTime(sFormattedTime, sizeof(sFormattedTime), "%d/%m/%Y", iDate);
@@ -215,7 +231,7 @@ public void SQL_Callback_GangStatistics(Database db, DBResultSet results, const 
 	Format(sDisplayString, sizeof(sDisplayString), "%T : %i/%i", "GangRank", iClient, iGangPosition, iCountGangs);
 	menu.AddItem("", sDisplayString, ITEMDRAW_DISABLED);
 
-	Format(sDisplayString, sizeof(sDisplayString), "%Tt", "CreatedBy", iClient, sCreatedName);
+	Format(sDisplayString, sizeof(sDisplayString), "%T", "CreatedBy", iClient, sCreatedName);
 	menu.AddItem("", sDisplayString, ITEMDRAW_DISABLED);
 
 	menu.ExitBackButton = true;
@@ -230,7 +246,7 @@ public int StatMenuCallback_Void(Menu menu, MenuAction action, int param1, int p
 		{
 			char sInfo[256];
 			GetMenuItem(menu, param2, sInfo, sizeof(sInfo));
-			StartOpeningMembersMenu(param1, sInfo);
+			StartOpeningMembersMenu(param1, StringToInt(sInfo));
 		}
 		case MenuAction_Cancel:
 		{
@@ -244,16 +260,18 @@ public int StatMenuCallback_Void(Menu menu, MenuAction action, int param1, int p
 	return;
 }
 
-void StartOpeningMembersMenu(int iClient, char[] sGangName)
+void StartOpeningMembersMenu(int iClient, int iGangId)
 {
-	if (!StrEqual(sGangName, ""))
-	{
-		Database hDatabase = Gangs_GetDatabase();
-		char sQuery[300];
-		Format(sQuery, sizeof(sQuery), "SELECT `steamid`, `playername`, `invitedby`, `rank`, `date`, `gang` FROM `gangs_players` WHERE `gang` = '%s' AND `server_id` = %i;", sGangName, Gangs_GetServerID());
-		hDatabase.Query(SQLCallback_OpenMembersMenu, sQuery, iClient);
-		delete hDatabase;
-	}
+	Database hDatabase = Gangs_GetDatabase();
+	char sQuery[300];
+	Format(sQuery, sizeof(sQuery), "SELECT player_table.steam_id, player_table.name, player_table.inviter_name, player_table.rank, player_table.invite_date, group_table.name \
+									FROM gang_player AS player_table \
+									INNER JOIN gang_group AS group_table \
+									ON player_table.gang_id = group_table.id \
+									WHERE player_table.gang_id = %i;", 
+									iGangId);
+	hDatabase.Query(SQLCallback_OpenMembersMenu, sQuery, iClient);
+	delete hDatabase;
 }
 
 public void SQLCallback_OpenMembersMenu(Database db, DBResultSet results, const char[] error, int data)

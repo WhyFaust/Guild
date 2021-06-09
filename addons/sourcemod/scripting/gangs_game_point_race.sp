@@ -80,7 +80,7 @@ public void OnLibraryAdded(const char[] name)
 public Plugin myinfo =
 {
     name = "[GANGS GAME] Point Race",
-    author = "baferpro",
+    author = "Faust",
     version = GANGS_VERSION
 };
 
@@ -147,7 +147,7 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
     int attacker = GetClientOfUserId(event.GetInt("attacker"));
     
     char sGangNameClient[MAXPLAYERS + 1][256];
-    if(g_hTimer != null)	// Проверяем что таймер активен
+    if(g_hTimer != null)
     {
         if(attacker != iClient)
         {
@@ -182,37 +182,30 @@ public void OnMapStart()
 public void PointRaceCallback(int iClient, int ItemID, const char[] ItemName)
 {
     char sQuery[300];
-    Format(sQuery, sizeof(sQuery), "SELECT gang FROM gangs_groups;");
+    Format(sQuery, sizeof(sQuery), "SELECT name \
+                                    FROM gang_group;");
     Database hDatabase = Gangs_GetDatabase();
     hDatabase.Query(SQLCallback_GetGangGroups, sQuery, iClient);
     delete hDatabase;
 }
 
-public void SQLCallback_GetGangGroups(Database db, DBResultSet results, const char[] error, int data)
+public void SQLCallback_GetGangGroups(Database db, DBResultSet results, const char[] error, int iClient)
 {
-    if (db == null)
+    if (error[0])
     {
-        LogError(error);
+        LogError("[SQLCallback_GetGangGroups] Error (%i): %s", iClient, error);
         return;
     }
-    if (results == null)
-    {
-        LogError(error);
-        return;
-    }
-    int iClient = data;
+
     if (!IsValidClient(iClient))
         return;
-    else 
+    
+        
+    if (results.RowCount != 0)
     {
         Menu menu = CreateMenu(ChoseEnemy_Callback, MenuAction_Select | MenuAction_End | MenuAction_DisplayItem);
-        
         menu.SetTitle("Выберите противника");
-        if (results.RowCount == 0)
-        {
-            delete menu;
-            return;
-        }
+
         char sGangName[128];
         char sGangNameClient[256];
         Gangs_GetClientGangName(iClient, sGangNameClient, sizeof(sGangNameClient));

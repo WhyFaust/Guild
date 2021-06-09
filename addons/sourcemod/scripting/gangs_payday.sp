@@ -65,7 +65,7 @@ public void OnLibraryAdded(const char[] name)
 public Plugin myinfo =
 {
 	name = "[GANGS MODULE] PayDay",
-	author = "baferpro",
+	author = "Faust",
 	version = GANGS_VERSION
 };
 
@@ -115,7 +115,10 @@ public void UpdateClientData(int iClient)
 	GetClientAuthId(iClient, AuthId_Steam2, sSteamID, sizeof(sSteamID));
 	
 	char sQuery[300];
-	Format(sQuery, sizeof(sQuery), "UPDATE payday_players SET time = %i WHERE steamid = '%s';", g_iTimePlayer[iClient], sSteamID);
+	Format(sQuery, sizeof(sQuery), "UPDATE payday_player \
+									SET time = %i \
+									WHERE steam_id = '%s';", 
+									g_iTimePlayer[iClient], sSteamID);
 	g_hDatabase.Query(SQLCallback_Void, sQuery, iClient);
 	g_iTimePlayer[iClient] = 0;
 }
@@ -149,7 +152,10 @@ public void GetClientData(int iClient)
 			char sSteamID[64];
 			GetClientAuthId(iClient, AuthId_Steam2, sSteamID, sizeof(sSteamID));
 			char sQuery[300];
-			Format(sQuery, sizeof(sQuery), "SELECT time FROM payday_players WHERE steamid = '%s';", sSteamID);
+			Format(sQuery, sizeof(sQuery), "SELECT time \
+											FROM payday_player \
+											WHERE steam_id = '%s';", 
+											sSteamID);
 			g_hDatabase.Query(SQLCallback_GetClientData, sQuery, iClient);
 		}
 	}
@@ -175,7 +181,10 @@ public void SQLCallback_GetClientData(Database db, DBResultSet results, const ch
 		GetClientAuthId(iClient, AuthId_Steam2, sSteamID, sizeof(sSteamID));
 		
 		char sQuery[300];
-		Format(sQuery, sizeof(sQuery), "INSERT INTO payday_players (steamid) VALUES ('%s');", sSteamID);
+		Format(sQuery, sizeof(sQuery), "INSERT INTO payday_player \
+										(steam_id) \
+										VALUES ('%s');", 
+										sSteamID);
 		g_hDatabase.Query(SQLCallback_Void, sQuery, iClient);
 	}
 	else
@@ -261,7 +270,10 @@ public Action TimeTimer(Handle hTimer, int iUserID)
 			GetClientAuthId(iClient, AuthId_Steam2, sSteamID, sizeof(sSteamID));
 			
 			char sQuery[300];
-			Format(sQuery, sizeof(sQuery), "UPDATE payday_players SET time = %i WHERE steamid = '%s';", g_iTimePlayer[iClient], sSteamID);
+			Format(sQuery, sizeof(sQuery), "UPDATE payday_player \
+											SET time = %i \
+											WHERE steam_id = '%s';", 
+											g_iTimePlayer[iClient], sSteamID);
 			g_hDatabase.Query(SQLCallback_Void, sQuery, iClient);
 		}
 	}
@@ -272,10 +284,12 @@ public Action LoadPerkLvl(Handle hTimer, int iUserID)
 	int iClient = iUserID;
 	if(IsValidClient(iClient) && Gangs_ClientHasGang(iClient))
 	{
-		char sGangName[256];
-		Gangs_GetClientGangName(iClient, sGangName, sizeof(sGangName));
+		int gangid = Gangs_GetClientGangId(iClient);
 		char sQuery[300];
-		Format(sQuery, sizeof(sQuery), "SELECT %s FROM gangs_perks WHERE gang = '%s' AND server_id = %i;", PerkName, sGangName, Gangs_GetServerID());
+		Format(sQuery, sizeof(sQuery), "SELECT %s \
+										FROM gang_perk \
+										WHERE gang_id = %i", 
+										PerkName, gangid);
 
 		Database db = Gangs_GetDatabase();
 		db.Query(SQLCallback_GetPerkLvl, sQuery, iClient);
@@ -412,21 +426,18 @@ public int MenuHandler_MainMenu(Menu hMenu, MenuAction action, int iClient, int 
         {
 			char sInfo[16];
 			hMenu.GetItem(iItem, sInfo, sizeof(sInfo));
-			char sGangName1[256], sGangName2[256];
-			Gangs_GetClientGangName(iClient, sGangName1, sizeof(sGangName1));
+			int gangid = Gangs_GetClientGangId(iClient);
 			if(StrEqual(sInfo, "buy"))
 			{
 				for (int i = 1; i <= MaxClients; i++)
-				{
 					if (IsValidClient(i))
-					{
-						Gangs_GetClientGangName(i, sGangName2, sizeof(sGangName2));
-						if (StrEqual(sGangName1, sGangName2))
+						if (gangid == Gangs_GetClientGangId(i))
 							g_iPerkLvl[i]+=1;
-					}
-				}
 				char sQuery[300];
-				Format(sQuery, sizeof(sQuery), "UPDATE gangs_perks SET %s=%i WHERE gang='%s' AND server_id=%i;", PerkName, g_iPerkLvl[iClient], sGangName1, Gangs_GetServerID());
+				Format(sQuery, sizeof(sQuery), "UPDATE gang_perk \
+												SET %s = %i \
+												WHERE gang_id = %i;", 
+												PerkName, g_iPerkLvl[iClient], gangid);
 				
 				Database db = Gangs_GetDatabase();
 				db.Query(SQLCallback_Void, sQuery);
@@ -480,16 +491,14 @@ public int MenuHandler_MainMenu(Menu hMenu, MenuAction action, int iClient, int 
 			else if(StrEqual(sInfo, "sell"))
 			{
 				for (int i = 1; i <= MaxClients; i++)
-				{
 					if (IsValidClient(i))
-					{
-						Gangs_GetClientGangName(i, sGangName2, sizeof(sGangName2));
-						if (StrEqual(sGangName1, sGangName2))
+						if (gangid == Gangs_GetClientGangId(i))
 							g_iPerkLvl[i]-=1;
-					}
-				}
 				char sQuery[300];
-				Format(sQuery, sizeof(sQuery), "UPDATE gangs_perks SET %s=%i WHERE gang='%s' AND server_id=%i;", PerkName, g_iPerkLvl[iClient], sGangName1, Gangs_GetServerID());
+				Format(sQuery, sizeof(sQuery), "UPDATE gang_perk \
+												SET %s = %i \
+												WHERE gang_id = %i;", 
+												PerkName, g_iPerkLvl[iClient], gangid);
 				
 				Database db = Gangs_GetDatabase();
 				db.Query(SQLCallback_Void, sQuery);
@@ -647,8 +656,8 @@ public void OnDBConnect(Database hDatabase, const char[] szError, any data)
 
 void CreateTables()
 {
-	g_hDatabase.Query(SQLCallback_Void, "CREATE TABLE IF NOT EXISTS payday_players (\
+	g_hDatabase.Query(SQLCallback_Void, "CREATE TABLE IF NOT EXISTS payday_player (\
 											id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \
-											steamid TEXT(32) NOT NULL, \
+											steam_id TEXT(32) NOT NULL, \
 											time INTEGER(16) NOT NULL DEFAULT 0);", 1);
 }

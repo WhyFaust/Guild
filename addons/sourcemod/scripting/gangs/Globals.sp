@@ -85,15 +85,14 @@ int ga_iTempInt2[MAXPLAYERS + 1] = {0, ...};
 int ga_iExtendCount[MAXPLAYERS + 1] = {0, ...};
 int g_iGangAmmount = 0;
 
+int ga_iPlayerId[MAXPLAYERS + 1];
+int ga_iGangId[MAXPLAYERS + 1];
 char ga_sGangName[MAXPLAYERS + 1][128];
 char ga_sInvitedBy[MAXPLAYERS + 1][128];
 
 bool ga_bSetName[MAXPLAYERS + 1] = {false, ...};
-bool ga_bIsPlayerInDatabase[MAXPLAYERS + 1] = {false, ...};
-bool ga_bIsGangInDatabase[MAXPLAYERS + 1] = {false, ...};
 bool ga_bHasGang[MAXPLAYERS + 1] = {false, ...};
 bool ga_bRename[MAXPLAYERS + 1] = {false, ...};
-bool ga_bHasPref[MAXPLAYERS + 1] = {false, ...};
 bool ga_bBlockInvites[MAXPLAYERS + 1] = {false, ...};
 bool ga_bInvitationSent[MAXPLAYERS + 1];
 

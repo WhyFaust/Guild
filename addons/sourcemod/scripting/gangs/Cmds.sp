@@ -1,10 +1,7 @@
 void RegAllCmds()
 {
 	RegConsoleCmd("gangs_config_reload", Command_Gang_Config_Reload, "Reload config file!");
-	if (!g_bInviteStyle)
-	{
-		RegConsoleCmd("sm_accept", Command_Accept, "Accept an invitation!");
-	}
+	RegConsoleCmd("sm_accept", Command_Accept, "Accept an invitation!");
 }
 
 public Action Command_Accept(int iClient, int args)

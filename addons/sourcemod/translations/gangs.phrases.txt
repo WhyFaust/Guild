@@ -94,9 +94,9 @@
 
 	"GangNameChange"
 	{
-		"#format"	"{1:s},{2:s},{3:s}"
-		"en"		"{1} has changed the name of {2} to {3}"
-		"ru"		"{1} изменил название {2} на {3}"
+		"#format"	"{1:s},{2:s}"
+		"en"		"{1} has changed the name  to {2}"
+		"ru"		"{1} изменил название на {2}"
 	}
 
 	"AcceptInstructions"

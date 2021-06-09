@@ -87,45 +87,52 @@ stock bool CheckDBItem(const char[] ItemName)
 
 stock bool AddItemInDB(const char[] ItemName)
 {
-	char szQuery[256];
-	FormatEx(szQuery, sizeof(szQuery), "SELECT %s FROM gangs_perks;", ItemName);
+	char sQuery[300];
+	FormatEx(sQuery, sizeof(sQuery), "SELECT %s \
+										FROM gang_perk;", 
+										ItemName);
 	
-	DataPack hPack = new DataPack(); // Создаем DataPack
-	hPack.WriteString(ItemName); // Записываем в него данные, которые будут переданы в каллбэк
-	g_hDatabase.Query(SQLCallback_CheckPerk, szQuery, hPack);
+	DataPack hPack = new DataPack();
+	hPack.WriteString(ItemName);
+	g_hDatabase.Query(SQLCallback_CheckPerk, sQuery, hPack);
 	return true;
 }
 
 public void SQLCallback_CheckPerk(Database db, DBResultSet hResults, const char[] sError, any iDataPack)
 {
-	DataPack hPack = view_as<DataPack>(iDataPack); // Получаем наш DataPack
-	hPack.Reset(); // Переводим указатель на начало датапака
+	DataPack hPack = view_as<DataPack>(iDataPack);
+	hPack.Reset();
 	
 	char ItemName[64];
 	hPack.ReadString(ItemName, sizeof(ItemName));
 	
 	delete hPack;
 
-	if(sError[0]) // Если произошла ошибка
+	if(sError[0])
 	{
 		if(StrContains(sError, "Duplicate column name", false))
 		{
 			char szQuery[256];
 			if(GLOBAL_INFO & IS_MySQL)
-				FormatEx(szQuery, sizeof(szQuery), "ALTER TABLE gangs_perks ADD COLUMN %s int(32) NOT NULL DEFAULT 0;", ItemName);
+				FormatEx(szQuery, sizeof(szQuery), "ALTER TABLE gang_perk \
+													ADD COLUMN %s int(32) NOT NULL DEFAULT 0;", 
+													ItemName);
 			else
-				FormatEx(szQuery, sizeof(szQuery), "ALTER TABLE gangs_perks ADD COLUMN %s INTEGER(32) NOT NULL DEFAULT 0;", ItemName);
-			g_hDatabase.Query(SQLCallback_Void, szQuery);
+				FormatEx(szQuery, sizeof(szQuery), "ALTER TABLE gang_perk \
+													ADD COLUMN %s INTEGER(32) NOT NULL DEFAULT 0;", 
+													ItemName);
+			g_hDatabase.Query(SQLCallback_Void, szQuery, 33);
 		}
 		else
-			LogError("[SQLCallback_CheckPerk] Error :  %s", sError); // Выводим в лог
-		return; // Прекращаем выполнение ф-и
+		{
+			LogError("[SQLCallback_CheckPerk] Error :  %s", sError);
+		}
+
+		return;
 	}
 	
 	if(hResults.FetchRow())
-	{
-		return; // Прекращаем выполнение ф-и
-	}
+		return;
 }
 
 stock int CreateItemID()
@@ -374,17 +381,6 @@ stock void ClearArrays()
 	}
 	g_hStatsArray.Clear();
 }
-
-//stock int GetGangLvl(int iClient)
-//{
-//	int iLvl = 1;
-//	while(RoundToFloor(float(ga_iScore[iClient]/(((2*g_iScore[ExpInc]+g_iScore[ExpInc]*(iLvl-1))/2)*iLvl))) != 0)
-//	{
-//		iLvl++;
-//	}
-//	
-//	return iLvl;
-//}
 
 stock int GetGangLvl(int iScore)
 {

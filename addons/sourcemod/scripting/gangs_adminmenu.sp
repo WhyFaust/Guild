@@ -150,7 +150,7 @@ public int MenuHandlerConfirmMenu(Menu menu, MenuAction action, int param1, int 
 			{
 				if(!StrEqual(info, "0"))
 				{
-					Gangs_DissolveGang(info);
+					Gangs_DissolveGang(StringToInt(info));
 					StartOpeningGangsList(client);
 				}
 				else
@@ -167,7 +167,10 @@ void StartOpeningGangsList1(int iClient)
 {
 	Database hDatabase = Gangs_GetDatabase();
 	char sQuery[300];
-	Format(sQuery, sizeof(sQuery), "SELECT gang FROM gangs_groups WHERE server_id = %i;", Gangs_GetServerID());
+	Format(sQuery, sizeof(sQuery), "SELECT id, name \
+									FROM gang_group \
+									WHERE server_id = %i;", 
+									Gangs_GetServerID());
 	hDatabase.Query(SQLCallback_OneOpenGangAdminMenu1, sQuery, iClient);
 	delete hDatabase;
 }
@@ -192,9 +195,11 @@ public void SQLCallback_OneOpenGangAdminMenu1(Database db, DBResultSet results, 
 		
 		while(results.FetchRow())
 		{
+			char GangId[4];
+			IntToString(results.FetchInt(0), GangId, sizeof(GangId));
 			char GangName[128];
-			results.FetchString(0, GangName, sizeof(GangName));
-			menu.AddItem(GangName, GangName);
+			results.FetchString(1, GangName, sizeof(GangName));
+			menu.AddItem(GangId, GangName);
 		}
 		
 		menu.ExitBackButton = true;
@@ -216,11 +221,13 @@ public int MenuHandlerGangName1(Menu menu, MenuAction action, int param1, int pa
 			{
 				Database hDatabase = Gangs_GetDatabase();
 				char sQuery[300];
-				Format(sQuery, sizeof(sQuery), "SELECT playername, steamid, rank FROM gangs_players WHERE gang = '%s' AND server_id = %i;", info, Gangs_GetServerID());
+				Format(sQuery, sizeof(sQuery), "SELECT name, steam_id, rank \
+												FROM gang_player \
+												WHERE gang_id = %i;", 
+												StringToInt(info));
 				hDatabase.Query(SQLCallback_GangPlayerList, sQuery, iClient);
 				delete hDatabase;
 			}
-			//menu.DisplayAt(iClient, GetMenuSelectionPosition(), MENU_TIME_FOREVER);
 		}
 	}
 }
@@ -280,7 +287,9 @@ void StartOpeningGangsList2(int iClient)
 {
 	Database hDatabase = Gangs_GetDatabase();
 	char sQuery[300];
-	Format(sQuery, sizeof(sQuery), "SELECT gang FROM gangs_groups WHERE server_id = %i;", Gangs_GetServerID());
+	Format(sQuery, sizeof(sQuery), "SELECT gang \
+									FROM gangs_groups \
+									WHERE server_id = %i;", Gangs_GetServerID());
 	hDatabase.Query(SQLCallback_OneOpenGangAdminMenu2, sQuery, iClient);
 	delete hDatabase;
 }

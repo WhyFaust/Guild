@@ -3,7 +3,7 @@
 #endif
 #define gangs_include
 
-#define GANGS_VERSION "1.3.1 [PUBLIC]"
+#define GANGS_VERSION "1.4.0 [PUBLIC]"
 
 bool IsValidClient(int iClient, bool bAllowBots = false, bool bAllowDead = true)
 {
@@ -82,6 +82,16 @@ native void Gangs_ReloadClient(int iClient);
  *
  */
 native bool Gangs_ClientHasGang(int iClient);
+
+/**
+ *
+ * Получить ид банды, в которой состоит игрок
+ *
+ * @param	iClient			Индекс игрока
+ * @return  int
+ *
+ */
+native int Gangs_GetClientGangId(int iClient);
 
 /**
  *
@@ -279,7 +289,7 @@ native int Gangs_GiveBankClientCash(int iClient, char[] sBuffer, int NewCash);
  * @param	sGang			Название банды
  *
  */
-native int Gangs_DissolveGang(char[] sGang);
+native int Gangs_DissolveGang(int iGangId);
 
 /**
  *
