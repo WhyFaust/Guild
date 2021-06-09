@@ -168,7 +168,7 @@ public Action AddToStatMenu(Handle timer)
 	Format(sQuery, sizeof(sQuery), "SELECT rating \
 									FROM gang_statistic;");
 	Database hDatabase = Gangs_GetDatabase();
-	g_hDatabase.Query(SQLCallback_CheckTable, sQuery);
+	hDatabase.Query(SQLCallback_CheckTable, sQuery);
 	delete hDatabase;
 	Gangs_AddToStatsMenu(StatName, STATSTANDART_CallBack);
 }

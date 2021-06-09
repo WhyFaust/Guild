@@ -5,7 +5,7 @@
 
 #define GANGS_VERSION "1.4.0 [PUBLIC]"
 
-bool IsValidClient(int iClient, bool bAllowBots = false, bool bAllowDead = true)
+stock bool IsValidClient(int iClient, bool bAllowBots = false, bool bAllowDead = true)
 {
 	if (!(1 <= iClient <= MaxClients) || !IsClientInGame(iClient) || (IsFakeClient(iClient) && !bAllowBots) || IsClientSourceTV(iClient) || IsClientReplay(iClient) || (!bAllowDead && !IsPlayerAlive(iClient)))
 		return false;
