@@ -6,10 +6,10 @@
   
 ## Essential Plugins:  
 GameCMS System (Optional)  
-Shop-Core (https://github.com/FD-Forks/Shop-Core)  
+Shop-Core (https://github.com/FD-Forks/Shop-Core) (Optional) 
 HexTags (https://github.com/Hexer10/HexTags) (Optional)  
 WCS (Optional)  
-LK (https://hlmod.ru/resources/lichnyj-k...e-modules.887/) (Optional)  
+LK (Optional)  
 MyJailShop (https://github.com/shanapu/MyJailShop/) (Optional)  
   
   
