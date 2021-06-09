@@ -165,16 +165,41 @@ public void Gangs_OnLoaded()
 public Action AddToStatMenu(Handle timer)
 {
 	char sQuery[300];
-	if(Gangs_GetDatabaseDriver())
-		Format(sQuery, sizeof(sQuery), "ALTER TABLE gang_statistic \
-										ADD COLUMN rating int(32) NOT NULL DEFAULT 0;");
-	else
-		Format(sQuery, sizeof(sQuery), "ALTER TABLE gang_statistic \
-										ADD COLUMN rating INTEGER(32) NOT NULL DEFAULT 0;");
+	Format(sQuery, sizeof(sQuery), "SELECT rating \
+									FROM gang_statistic;");
 	Database hDatabase = Gangs_GetDatabase();
-	hDatabase.Query(SQLCallback_Void, sQuery);
+	g_hDatabase.Query(SQLCallback_CheckTable, sQuery);
 	delete hDatabase;
 	Gangs_AddToStatsMenu(StatName, STATSTANDART_CallBack);
+}
+
+public void SQLCallback_CheckTable(Database db, DBResultSet hResults, const char[] sError, any data)
+{
+	if(sError[0])
+	{
+		if(StrContains(sError, "Duplicate column name", false))
+		{
+			char sQuery[300];
+			if(Gangs_GetDatabaseDriver())
+				Format(sQuery, sizeof(sQuery), "ALTER TABLE gang_statistic \
+												ADD COLUMN rating int(32) NOT NULL DEFAULT 0;");
+			else
+				Format(sQuery, sizeof(sQuery), "ALTER TABLE gang_statistic \
+												ADD COLUMN rating INTEGER(32) NOT NULL DEFAULT 0;");
+			Database hDatabase = Gangs_GetDatabase();
+			hDatabase.Query(SQLCallback_Void, sQuery);
+			delete hDatabase;
+		}
+		else
+		{
+			LogError("[SQLCallback_CheckTable] Error :  %s", sError);
+		}
+
+		return;
+	}
+	
+	if(hResults.FetchRow())
+		return;
 }
 
 public void STATSTANDART_CallBack(int iClient, int ItemID, const char[] ItemName)
@@ -187,7 +212,7 @@ void StartOpeningStatMenu(int iClient)
 	if (IsValidClient(iClient))
 	{
 		Database hDatabase = Gangs_GetDatabase();
-		char sQuery[256];
+		char sQuery[300];
 		Format(sQuery, sizeof(sQuery), "SELECT group_table.name, statistic_table.rating \
 										FROM gang_statistic AS statistic_table \
 										INNER JOIN gang_group AS group_table \
@@ -223,15 +248,16 @@ public void SQL_Callback_StatMenu(Database db, DBResultSet results, const char[]
 	}
 
 	char sInfoString[256];
+	char sBuffer[256];
 	while (results.FetchRow())
 	{
 		char sGangName[128];
 		results.FetchString(0, sGangName, sizeof(sGangName));
 		int iRating = results.FetchInt(1);
 
-		//Format(sInfoString, sizeof(sInfoString), "%s;%i", sGangName, iRating);
+		Format(sBuffer, sizeof(sBuffer), "%s;%i", sGangName, iRating);
 		Format(sInfoString, sizeof(sInfoString), "%s [%i]", sGangName, iRating);
-		menu.AddItem(sInfoString, sInfoString, ITEMDRAW_DISABLED);
+		menu.AddItem(sBuffer, sInfoString, ITEMDRAW_DISABLED);
 	}   
 
 	menu.ExitBackButton = true;
@@ -275,6 +301,7 @@ public int StatisticStandartMenu_Callback(Menu menu, MenuAction action, int para
 			delete menu;
 		}
 	}
+
 	return;
 }
 
@@ -297,7 +324,6 @@ public int StatMenuCallback_Void(Menu menu, MenuAction action, int param1, int p
 public void SQLCallback_Void(Database db, DBResultSet results, const char[] error, int data)
 {
 	if (error[0])
-	{
-		LogError("Error (%i): %s", data, error);
-	}
+		LogError("[SQLCallback_Void] Error (%i): %s", data, error);
+
 }

@@ -61,12 +61,6 @@
 		"ru"		"В этой банде нет мест!"
 	}
 
-	"InvitationSent"
-	{
-		"en"		"Wait for the acceptance / rejection of the previous invitation."
-		"ru"		"Дождитесь принятия\отклонения предыдущего приглашения."
-	}
-
 	"NameTooLong"
 	{
 		"en"		"The name you selected is too long!"
@@ -97,13 +91,6 @@
 		"#format"	"{1:s},{2:s}"
 		"en"		"{1} has changed the name  to {2}"
 		"ru"		"{1} изменил название на {2}"
-	}
-
-	"AcceptInstructions"
-	{
-		"#format"	"{1:s}"
-		"en"		"Type !accept to join {1}!"
-		"ru"		"Напишите !accept , чтобы вступить в {1}"
 	}
 
 	"GangJoined"
@@ -758,5 +745,38 @@
 	{
 		"ru"		"Успешное действие."
 		"en"		"Successful action."
+	}
+
+	"InvitationSent"
+	{
+		"en"		"The invitation has been sent."
+		"ru"		"Приглашениие отправлено."
+	}
+
+	"InvitationSended"
+	{
+		"en"		"Wait for the acceptance / rejection of the previous invitation."
+		"ru"		"Дождитесь принятия\отклонения предыдущего приглашения."
+	}
+
+	"AcceptInstructions"
+	{
+		"#format"	"{1:s}"
+		"en"		"Type !accept to join {1}!"
+		"ru"		"Напишите !accept , чтобы вступить в {1}"
+	}
+	
+	"AcceptTimeoutSender"
+	{
+		"#format" "{1:s}" 
+		"ru"		"Игрок {1} не успел принять приглашение в банду."
+		"en"		"Player {1} did not have time to accept the invitation to the gang."
+	}
+	
+	"AcceptTimeoutReceiver"
+	{
+		"#format" "{1:s}" 
+		"ru"		"Вы не успели принять приглашение в банду {1}"
+		"en"		"You did not have time to accept the invitation to the gang {1}"
 	}
 }

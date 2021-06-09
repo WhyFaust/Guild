@@ -107,12 +107,15 @@ public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcas
         g_hTimerShowInfo = CreateTimer(1.0, Timer_ShowInfo, _, TIMER_REPEAT);
         g_iTimeRemaining = g_Item.Time;
         if(g_Item.TimeOutMode == 0)
+        {
             g_iTimeOut = g_Item.TimeOut;
+        }
         else if(g_Item.TimeOutMode == 1)
         {
             g_iTimeOut = 0;
-            g_hTimeOutTimer = g_hTimer = CreateTimer(60.0, Timer_TimeOut, _, TIMER_REPEAT);
+            g_hTimeOutTimer = CreateTimer(60.0, Timer_TimeOut, _, TIMER_REPEAT);
         }
+        CPrintToChatAll("%t %t", "Prefix", "GamePointRace_StartNewRound");
     }
     if(g_Item.TimeOutMode == 0 && g_iTimeOut > 0)
     {
@@ -120,7 +123,7 @@ public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcas
     }
 }
 
-public Action Timer_TimeOut(Handle hTimer, any iData) // Каллбек нашего таймера
+public Action Timer_TimeOut(Handle hTimer, any iData)
 {
     g_iTimeOut++;
     if(g_iTimeOut == g_Item.TimeOut)
@@ -298,30 +301,36 @@ public int ChoseEnemy_Callback(Menu menu, MenuAction action, int param1, int par
                         g_hAcceptTimer = CreateTimer(float(g_Item.TimerAccept), Timer_Accept, StringToInt(sPostInfo[1]));
                         
                         g_Team.Team1.Point = 0;
-                        //strcopy(g_Team.Team1.GangName, sizeof(128), sGangNameClient[param1]);
-                        //Format(g_Team.Team1.GangName, sizeof(128), "%s", sGangNameClient[param1]);
                         strcopy(g_Team.Team1.GangName, 128, sGangNameClient[param1]);
                         g_Team.Team2.Point = 0;
-                        //strcopy(g_Team.Team2.GangName, sizeof(128), sPostInfo[0]);
-                        //Format(g_Team.Team2.GangName, sizeof(128), "%s", sPostInfo[0]);
                         strcopy(g_Team.Team2.GangName, 128, sPostInfo[0]);
-                        //StartGame(sGangNameClient[param1], sInfo);
                     }
                     else
+                    {
                         CPrintToChat(param1, "%t %t", "Prefix", "point_race_wait", g_iTimeOut);
+                    }
                 }
                 else
+                {
                     CPrintToChat(param1, "%t %t", "Prefix", "point_race_preparing");
+                }
             }
             else
+            {
                 CPrintToChat(param1, "%t %t", "Prefix", "point_race_battle_between", g_Team.Team1.GangName, g_Team.Team2.GangName);
+            }
         }
-        case MenuAction_End:
-            delete menu;
         case MenuAction_Cancel:
+        {
             if(param2 == MenuCancel_ExitBack)
                 Gangs_ShowGamesMenu(param1);
+        }
+        case MenuAction_End:
+        {
+            delete menu;
+        }
     }
+
     return;
 }
 
@@ -353,6 +362,7 @@ public int Accept_Callback(Menu menu, MenuAction action, int param1, int param2)
             delete menu;
         }
     }
+
     return;
 }
 
@@ -363,21 +373,32 @@ void StartGame()
         g_hTimer = CreateTimer(float(g_Item.Time), Timer_Delay);
         g_hTimerShowInfo = CreateTimer(1.0, Timer_ShowInfo, _, TIMER_REPEAT);
         g_iTimeRemaining = g_Item.Time;
-        g_iTimeOut = g_Item.TimeOut;
+        if(g_Item.TimeOutMode == 0)
+        {
+            g_iTimeOut = g_Item.TimeOut;
+        }
+        else if(g_Item.TimeOutMode == 1)
+        {
+            g_iTimeOut = 0;
+            g_hTimeOutTimer = CreateTimer(60.0, Timer_TimeOut, _, TIMER_REPEAT);
+        }
+        CPrintToChatAll("%t %t", "Prefix", "GamePointRace_StartNewRound");
     }
     else
     {
         g_bIsGameStarted = true;
+        CPrintToChatAll("%t %t", "Prefix", "GamePointRace_StartNewRound");
     }
 }
 
-public Action Timer_Delay(Handle hTimer, any iData) // Каллбек нашего таймера
+public Action Timer_Delay(Handle hTimer, any iData)
 {
     if (g_hTimer != INVALID_HANDLE)
     {
         KillTimer(g_hTimer);
-        g_hTimer = INVALID_HANDLE;		// Обнуляем значения дескриптора
+        g_hTimer = INVALID_HANDLE;
     }
+
     if(g_Team.Team1.Point > g_Team.Team2.Point)
     {
         CPrintToChatAll("%t %t", "Prefix", "point_race_win", g_Team.Team1.GangName);
@@ -735,11 +756,14 @@ public Action Timer_Delay(Handle hTimer, any iData) // Каллбек нашег
         }
     }
     else if(g_Team.Team1.Point == g_Team.Team2.Point)
+    {
         CPrintToChatAll("%t %t", "Prefix", "point_race_draw");
+    }
+
     return Plugin_Stop;
 }
 
-public Action Timer_ShowInfo(Handle hTimer, any iData) // Каллбек нашего таймера
+public Action Timer_ShowInfo(Handle hTimer, any iData)
 {
     if(g_hTimer != INVALID_HANDLE)
     {

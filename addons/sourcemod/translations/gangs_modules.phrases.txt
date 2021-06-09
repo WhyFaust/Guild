@@ -162,7 +162,7 @@
 	}
 	
 	"StatisticStandart"
-	{ 
+	{
 		"ru" "Топ по опыту" 
 		"en" "Top in experience" 
 	}
@@ -184,5 +184,17 @@
 		"#format"    "{1:s},{2:s},{3:s}"
 		"ru" "[{1}] {2}: {3}"
 		"en" "[{1}] {2}: {3}"
+	}
+
+	"GamePointRace_StartNewRound"
+	{
+		"ru" "Игра начнется в новом раунде." 
+		"en" "The game will start in a new round." 
+	}
+
+	"GamePointRace_Started"
+	{
+		"ru" "Игра началась." 
+		"en" "The game is on." 
 	}
 }

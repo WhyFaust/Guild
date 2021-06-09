@@ -1260,11 +1260,12 @@ public int InvitationMenu_Callback(Menu menu, MenuAction action, int param1, int
 				{
 					OpenGangInvitationMenu(iUserID);
 				}
+				CPrintToChat(param1, "%t %t", "Prefix", "InvitationSent");
 				StartOpeningGangMenu(param1);
 			}
 			else
 			{
-				CPrintToChat(param1, "%t %t", "Prefix", "InvitationSent");
+				CPrintToChat(param1, "%t %t", "Prefix", "InvitationSended");
 				return;
 			}
 			
@@ -1288,10 +1289,22 @@ public Action AcceptTimer(Handle timer, DataPack data)
 	int iClient = data.ReadCell();
 	int iTarget = data.ReadCell();
 	delete data;
-	if(IsValidClient(iClient) && ga_bInvitationSent[iClient])
-		ga_bInvitationSent[iClient] = false;
-	if(IsValidClient(iTarget) && ga_iInvitation[iTarget])
-		ga_iInvitation[IsValidClient] = -1;
+	if (IsValidClient(iClient) && IsValidClient(iTarget))
+	{
+		if (ga_bInvitationSent[iClient])
+		{
+			char sName[64];
+			GetClientName(iTarget, sName, sizeof(sName));
+			ga_bInvitationSent[iClient] = false;
+			CPrintToChat(iClient, "%t %t", "Prefix", "AcceptTimeoutSender", sName);
+		}
+		if (ga_iInvitation[iTarget] != -1)
+		{
+			ga_iInvitation[iTarget] = -1;
+			CPrintToChat(iClient, "%t %t", "Prefix", "AcceptTimeoutReceiver", ga_sGangName[iClient]);
+		}
+	}
+		
 }
 
 
