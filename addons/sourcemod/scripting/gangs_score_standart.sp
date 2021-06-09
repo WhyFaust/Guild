@@ -20,36 +20,16 @@ public Plugin myinfo =
 	version = GANGS_VERSION
 };
 
-/*public void Gangs_OnLoaded()
-{
-	Handle g_hCvar = FindConVar("sm_gangs_terrorist_only");
-	if (g_hCvar != INVALID_HANDLE)
-		g_bOnlyTerrorist = GetConVarBool(g_hCvar);
-	LoadTranslations("gangs.phrases");
-	LoadTranslations("gangs_modules.phrases");
-}*/
-
 public void OnPluginStart()
 {
 	if(GetEngineVersion() != Engine_CSGO)
-	{
 		SetFailState("This plugin works only on CS:GO");
-	}
 	
 	KFG_load();
 	
-	//HookEvent("round_start", OnRoundStart, EventHookMode_PostNoCopy);
 	HookEvent("player_death", Event_PlayerDeath);
 	HookEvent("round_end", Event_RoundEnd);
 }
-
-/*public OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
-{
-	for (int i = 0; i <= MaxClients; i++)
-	{
-		if(IsValidClient(i)) CreateTimer(TimeGetHP, TIMER_PlayerSpawn, i);
-	}
-}*/
 
 public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {

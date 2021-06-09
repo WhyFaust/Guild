@@ -6,7 +6,7 @@
 public Plugin myinfo = 
 {
 	name = "[GANGS MODULE] Tag",
-	author = "DeeperSpy, baferpro",
+	author = "DeeperSpy, Faust",
 	version = GANGS_VERSION
 };
 

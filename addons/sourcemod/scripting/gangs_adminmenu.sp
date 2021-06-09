@@ -5,17 +5,12 @@
 public Plugin myinfo = 
 {
 	name = "[Gangs] Admin Menu", 
-	author = "baferpro", 
+	author = "Faust", 
 	version = GANGS_VERSION
 }
 
 public void OnPluginStart()
-{
-	//if(GetEngineVersion() != Engine_CSGO)
-	//{
-	//	SetFailState("This plugin works only on CS:GO");
-	//}
-	
+{	
 	RegAdminCmd("sm_gangadmin", Command_GangAdmin, ADMFLAG_ROOT);
 }
 
@@ -442,9 +437,7 @@ public int MenuHandlerGangName4(Menu menu, MenuAction action, int param1, int pa
 			if (menu.GetItem(param2, info, sizeof(info)))
 			{
 				char sInfo[2][64];
-				ExplodeString(info, "_", sInfo, sizeof(sInfo), sizeof(sInfo[]));
-				//sInfo[0] - Gang Name
-				//sInfo[1] - Кол-во очков
+				ExplodeString(info, "_", sInfo, sizeof(sInfo), sizeof(sInfo[])); // 0 - Gang Name | 1 - Members count
 				
 				Handle g_hCvar = FindConVar("sm_gangs_db_statistic_name");
 				char sBuffer[64];
@@ -484,9 +477,7 @@ public int MenuHandlerGangName5(Menu menu, MenuAction action, int param1, int pa
 			if (menu.GetItem(param2, info, sizeof(info)))
 			{
 				char sInfo[2][64];
-				ExplodeString(info, "_", sInfo, sizeof(sInfo), sizeof(sInfo[]));
-				//sInfo[0] - Gang Name
-				//sInfo[1] - Кол-во очков
+				ExplodeString(info, "_", sInfo, sizeof(sInfo), sizeof(sInfo[])); // 0 - Gang Name | 1 - Members count
 				
 				Handle g_hCvar = FindConVar("sm_gangs_db_statistic_name");
 				char sBuffer[64];

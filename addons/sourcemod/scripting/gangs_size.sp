@@ -110,12 +110,12 @@ public Action LoadPerkLvl(Handle hTimer, int iUserID)
 	int iClient = iUserID;
 	if(IsValidClient(iClient) && Gangs_ClientHasGang(iClient))
 	{
-		int gangid = Gangs_GetClientGangId(iClient);
+		int iGangID = Gangs_GetClientGangId(iClient);
 		char sQuery[300];
 		Format(sQuery, sizeof(sQuery), "SELECT %s \
 										FROM gang_perk \
 										WHERE gang_id = %i;", 
-										PerkName, gangid);
+										PerkName, iGangID);
 		Database hDatabase = Gangs_GetDatabase();
 		hDatabase.Query(SQLCallback_GetPerkLvl, sQuery, iClient);
 		delete hDatabase;
@@ -268,19 +268,20 @@ public int MenuHandler_MainMenu(Menu hMenu, MenuAction action, int iClient, int 
         {
 			char sInfo[16];
 			hMenu.GetItem(iItem, sInfo, sizeof(sInfo));
-			int gangid = Gangs_GetClientGangId(iClient);
+			int iGangID = Gangs_GetClientGangId(iClient);
 			if(StrEqual(sInfo, "buy"))
 			{
+				g_iPerkLvl[iClient] += 1;
 				for (int i = 1; i <= MaxClients; i++)
 					if (IsValidClient(i))
-						if (gangid == Gangs_GetClientGangId(i))
-							g_iPerkLvl[i] += 1;
+						if (iGangID == Gangs_GetClientGangId(i))
+							g_iPerkLvl[i] = g_iPerkLvl[iClient];
 				
 				char sQuery[300];
 				Format(sQuery, sizeof(sQuery), "UPDATE gang_perk \
 												SET %s = %i \
 												WHERE gang_id = %i;", 
-												PerkName, g_iPerkLvl[iClient], gangid);
+												PerkName, g_iPerkLvl[iClient], iGangID);
 				Database hDatabase = Gangs_GetDatabase();
 				hDatabase.Query(SQLCallback_Void, sQuery);
 				delete hDatabase;
@@ -325,16 +326,17 @@ public int MenuHandler_MainMenu(Menu hMenu, MenuAction action, int iClient, int 
 			}
 			else if(StrEqual(sInfo, "sell"))
 			{
+				g_iPerkLvl[iClient] -= 1;
 				for (int i = 1; i <= MaxClients; i++)
 					if (IsValidClient(i))
-						if (gangid == Gangs_GetClientGangId(i))
-							g_iPerkLvl[i] -= 1;
+						if (iGangID == Gangs_GetClientGangId(i))
+							g_iPerkLvl[i] = g_iPerkLvl[iClient];
 
 				char sQuery[300];
 				Format(sQuery, sizeof(sQuery), "UPDATE gang_perk \
 												SET %s = %i \
 												WHERE gang_id = %i;", 
-												PerkName, g_iPerkLvl[iClient], gangid);
+												PerkName, g_iPerkLvl[iClient], iGangID);
 				
 				Database hDatabase = Gangs_GetDatabase();
 				hDatabase.Query(SQLCallback_Void, sQuery);
@@ -411,7 +413,5 @@ void KFG_load()
 public void SQLCallback_Void(Database db, DBResultSet results, const char[] error, int data)
 {
 	if (error[0])
-	{
 		LogError("[SQLCallback_Void] Error (%i): %s", data, error);
-	}
 }

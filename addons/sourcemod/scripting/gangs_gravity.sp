@@ -53,7 +53,7 @@ public void OnLibraryAdded(const char[] name)
 public Plugin myinfo =
 {
 	name = "[GANGS MODULE] Gravity",
-	author = "baferpro",
+	author = "Faust",
 	version = GANGS_VERSION
 };
 
@@ -103,10 +103,12 @@ public Action LoadPerkLvl(Handle hTimer, int iUserID)
 	int iClient = iUserID;
 	if(IsValidClient(iClient) && Gangs_ClientHasGang(iClient))
 	{
-		char sGangName[256];
-		Gangs_GetClientGangName(iClient, sGangName, sizeof(sGangName));
+		int iGangID = Gangs_GetClientGangId(iClient);
 		char sQuery[300];
-		Format(sQuery, sizeof(sQuery), "SELECT %s FROM gangs_perks WHERE gang = '%s' AND server_id = %i;", PerkName, sGangName, Gangs_GetServerID());
+		Format(sQuery, sizeof(sQuery), "SELECT %s \
+										FROM gang_perk \
+										WHERE gang_id = %i;", 
+										PerkName, iGangID);
 		Database hDatabase = Gangs_GetDatabase();
 		hDatabase.Query(SQLCallback_GetPerkLvl, sQuery, iClient);
 		delete hDatabase;
@@ -122,7 +124,7 @@ public void SQLCallback_GetPerkLvl(Database db, DBResultSet results, const char[
 {
 	if(error[0])
 	{
-		LogError("SQLCallback_GetPerkLvl: %s", error); // Выводим в лог
+		LogError("SQLCallback_GetPerkLvl: %s", error);
 		return;
 	}
 
@@ -287,21 +289,20 @@ public int MenuHandler_MainMenu(Menu hMenu, MenuAction action, int iClient, int 
         {
 			char sInfo[16];
 			hMenu.GetItem(iItem, sInfo, sizeof(sInfo));
-			char sGangName1[256], sGangName2[256];
-			Gangs_GetClientGangName(iClient, sGangName1, sizeof(sGangName1));
+			int iGangID = Gangs_GetClientGangId(iClient);
 			if(StrEqual(sInfo, "buy"))
 			{
+				g_iPerkLvl[iClient] += 1;
 				for (int i = 1; i <= MaxClients; i++)
-				{
 					if (IsValidClient(i))
-					{
-						Gangs_GetClientGangName(i, sGangName2, sizeof(sGangName2));
-						if (StrEqual(sGangName1, sGangName2))
-							g_iPerkLvl[i]+=1;
-					}
-				}
+						if (iGangID == Gangs_GetClientGangId(i))
+							g_iPerkLvl[i] = g_iPerkLvl[iClient];
+
 				char sQuery[300];
-				Format(sQuery, sizeof(sQuery), "UPDATE gangs_perks SET %s=%i WHERE gang='%s' AND server_id=%i;", PerkName, g_iPerkLvl[iClient], sGangName1, Gangs_GetServerID());
+				Format(sQuery, sizeof(sQuery), "UPDATE gang_perk \
+												SET %s = %i \
+												WHERE gang_id = %i;", 
+												PerkName, g_iPerkLvl[iClient], iGangID);
 				Database hDatabase = Gangs_GetDatabase();
 				hDatabase.Query(SQLCallback_Void, sQuery);
 				delete hDatabase;
@@ -346,17 +347,17 @@ public int MenuHandler_MainMenu(Menu hMenu, MenuAction action, int iClient, int 
 			}
 			else if(StrEqual(sInfo, "sell"))
 			{
+				g_iPerkLvl[iClient] -= 1;
 				for (int i = 1; i <= MaxClients; i++)
-				{
 					if (IsValidClient(i))
-					{
-						Gangs_GetClientGangName(i, sGangName2, sizeof(sGangName2));
-						if (StrEqual(sGangName1, sGangName2))
-							g_iPerkLvl[i]-=1;
-					}
-				}
+						if (iGangID == Gangs_GetClientGangId(i))
+							g_iPerkLvl[i] = g_iPerkLvl[iClient];
+
 				char sQuery[300];
-				Format(sQuery, sizeof(sQuery), "UPDATE gangs_perks SET %s=%i WHERE gang='%s' AND server_id=%i;", PerkName, g_iPerkLvl[iClient], sGangName1, Gangs_GetServerID());
+				Format(sQuery, sizeof(sQuery), "UPDATE gang_perk \
+												SET %s = %i \
+												WHERE gang_id = %i;", 
+												PerkName, g_iPerkLvl[iClient], iGangID);
 				Database hDatabase = Gangs_GetDatabase();
 				hDatabase.Query(SQLCallback_Void, sQuery);
 				delete hDatabase;
@@ -444,8 +445,6 @@ float GetClientGravityAmmount(int iClient)
 
 public void SQLCallback_Void(Database db, DBResultSet results, const char[] error, int data)
 {
-	if (db == null)
-	{
-		LogError("Error (%i): %s", data, error);
-	}
+	if (error[0])
+		LogError("[SQLCallback_Void] Error (%i): %s", data, error);
 }

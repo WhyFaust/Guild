@@ -6,7 +6,7 @@
 public Plugin myinfo =
 {
 	name = "[Gangs] Score Gift",
-	author = "R1KO, baferpro",
+	author = "R1KO, Faust",
 	version = GANGS_VERSION
 }
 

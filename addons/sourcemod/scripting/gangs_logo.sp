@@ -11,16 +11,14 @@ int m_nPersonaDataPublicLevel;
 public Plugin myinfo = 
 {
 	name = "[Gangs] Logo", 
-	author = "baferpro", 
+	author = "Faust", 
 	version = GANGS_VERSION
 }
 
 public void OnPluginStart()
 {
 	if(GetEngineVersion() != Engine_CSGO)
-	{
 		SetFailState("This plugin works only on CS:GO");
-	}	
 	
 	OnMapStart();
 
@@ -92,9 +90,9 @@ void KFG_load()
 	BuildPath(Path_SM, path, sizeof(path), "configs/gangs/gangs_module_logo.ini");
 	if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][Logo] - Configuration file not found");
 	kfg.Rewind();
-	if(kfg.GotoFirstSubKey()) // Переходим к первому ключу внутри "GlobalKey"
+	if(kfg.GotoFirstSubKey())
 	{
-		do	  // Создаем цикл с послеусловием
+		do
 		{
 			static char sBuffer[PLATFORM_MAX_PATH];
 			int iValue = kfg.GetNum("level");

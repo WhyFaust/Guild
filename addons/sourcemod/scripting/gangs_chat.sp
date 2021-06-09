@@ -10,7 +10,7 @@ ConVar g_cvChatCommand;
 public Plugin myinfo = 
 {
 	name = "[Gangs] Chat", 
-	author = "baferpro", 
+	author = "Faust", 
 	version = GANGS_VERSION
 }
 
@@ -35,7 +35,7 @@ public void OnConfigsExecuted()
 {
 	char sCommand[64];
 	g_cvChatCommand.GetString(sCommand, sizeof(sCommand));
-	if (GetCommandFlags(sCommand) == INVALID_FCVAR_FLAGS)  // if command not already exist
+	if (GetCommandFlags(sCommand) == INVALID_FCVAR_FLAGS)
 	{
 		RegConsoleCmd(sCommand, Command_GangChat, "Command for gang chat");
 	}
@@ -70,7 +70,7 @@ public Action Command_GangChat(int iClient, int args)
 		ConfigRanks.Rewind();
 		char buffer[16];
 		IntToString(Gangs_GetClientGangRank(iClient), buffer, sizeof(buffer));
-		if(ConfigRanks.JumpToKey(buffer)) // Попытка перейти к ключу
+		if(ConfigRanks.JumpToKey(buffer))
 		{
 			ConfigRanks.GetString("Name", szBuffer, sizeof(szBuffer));
 			Format(sRank, sizeof(sRank), "%t", szBuffer);

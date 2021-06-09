@@ -8,7 +8,7 @@
 public Plugin myinfo =
 {
 	name = "[GANGS MODULE] Site Statistic",
-	author = "baferpro",
+	author = "Faust",
 	description = "uwu-party.ru/plugins/",
 	version = GANGS_VERSION
 };
@@ -45,29 +45,17 @@ public int OnSocketReceive(Handle socket, char[] receiveData, const int dataSize
 		ReplaceString(szTheContent, sizeof(szTheContent), szTheNew, "");
 	   
 		if(StrEqual(szTheContent, "\r\n\r\ntrue", false))
-		{
 			PrintToServer("Successful!");
-		}
 		else if(StrEqual(szTheContent, "\r\n\r\nbadIP", false))
-		{
-			PrintToServer("Wrong IP!");
-		}
+			SetFailState("Wrong IP!");
 		else if(StrEqual(szTheContent, "\r\n\r\nbadPort", false))
-		{
-			PrintToServer("Wrong Port!");
-		}
+			SetFailState("Wrong Port!");
 		else if(StrEqual(szTheContent, "\r\n\r\nbadPlugin", false))
-		{
-			PrintToServer("Wrong Plugin!");
-		}
+			SetFailState("Wrong Plugin!");
 		else if(StrEqual(szTheContent, "\r\n\r\nfail", false))
-		{
 			SetFailState("Fail connect.");
-		}
 		else
-		{
 			SetFailState("Incomprehensible error! Contact the author.\n(%s)", szTheContent);
-		}
 	}
 }
 

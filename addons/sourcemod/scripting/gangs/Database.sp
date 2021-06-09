@@ -796,6 +796,6 @@ public void SQLCallback_Void(Database db, DBResultSet results, const char[] erro
 {
 	if (error[0])
 	{
-		LogError("Error (%i): %s", data, error);
+		LogError("[SQLCallback_Void] Error (%i): %s", data, error);
 	}
 }

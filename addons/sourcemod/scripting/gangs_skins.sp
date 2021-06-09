@@ -59,7 +59,7 @@ public void OnLibraryAdded(const char[] name)
 public Plugin myinfo =
 {
 	name = "[GANGS MODULE] Skins",
-	author = "baferpro",
+	author = "Faust",
 	version = GANGS_VERSION
 };
 
@@ -76,7 +76,9 @@ public void Gangs_OnLoaded()
 public Action AddToPerkMenu(Handle timer)
 {
 	char sQuery[300];
-	Format(sQuery, sizeof(sQuery), "SELECT %s FROM gangs_perks;", PerkName);
+	Format(sQuery, sizeof(sQuery), "SELECT %s \
+									FROM gang_perk;", 
+									PerkName);
 	Database hDatabase = Gangs_GetDatabase();
 	hDatabase.Query(SQLCallback_CheckPerk, sQuery);
 	delete hDatabase;
@@ -86,26 +88,31 @@ public Action AddToPerkMenu(Handle timer)
 
 public void SQLCallback_CheckPerk(Database db, DBResultSet hResults, const char[] sError, any iDataPack)
 {
-	if(sError[0]) // Если произошла ошибка
+	if(sError[0])
 	{
 		if(StrContains(sError, "Duplicate column name", false))
 		{
 			char sQuery[256];
 			if(Gangs_GetDatabaseDriver())
-				Format(sQuery, sizeof(sQuery), "ALTER TABLE gangs_perks ADD COLUMN %s varchar(32) NULL DEFAULT NULL;", PerkName);
+				Format(sQuery, sizeof(sQuery), "ALTER TABLE gang_perk \
+												ADD COLUMN %s varchar(32) NULL DEFAULT NULL;", 
+												PerkName);
 			else
-				Format(sQuery, sizeof(sQuery), "ALTER TABLE gangs_perks ADD COLUMN %s TEXT(32) NULL DEFAULT NULL;", PerkName);
+				Format(sQuery, sizeof(sQuery), "ALTER TABLE gang_perk \
+												ADD COLUMN %s TEXT(32) NULL DEFAULT NULL;", 
+												PerkName);
 			db.Query(SQLCallback_Void, sQuery);
 		}
 		else
-			LogError("[SQLCallback_CheckPerk] Error :  %s", sError); // Выводим в лог
-		return; // Прекращаем выполнение ф-и
+		{
+			LogError("[SQLCallback_CheckPerk] Error :  %s", sError);
+		}
+
+		return;
 	}
 	
 	if(hResults.FetchRow())
-	{
-		return; // Прекращаем выполнение ф-и
-	}
+		return;
 }
 
 public void OnClientDisconnect(int iClient)
@@ -121,13 +128,9 @@ public void OnClientConnected(int iClient)
 public void OnClientPutInServer(int iClient)
 {
 	if(g_bGangCoreExist)
-	{
 		CreateTimer(2.0, LoadPerkLvl, iClient, TIMER_FLAG_NO_MAPCHANGE);
-	}
 	else
-	{
 		CreateTimer(5.0, ReLoadPerkLvl, iClient, TIMER_FLAG_NO_MAPCHANGE);
-	}
 }
 
 public Action LoadPerkLvl(Handle hTimer, int iUserID)
@@ -135,10 +138,12 @@ public Action LoadPerkLvl(Handle hTimer, int iUserID)
 	int iClient = iUserID;
 	if(IsValidClient(iClient) && Gangs_ClientHasGang(iClient))
 	{
-		char sGangName[256];
-		Gangs_GetClientGangName(iClient, sGangName, sizeof(sGangName));
+		int iGangID = Gangs_GetClientGangId(iClient);
 		char sQuery[300];
-		Format(sQuery, sizeof(sQuery), "SELECT %s FROM gangs_perks WHERE gang = '%s' AND server_id = %i;", PerkName, sGangName, Gangs_GetServerID());
+		Format(sQuery, sizeof(sQuery), "SELECT %s \
+										FROM gang_perk \
+										WHERE gang_id = %i;", 
+										PerkName, iGangID);
 		Database hDatabase = Gangs_GetDatabase();
 		hDatabase.Query(SQLCallback_GetPerkLvl, sQuery, iClient);
 		delete hDatabase;
@@ -476,7 +481,12 @@ public int MenuSkinSet_Callback(Menu hMenu, MenuAction action, int iClient, int 
 			if(iItem == 0)
 			{
 				char sQuery[256];
-				Format(sQuery, sizeof(sQuery),"SELECT gang FROM gangs_perks WHERE %s = '%s' AND server_id = %i;", PerkName, szInfo, Gangs_GetServerID());
+				Format(sQuery, sizeof(sQuery),"SELECT group_table.name \
+												FROM gang_perk AS perk_table \
+												INNER JOIN gang_group AS group_table \
+												ON group_table.id = perk_table.gang_id \
+												WHERE perk_table.%s = '%s';", 
+												PerkName, szInfo);
 				DataPack hPack = new DataPack();
 				hPack.WriteCell(iClient);
 				hPack.WriteString(szInfo);
@@ -662,27 +672,29 @@ public void SQLCallback_CheckSkin(Database db, DBResultSet results, const char[]
 				ConfigSkins.GetString("model", ga_sGangSkinModel[iClient], sizeof(ga_sGangSkinModel[]));
 				ConfigSkins.GetString("arms", ga_sGangSkinArms[iClient], sizeof(ga_sGangSkinArms[]));
 				Format(ga_sGangSkin[iClient], sizeof(ga_sGangSkin[]), szBuffer);
-				char sGangName[MAXPLAYERS+1][256];
-				Gangs_GetClientGangName(iClient, sGangName[iClient], sizeof(sGangName));
+
+				int iGangID = Gangs_GetClientGangId(iClient);
 				for (int i = 1; i <= MaxClients; i++)
-				{
 					if (IsValidClient(i) && iClient != i)
-					{
-						Gangs_GetClientGangName(i, sGangName[i], sizeof(sGangName));
-						if (StrEqual(sGangName[i], sGangName[iClient]))
+						if (iGangID == Gangs_GetClientGangId(i))
 						{
 							ga_sGangSkin[i] = ga_sGangSkin[iClient];
 							ga_sGangSkinModel[i] = ga_sGangSkinModel[iClient];
 							ga_sGangSkinArms[i] = ga_sGangSkinArms[iClient];
 						}
-					}
-				}
-				char sQuery[256];
-				Format(sQuery, sizeof(sQuery),"UPDATE gangs_perks SET %s = '%s' WHERE gang = '%s' AND server_id = %i;", PerkName, szBuffer, sGangName[iClient], Gangs_GetServerID());
-				//PrintToChatAll("%s-%s", szBuffer, sGangName[iClient]); 
+
+				char sQuery[300];
+				Format(sQuery, sizeof(sQuery), "UPDATE gang_perk \
+												SET %s = '%s' 
+												WHERE gang_id = %i;", 
+												PerkName, szBuffer, iGangID);
 				Database hDatabase = Gangs_GetDatabase();
 				hDatabase.Query(SQLCallback_Void, sQuery);
-				Format(sQuery, sizeof(sQuery),"SELECT gang, %s FROM gangs_perks", PerkName);
+				Format(sQuery, sizeof(sQuery), "SELECT group_table.name, perk_table.%s \
+												FROM gang_perk AS perk_table \
+												INNER JOIN gang_group AS group_table \
+												ON group_table.id = perk_table.gang_id;", 
+												PerkName);
 				hDatabase.Query(SQLCallback_OpenSkinMenu, sQuery, iClient);
 				delete hDatabase;
 			}

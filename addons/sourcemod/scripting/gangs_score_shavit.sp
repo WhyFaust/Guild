@@ -19,16 +19,14 @@ int g_iMapUser[MAXPLAYERS+1] = 0;
 public Plugin myinfo =
 {
 	name = "[GANGS MODULE] Score Shavit",
-	author = "baferpro",
+	author = "Faust",
 	version = GANGS_VERSION
 };
 
 public void OnPluginStart()
 {
 	if(GetEngineVersion() != Engine_CSGO)
-	{
 		SetFailState("This plugin works only on CS:GO");
-	}
 	
 	RegAdminCmd("sm_setscoreshavit", Command_SetScoreShavit, ADMFLAG_ROOT);
 	
@@ -70,9 +68,7 @@ public void Shavit_OnFinish(int client, int style, float time, int jumps, int st
 			Gangs_SetClientGangScore(client, Gangs_GetClientGangScore(client)+g_Item.Score);
 			g_iMapUser[client]++;
 			if(g_Item.Messages)
-			{
 				CPrintToChat(client, "Вы заработали %i опыта для банды за прохождение карты", g_Item.Score);
-			}
 		}
 	}
 }
@@ -85,12 +81,8 @@ public void OnMapStart()
 public void OnMapEnd()
 {
 	for(int i = 0; i <= MaxClients; i++) 
-	{
 		if(IsValidClient(i))
-		{
 			g_iMapUser[i] = 0;
-		}
-	}
 }
 
 void KFG_load()
