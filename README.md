@@ -6,7 +6,7 @@
   
 ## Essential Plugins:  
 GameCMS System (Optional)  
-Shop-Core (https://github.com/FD-Forks/Shop-Core) (Optional) 
+Shop-Core (https://github.com/FD-Forks/Shop-Core) (Optional)  
 HexTags (https://github.com/Hexer10/HexTags) (Optional)  
 WCS (Optional)  
 LK (Optional)  
