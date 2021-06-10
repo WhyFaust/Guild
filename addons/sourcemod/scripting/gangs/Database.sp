@@ -497,6 +497,7 @@ public void SQLCallback_CheckIfInDatabase_Player(Database db, DBResultSet result
 										ga_iGangId[iClient], ga_sSteamID[iClient], szEscapedName, ga_iRank[iClient], ga_sInvitedBy[iClient], ga_iDateJoined[iClient]);
 		g_hDatabase.Query(SQLCallback_Void, sQuery, 1);
 		API_OnGoToGang(iClient, ga_sGangName[iClient], ga_iInvitation[iClient]);
+		ga_iInvitation[iClient] = -1;
 	}
 
 	Format(sQuery, sizeof(sQuery), "SELECT * \

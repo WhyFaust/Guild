@@ -1301,7 +1301,7 @@ public Action AcceptTimer(Handle timer, DataPack data)
 		if (ga_iInvitation[iTarget] != -1)
 		{
 			ga_iInvitation[iTarget] = -1;
-			CPrintToChat(iClient, "%t %t", "Prefix", "AcceptTimeoutReceiver", ga_sGangName[iClient]);
+			CPrintToChat(iTarget, "%t %t", "Prefix", "AcceptTimeoutReceiver", ga_sGangName[iClient]);
 		}
 	}
 		
