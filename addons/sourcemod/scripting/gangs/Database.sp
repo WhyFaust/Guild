@@ -406,7 +406,7 @@ public void SQLCallback_CreateGroup(Database db, DBResultSet results, const char
 	char sQuery[300];
 	if(!bGangInDatabase)
 	{
-		int iCreateDate = GetTime();
+		int iCreateDate = GetTime() + g_iCreateGangDays * 86400;
 		Format(sQuery, sizeof(sQuery), "INSERT INTO gang_group \
 										(name, server_id, create_date) \
 										VALUES ('%s', %i, %i);", 
