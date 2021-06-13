@@ -1761,9 +1761,12 @@ public int AdministrationMenu_Callback(Menu menu, MenuAction action, int param1,
 			}
 			else if(StrEqual(sInfo, "extend"))
 			{
-				char szQuery[256];
-				Format( szQuery, sizeof( szQuery ),"SELECT end_date FROM gangs_groups WHERE gang = '%s' AND server_id = %i", ga_sGangName[param1], g_iServerID);
-				g_hDatabase.Query(SQLCallback_OpenExtendMenu, szQuery, param1);
+				char sQuery[256];
+				Format(sQuery, sizeof(sQuery), "SELECT end_date \
+												FROM gang_group \
+												WHERE gang_id = %i;", 
+												ga_iGangId[param1]);
+				g_hDatabase.Query(SQLCallback_OpenExtendMenu, sQuery, param1);
 			}
 			//else if(StrEqual(sInfo, "transferleader"))
 			//{
@@ -1787,34 +1790,28 @@ public int AdministrationMenu_Callback(Menu menu, MenuAction action, int param1,
 	return;
 }
 
-public void SQLCallback_OpenExtendMenu(Database db, DBResultSet results, const char[] error, int data)
+public void SQLCallback_OpenExtendMenu(Database db, DBResultSet results, const char[] error, int iClient)
 {
 	if(error[0])
 	{
-		LogError("[SQLCallback_OpenExtendMenu] Error (%i): %s", data, error);
+		LogError("[SQLCallback_OpenExtendMenu] Error (%i): %s", iClient, error);
 		return;
 	}
-	
-	int iClient = data;
+
 	if(!IsValidClient(iClient))
-	{
 		return;
-	}
-	else 
+
+	if(results.FetchRow())
 	{
-		while(results.FetchRow())
-		{
-			OpenAdministrationMenuExtendGang(iClient, results.FetchInt(0));
-		}
+		OpenAdministrationMenuExtendGang(iClient, results.FetchInt(0));
 	}
 }
 
 void OpenAdministrationMenuExtendGang(int iClient, int endtime)
 {
 	if(!IsValidClient(iClient))
-	{
 		return;
-	}
+
 	Menu menu = CreateMenu(AdministrationMenuExtend_Callback, MenuAction_Select | MenuAction_End | MenuAction_DisplayItem | MenuAction_Cancel);
 	
 	char tempBuffer[512], sDisplayString[128];
@@ -1942,12 +1939,11 @@ void OpenAdministrationMenuExtendGang(int iClient, int endtime)
 	menu.Display(iClient, MENU_TIME_FOREVER);
 }
 
-public int AdministrationMenuExtend_Callback(Menu menu, MenuAction action, int param1, int param2)
+public int AdministrationMenuExtend_Callback(Menu menu, MenuAction action, int iClient, int param2)
 {
-	if(!IsValidClient(param1))
-	{
+	if(!IsValidClient(iClient))
 		return;
-	}
+
 	switch (action)
 	{
 		case MenuAction_Select:
@@ -1956,19 +1952,100 @@ public int AdministrationMenuExtend_Callback(Menu menu, MenuAction action, int p
 			GetMenuItem(menu, param2, sInfo, sizeof(sInfo));
 			if(StrEqual(sInfo, "yes"))
 			{
-				char szQuery[256];
-				Format( szQuery, sizeof( szQuery ),"SELECT end_date FROM gangs_groups WHERE gang = '%s' AND server_id = %i;", ga_sGangName[param1], g_iServerID);
-				g_hDatabase.Query(SQLCallback_ExtendGang, szQuery, param1);
+				SetTimeEndGang(iClient, GetTime()+2629743);
+				CPrintToChat(iClient, "%t %t", "Prefix", "GangExtended");
+				int iPrice;
+				if(g_bExtendCostFormula)
+					iPrice = g_iExtendCostPrice + g_iExtendModifier * GetGangLvl(ga_iScore[iClient]);
+				else 
+					iPrice = g_iExtendCostPrice;
+
+				if(g_iExtendPriceSellMode == 0 && g_bGameCMSExist)
+				{
+					int Discount;
+					if(GameCMS_GetGlobalDiscount() > GameCMS_GetClientDiscount(iClient))
+						Discount = GameCMS_GetGlobalDiscount();
+					else 
+						Discount = GameCMS_GetClientDiscount(iClient);
+					
+					if(g_bEnableBank && g_bBankRubles && g_bExtendBank)
+						SetBankRubles(iClient, ga_iBankRubles[iClient] - Colculate(iClient, iPrice, Discount));
+					else
+						GameCMS_SetClientRubles(iClient, GameCMS_GetClientRubles(iClient) - Colculate(iClient, iPrice, Discount));
+				
+					if(g_bLog)
+						LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N продлил банду за %i рублей", iClient, Colculate(iClient, iPrice, Discount));
+				}
+				else if(g_iExtendPriceSellMode == 1)
+				{
+					if(g_bEnableBank && g_bBankShop && g_bExtendBank)
+						SetBankCredits(iClient, ga_iBankCredits[iClient] - iPrice);
+					else
+					{
+						if(g_bShopLoaded)
+							Shop_SetClientCredits(iClient, Shop_GetClientCredits(iClient) - iPrice);
+						else if(g_bStoreLoaded)
+							Store_SetClientCredits(iClient, Store_GetClientCredits(iClient) - iPrice);
+					}
+				
+					if(g_bLog)
+						LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N продлил банду за %i кредитов", iClient, iPrice);
+				}
+				else if(g_iExtendPriceSellMode == 2 && g_bLShopGoldExist)
+				{
+					if(g_bEnableBank && g_bBankShopGold && g_bExtendBank)
+						SetBankGold(iClient, ga_iBankGold[iClient] - iPrice);
+					else
+						Shop_SetClientGold(iClient, Shop_GetClientGold(iClient) - iPrice);
+				
+					if(g_bLog)
+						LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N продлил банду за %i голды", iClient, iPrice);
+				}
+				//else if(g_iExtendPriceSellMode == 3 && g_bWCSLoaded)
+				else if(g_iExtendPriceSellMode == 3)
+				{
+					if(g_bEnableBank && g_bBankWcsGold && g_bExtendBank)
+						SetBankWCSGold(iClient, ga_iBankWCSGold[iClient] - iPrice);
+					else
+						WCS_TakeGold(iClient, iPrice);
+				
+					if(g_bLog)
+						LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N продлил банду за %i WCS голды", iClient, iPrice);
+				}
+				else if(g_iExtendPriceSellMode == 4 && g_bLKLoaded)
+				{
+					if(g_bEnableBank && g_bBankLkRubles && g_bExtendBank)
+						SetBankLKRubles(iClient, ga_iBankLKRubles[iClient] - iPrice);
+					else
+						LK_ChangeBalance(iClient, LK_Cash, LK_Take, iPrice);
+								
+					if(g_bLog)
+						LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N продлил банду за %i lk рублей", iClient, iPrice);
+				}
+				else if(g_iExtendPriceSellMode == 5 && g_bMyJBShopExist)
+				{
+					if(g_bEnableBank && g_bBankMyJBCredits && g_bExtendBank)
+						SetBankMyJBCredits(iClient, ga_iBankMyJBCredits[iClient] - iPrice);
+					else
+						MyJailShop_SetCredits(iClient, MyJailShop_GetCredits(iClient) - iPrice);
+								
+					if(g_bLog)
+						LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N продлил банду за %i lk рублей", iClient, iPrice);
+				}
+				else 
+				{
+					CPrintToChat(iClient, "%t %t", "Prefix", "Error");
+				}
 			}
 			else if(StrEqual(sInfo, "no"))
 			{
-				OpenAdministrationMenu(param1);
+				OpenAdministrationMenu(iClient);
 			}
 		}
 		case MenuAction_Cancel:
 		{
 			if(param2 == MenuCancel_ExitBack)
-				OpenAdministrationMenu(param1);
+				OpenAdministrationMenu(iClient);
 		}
 		case MenuAction_End:
 		{
@@ -1976,120 +2053,6 @@ public int AdministrationMenuExtend_Callback(Menu menu, MenuAction action, int p
 		}
 	}
 	return;
-}
-
-public void SQLCallback_ExtendGang(Database db, DBResultSet results, const char[] error, int data)
-{
-	if(error[0])
-	{
-		LogError("[SQLCallback_ExtendGang] Error (%i): %s", data, error);
-		return;
-	}
-	
-	int iClient = data;
-	if(!IsValidClient(iClient))
-	{
-		return;
-	}
-	else 
-	{
-		while(results.FetchRow())
-		{
-			SetTimeEndGang(ga_iGangId[iClient], GetTime()+2629743);
-			CPrintToChat(iClient, "%t %t", "Prefix", "GangExtended");
-			char sQuery[300];
-			int iPrice;
-			if(g_bExtendCostFormula)
-				iPrice = g_iExtendCostPrice+g_iExtendModifier*GetGangLvl(ga_iScore[iClient]);
-			else 
-				iPrice = g_iExtendCostPrice;
-			if(g_iExtendPriceSellMode == 0 && g_bGameCMSExist)
-			{
-				int Discount;
-				if(GameCMS_GetGlobalDiscount() > GameCMS_GetClientDiscount(iClient))
-					Discount = GameCMS_GetGlobalDiscount();
-				else 
-					Discount = GameCMS_GetClientDiscount(iClient);
-				
-				if(g_bEnableBank && g_bBankRubles && g_bExtendBank)
-					SetBankRubles(iClient, ga_iBankRubles[iClient] - Colculate(iClient, iPrice, Discount));
-				else
-					GameCMS_SetClientRubles(iClient, GameCMS_GetClientRubles(iClient) - Colculate(iClient, iPrice, Discount));
-			
-				if(g_bLog)
-					LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N продлил банду за %i рублей", iClient, Colculate(iClient, iPrice, Discount));
-			}
-			else if(g_iExtendPriceSellMode == 1)
-			{
-				if(g_bEnableBank && g_bBankShop && g_bExtendBank)
-					SetBankCredits(iClient, ga_iBankCredits[iClient] - iPrice);
-				else
-				{
-					if(g_bShopLoaded)
-						Shop_SetClientCredits(iClient, Shop_GetClientCredits(iClient) - iPrice);
-					else if(g_bStoreLoaded)
-						Store_SetClientCredits(iClient, Store_GetClientCredits(iClient) - iPrice);
-				}
-			
-				if(g_bLog)
-					LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N продлил банду за %i кредитов", iClient, iPrice);
-			}
-			else if(g_iExtendPriceSellMode == 2 && g_bLShopGoldExist)
-			{
-				if(g_bEnableBank && g_bBankShopGold && g_bExtendBank)
-					SetBankGold(iClient, ga_iBankGold[iClient] - iPrice);
-				else
-					Shop_SetClientGold(iClient, Shop_GetClientGold(iClient) - iPrice);
-			
-				if(g_bLog)
-					LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N продлил банду за %i голды", iClient, iPrice);
-			}
-			//else if(g_iExtendPriceSellMode == 3 && g_bWCSLoaded)
-			else if(g_iExtendPriceSellMode == 3)
-			{
-				if(g_bEnableBank && g_bBankWcsGold && g_bExtendBank)
-					SetBankWCSGold(iClient, ga_iBankWCSGold[iClient] - iPrice);
-				else
-					WCS_TakeGold(iClient, iPrice);
-			
-				if(g_bLog)
-					LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N продлил банду за %i WCS голды", iClient, iPrice);
-			}
-			else if(g_iExtendPriceSellMode == 4 && g_bLKLoaded)
-			{
-				if(g_bEnableBank && g_bBankLkRubles && g_bExtendBank)
-					SetBankLKRubles(iClient, ga_iBankLKRubles[iClient] - iPrice);
-				else
-					LK_ChangeBalance(iClient, LK_Cash, LK_Take, iPrice);
-							
-				if(g_bLog)
-					LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N продлил банду за %i lk рублей", iClient, iPrice);
-			}
-			else if(g_iExtendPriceSellMode == 5 && g_bMyJBShopExist)
-			{
-				if(g_bEnableBank && g_bBankMyJBCredits && g_bExtendBank)
-					SetBankMyJBCredits(iClient, ga_iBankMyJBCredits[iClient] - iPrice);
-				else
-					MyJailShop_SetCredits(iClient, MyJailShop_GetCredits(iClient) - iPrice);
-							
-				if(g_bLog)
-					LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N продлил банду за %i lk рублей", iClient, iPrice);
-			}
-			else CPrintToChat(iClient, "%t %t", "Prefix", "Error");
-			
-			ga_iExtendCount[iClient]++;
-			for(int i = 1; i <= MaxClients; i++)
-				if(IsValidClient(i) && iClient != i)
-					if(StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
-						ga_iExtendCount[i]++;
-
-			Format(sQuery, sizeof(sQuery), "UPDATE gang_group \
-											SET extend_count = '%i' \
-											WHERE id = %i AND server_id = %i;", 
-											ga_iExtendCount[iClient], ga_iGangId[iClient], g_iServerID);
-			g_hDatabase.Query(SQLCallback_Void, sQuery, 30);
-		}
-	}
 }
 
 /*****************************************************************

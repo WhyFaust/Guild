@@ -158,13 +158,19 @@ void PrintToGang(int iClient, bool bPrintToClient = false, const char[] sMsg, an
     }
 }
 
-void SetTimeEndGang(int gangid, int time)
-{
+void SetTimeEndGang(int iClient, int iTime)
+{				
+    ga_iExtendCount[iClient]++;
+    for(int i = 1; i <= MaxClients; i++)
+        if(IsValidClient(i) && iClient != i)
+            if(ga_iGangId[i] == ga_iGangId[iClient])
+                ga_iExtendCount[i]++;
+
     char sQuery[300];
     Format(sQuery, sizeof(sQuery), "UPDATE gang_group \
-                                    SET end_date = %i \
-                                    WHERE id = %i AND server_id = %i;", 
-                                    time, gangid, g_iServerID);
+                                    SET end_date = %i, extend_count = %i \
+                                    WHERE id = %i;", 
+                                    iTime, ga_iExtendCount[iClient], ga_iGangId[iClient]);
     g_hDatabase.Query(SQLCallback_Void, sQuery, 6);
 }
 
