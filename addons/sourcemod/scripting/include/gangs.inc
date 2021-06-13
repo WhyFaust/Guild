@@ -342,6 +342,13 @@ forward void Gangs_OnExitFromGang(int iClient);
 */
 forward void Gangs_OnLoaded();
 
+/**
+ *
+ *	Вызывается когда пользователь Gangs загрузил все данные из бд.
+ *
+*/
+forward void Gangs_OnPlayerLoaded(int iClient);
+
 public SharedPlugin __pl_gangs  =
 {
 	name = "gangs",
@@ -364,6 +371,7 @@ public __pl_gangs_SetNTVOptional()
 	MarkNativeAsOptional("Gangs_ReloadClient");
 	MarkNativeAsOptional("Gangs_ClientHasGang");
 	MarkNativeAsOptional("Gangs_GetClientGangName");
+	MarkNativeAsOptional("Gangs_GetClientGangId");
 	MarkNativeAsOptional("Gangs_GetClientGangRank");
 	MarkNativeAsOptional("Gangs_GetClientGangScore");
 	MarkNativeAsOptional("Gangs_SetClientGangScore");

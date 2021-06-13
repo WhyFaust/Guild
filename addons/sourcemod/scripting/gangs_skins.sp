@@ -9,6 +9,13 @@
 #tryinclude <vip_core>
 #define REQUIRE_PLUGIN
 
+#define PerkName    "skin"
+
+KeyValues ConfigSkins;
+char ga_sGangSkin[MAXPLAYERS + 1][32];
+char ga_sGangSkinModel[MAXPLAYERS + 1][128];
+char ga_sGangSkinArms[MAXPLAYERS + 1][128];
+
 enum struct enum_Item
 {
 	int Bank;
@@ -18,13 +25,6 @@ enum struct enum_Item
 	int ColorForTeam;
 	int NoVip;
 }
-
-#define PerkName    "skin"
-
-KeyValues ConfigSkins;
-char ga_sGangSkin[MAXPLAYERS + 1][32];
-char ga_sGangSkinModel[MAXPLAYERS + 1][128];
-char ga_sGangSkinArms[MAXPLAYERS + 1][128];
 enum_Item g_Item;
 bool g_bOnlyTerrorist;
 Handle SkinMenu;
@@ -60,20 +60,151 @@ public Plugin myinfo =
 {
 	name = "[GANGS MODULE] Skins",
 	author = "Faust",
-	version = GANGS_VERSION
-};
+	version = GANGS_VERSION,
+	url = "https://uwu-party.ru"
+}
+
+public void Gangs_OnPlayerLoaded(int iClient)
+{
+	if(IsValidClient(iClient))
+		LoadPerkLvl(iClient);
+}
+
+public void Gangs_OnGoToGang(int iClient, char[] sGang, int Inviter)
+{
+	if(iClient != Inviter)
+	{
+		ga_sGangSkin[iClient] = ga_sGangSkin[Inviter];
+		ga_sGangSkinModel[iClient] = ga_sGangSkinModel[Inviter];
+		ga_sGangSkinArms[iClient] = ga_sGangSkinArms[Inviter];
+		UpdateClientSkinsGang(iClient);
+	}
+	else
+	{
+		LoadPerkLvl(iClient)
+	}
+}
+
+public void Gangs_OnExitFromGang(int iClient)
+{
+	ResetVariables(iClient);
+	UpdateClientSkinsGang(iClient);
+}
+
+public void OnClientDisconnect(int iClient)
+{
+	ResetVariables(iClient);
+}
+
+public void OnClientConnected(int iClient)
+{
+	ResetVariables(iClient);
+}
+
+public void LoadPerkLvl(int iClient)
+{
+	if(IsValidClient(iClient) && Gangs_ClientHasGang(iClient))
+	{
+		int iGangID = Gangs_GetClientGangId(iClient);
+		char sQuery[300];
+		Format(sQuery, sizeof(sQuery), "SELECT %s \
+										FROM gang_perk \
+										WHERE gang_id = %i;", 
+										PerkName, iGangID);
+		Database hDatabase = Gangs_GetDatabase();
+		hDatabase.Query(SQLCallback_GetPerkLvl, sQuery, iClient);
+		delete hDatabase;
+	}
+}
+
+public void SQLCallback_GetPerkLvl(Database db, DBResultSet results, const char[] error, int iClient)
+{
+	if (error[0])
+	{
+		LogError("[SQLCallback_GetPerkLvl] Error (%i): %s", iClient, error);
+		return;
+	}
+
+	if (!IsValidClient(iClient))
+		return;
+
+	if (results.RowCount == 1)
+	{
+		results.FetchRow();
+		if(!results.IsFieldNull(0))
+		{
+			results.FetchString(0, ga_sGangSkin[iClient], sizeof(ga_sGangSkin));
+			ConfigSkins.Rewind();
+			if(ConfigSkins.JumpToKey(ga_sGangSkin[iClient]))
+			{
+				ConfigSkins.GetString("model", ga_sGangSkinModel[iClient], sizeof(ga_sGangSkinModel[]));
+				ConfigSkins.GetString("arms", ga_sGangSkinArms[iClient], sizeof(ga_sGangSkinArms[]));
+			}
+			else
+			{
+				Format(ga_sGangSkinModel[iClient], sizeof(ga_sGangSkinModel[]), "NONE");
+				Format(ga_sGangSkinArms[iClient], sizeof(ga_sGangSkinArms[]), "NONE");
+				LogError("Not found skin %s in config", ga_sGangSkin[iClient]);
+			}
+			UpdateClientSkinsGang(iClient);
+		}
+		else
+		{
+			Format(ga_sGangSkin[iClient], sizeof(ga_sGangSkin[]), "NONE");
+		}
+	}
+	else
+	{
+		Format(ga_sGangSkin[iClient], sizeof(ga_sGangSkin[]), "NONE");
+	}
+}
+
+public void OnPluginEnd()
+{
+	if(g_bGangCoreExist)
+		Gangs_DeleteFromPerkMenu(PerkName);
+}
+
+public void OnPluginStart()
+{
+	if(GetEngineVersion() != Engine_CSGO)
+		SetFailState("This plugin works only on CS:GO");
+
+	LoadTranslations("gangs.phrases");
+	LoadTranslations("gangs_modules.phrases");
+
+	HookEvent("player_spawn", Event_PlayerSpawn);
+
+	for (int i = 1; i <= MaxClients; i++)
+		if (IsValidClient(i))
+			ResetVariables(i);
+
+	OnMapStart();
+
+	if(Gangs_GetDatabase() != INVALID_HANDLE)
+		Gangs_OnLoaded();
+}
+
+public void OnMapStart()
+{
+	KFG_load();
+	LoadConfigSkins("Skins", "configs/gangs/skins.txt");
+}
+
+public void OnMapEnd()
+{
+	delete ConfigSkins;
+}
 
 public void Gangs_OnLoaded()
 {
 	Handle g_hCvar = FindConVar("sm_gangs_terrorist_only");
 	if (g_hCvar != INVALID_HANDLE)
 		g_bOnlyTerrorist = GetConVarBool(g_hCvar);
-	LoadTranslations("gangs.phrases");
-	LoadTranslations("gangs_modules.phrases");
-	CreateTimer(5.0, AddToPerkMenu, _, TIMER_FLAG_NO_MAPCHANGE);
+	AddToPerkMenu();
 }
 
-public Action AddToPerkMenu(Handle timer)
+public void AddToPerkMenu()
 {
 	char sQuery[300];
 	Format(sQuery, sizeof(sQuery), "SELECT %s \
@@ -115,136 +246,6 @@ public void SQLCallback_CheckPerk(Database db, DBResultSet hResults, const char[
 		return;
 }
 
-public void OnClientDisconnect(int iClient)
-{
-	ResetVariables(iClient);
-}
-
-public void OnClientConnected(int iClient)
-{
-	ResetVariables(iClient);
-}
-
-public void OnClientPutInServer(int iClient)
-{
-	if(g_bGangCoreExist)
-		CreateTimer(2.0, LoadPerkLvl, iClient, TIMER_FLAG_NO_MAPCHANGE);
-	else
-		CreateTimer(5.0, ReLoadPerkLvl, iClient, TIMER_FLAG_NO_MAPCHANGE);
-}
-
-public Action LoadPerkLvl(Handle hTimer, int iUserID)
-{
-	int iClient = iUserID;
-	if(IsValidClient(iClient) && Gangs_ClientHasGang(iClient))
-	{
-		int iGangID = Gangs_GetClientGangId(iClient);
-		char sQuery[300];
-		Format(sQuery, sizeof(sQuery), "SELECT %s \
-										FROM gang_perk \
-										WHERE gang_id = %i;", 
-										PerkName, iGangID);
-		Database hDatabase = Gangs_GetDatabase();
-		hDatabase.Query(SQLCallback_GetPerkLvl, sQuery, iClient);
-		delete hDatabase;
-	}
-}
-
-public Action ReLoadPerkLvl(Handle hTimer, int iUserID)
-{
-	OnClientPutInServer(iUserID);
-}
-
-public void SQLCallback_GetPerkLvl(Database db, DBResultSet results, const char[] error, int data)
-{
-	if (error[0])
-	{
-		LogError(error);
-		return;
-	}
-
-	int iClient = data;
-	if (!IsValidClient(iClient))
-	{
-		return;
-	}
-	else 
-	{
-		if (results.RowCount == 1)
-		{
-			results.FetchRow();
-			if(!results.IsFieldNull(0))
-			{
-				results.FetchString(0, ga_sGangSkin[iClient], sizeof(ga_sGangSkin));
-				ConfigSkins.Rewind();
-				if(ConfigSkins.JumpToKey(ga_sGangSkin[iClient]))
-				{
-					ConfigSkins.GetString("model", ga_sGangSkinModel[iClient], sizeof(ga_sGangSkinModel[]));
-					ConfigSkins.GetString("arms", ga_sGangSkinArms[iClient], sizeof(ga_sGangSkinArms[]));
-				}
-				else
-				{
-					Format(ga_sGangSkinModel[iClient], sizeof(ga_sGangSkinModel[]), "NONE");
-					Format(ga_sGangSkinArms[iClient], sizeof(ga_sGangSkinArms[]), "NONE");
-					LogError("Not found skin %s in config", ga_sGangSkin[iClient]);
-				}
-			}
-			else
-			{
-				Format(ga_sGangSkin[iClient], sizeof(ga_sGangSkin[]), "NONE");
-			}
-		}
-		else
-		{
-			Format(ga_sGangSkin[iClient], sizeof(ga_sGangSkin[]), "NONE");
-		}
-	}
-	
-	if(StrEqual(ga_sGangSkin[iClient], "ERROR"))
-	{
-		OnClientPutInServer(iClient);
-	}
-}
-
-public void OnPluginEnd()
-{
-	if(g_bGangCoreExist)
-		Gangs_DeleteFromPerkMenu(PerkName);
-}
-
-public void OnPluginStart()
-{
-	if(GetEngineVersion() != Engine_CSGO)
-	{
-		SetFailState("This plugin works only on CS:GO");
-	}
-	
-	OnMapStart();
-	Gangs_OnLoaded();
-	
-	HookEvent("player_spawn", Event_PlayerSpawn);
-	
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		if (IsValidClient(i))
-		{
-			ResetVariables(i);
-			OnClientPutInServer(i);
-		}
-	}
-}
-
-public void OnMapStart()
-{
-	KFG_load();
-	LoadConfigSkins("Skins", "configs/gangs/skins.txt");
-}
-
-public void OnMapEnd()
-{
-	delete ConfigSkins;
-}
-
 public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 {
 	int iClient = GetClientOfUserId(event.GetInt("userid"));
@@ -262,20 +263,6 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
 
 public Action Timer_SetSkins(Handle timer, any iClient)
 {
-	UpdateClientSkinsGang(iClient);
-}
-
-public void Gangs_OnGoToGang(int iClient, char[] sGang, int Inviter)
-{
-	ga_sGangSkin[iClient] = ga_sGangSkin[Inviter];
-	ga_sGangSkinModel[iClient] = ga_sGangSkinModel[Inviter];
-	ga_sGangSkinArms[iClient] = ga_sGangSkinArms[Inviter];
-	UpdateClientSkinsGang(iClient);
-}
-
-public void Gangs_OnExitFromGang(int iClient)
-{
-	ResetVariables(iClient);
 	UpdateClientSkinsGang(iClient);
 }
 

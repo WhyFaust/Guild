@@ -7,6 +7,8 @@
 #tryinclude <vip_core>
 #define REQUIRE_PLUGIN
 
+#define PerkName    "speed"
+
 enum struct enum_Item
 {
 	int Bank;
@@ -17,9 +19,6 @@ enum struct enum_Item
 	int NoVip;
 	int ProcentSell;
 }
-
-#define PerkName    "speed"
-
 enum_Item g_Item;
 int g_iPerkLvl[MAXPLAYERS + 1] = -1;
 float ModifierPerk;
@@ -53,12 +52,22 @@ public Plugin myinfo =
 {
 	name = "[GANGS MODULE] Speed",
 	author = "Faust",
-	version = GANGS_VERSION
-};
+	version = GANGS_VERSION,
+	url = "https://uwu-party.ru"
+}
+
+public void Gangs_OnPlayerLoaded(int iClient)
+{
+	if(IsValidClient(iClient))
+		LoadPerkLvl(iClient);
+}
 
 public void Gangs_OnGoToGang(int iClient, char[] sGang, int Inviter)
 {
-	g_iPerkLvl[iClient] = g_iPerkLvl[Inviter];
+	if(iClient != Inviter)
+		g_iPerkLvl[iClient] = g_iPerkLvl[Inviter];
+	else
+		LoadPerkLvl(iClient)
 }
 
 public void Gangs_OnExitFromGang(int iClient)
@@ -66,37 +75,13 @@ public void Gangs_OnExitFromGang(int iClient)
 	g_iPerkLvl[iClient] = -1;
 }
 
-public void Gangs_OnLoaded()
-{
-	Handle g_hCvar = FindConVar("sm_gangs_terrorist_only");
-	if (g_hCvar != INVALID_HANDLE)
-	{
-		g_bOnlyTerrorist = GetConVarBool(g_hCvar);
-	} 
-	LoadTranslations("gangs.phrases");
-	LoadTranslations("gangs_modules.phrases");
-	CreateTimer(5.0, AddToPerkMenu, _, TIMER_FLAG_NO_MAPCHANGE);
-}
-
-public Action AddToPerkMenu(Handle timer)
-{
-	Gangs_AddToPerkMenu(PerkName, SPEED_CallBack, true);
-}
-
 public void OnClientDisconnect(int iClient)
 {
 	g_iPerkLvl[iClient] = -1;
 }
 
-public void OnClientPutInServer(int iClient)
+public void LoadPerkLvl(int iClient)
 {
-	if(g_bGangCoreExist) CreateTimer(2.0, LoadPerkLvl, iClient, TIMER_FLAG_NO_MAPCHANGE);
-	else CreateTimer(5.0, ReLoadPerkLvl, iClient, TIMER_FLAG_NO_MAPCHANGE);
-}
-
-public Action LoadPerkLvl(Handle hTimer, int iUserID)
-{
-	int iClient = iUserID;
 	if(IsValidClient(iClient) && Gangs_ClientHasGang(iClient))
 	{
 		int iGangID = Gangs_GetClientGangId(iClient);
@@ -111,35 +96,19 @@ public Action LoadPerkLvl(Handle hTimer, int iUserID)
 	}
 }
 
-public Action ReLoadPerkLvl(Handle hTimer, int iUserID)
-{
-	OnClientPutInServer(iUserID);
-}
-
-public void SQLCallback_GetPerkLvl(Database db, DBResultSet results, const char[] error, int data)
+public void SQLCallback_GetPerkLvl(Database db, DBResultSet results, const char[] error, int iClient)
 {
 	if (error[0])
 	{
-		LogError(error);
+		LogError("[SQLCallback_GetPerkLvl] Error (%i): %s", iClient, error);
 		return;
 	}
-
-	int iClient = data;
 
 	if (!IsValidClient(iClient))
-	{
 		return;
-	}
 
 	if (results.FetchRow())
-	{
 		g_iPerkLvl[iClient] = results.FetchInt(0);
-	}
-	
-	if(g_iPerkLvl[iClient] == -1)
-	{
-		OnClientPutInServer(iClient);
-	}
 }
 
 public void OnPluginEnd()
@@ -151,24 +120,35 @@ public void OnPluginEnd()
 public void OnPluginStart()
 {
 	if(GetEngineVersion() != Engine_CSGO)
-	{
 		SetFailState("This plugin works only on CS:GO");
-	}
-	
+
+	LoadTranslations("gangs.phrases");
+	LoadTranslations("gangs_modules.phrases");
+
 	KFG_load();
-	
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		if (IsValidClient(i))
-		{
-			OnClientPutInServer(i);
-		}
-	}
+
+	if(Gangs_GetDatabase() != INVALID_HANDLE)
+		Gangs_OnLoaded();
 }
 
 public void OnMapStart()
 {
 	KFG_load();
+}
+
+public void Gangs_OnLoaded()
+{
+	Handle g_hCvar = FindConVar("sm_gangs_terrorist_only");
+	if (g_hCvar != INVALID_HANDLE)
+	{
+		g_bOnlyTerrorist = GetConVarBool(g_hCvar);
+	}
+	AddToPerkMenu();
+}
+
+public void AddToPerkMenu()
+{
+	Gangs_AddToPerkMenu(PerkName, SPEED_CallBack, true);
 }
 
 public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)

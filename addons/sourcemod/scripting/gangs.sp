@@ -136,25 +136,19 @@ public void OnMapEnd()
 public void OnClientConnected(int iClient)
 {
     if(g_bPluginEnabled)
-    {
         ResetVariables(iClient);
-    }
 }
 
 public void OnClientDisconnect(int iClient)
 {
     if(g_bPluginEnabled)
-    {
         ResetVariables(iClient);
-    }
 }
 
 public void OnClientPutInServer(int iClient) 
 {
     if(IsValidClient(iClient))
-    {
         CreateTimer(2.0, Timer_AlertGang, iClient, TIMER_FLAG_NO_MAPCHANGE);
-    }
 }
 
 public void OnClientPostAdminCheck(int iClient)

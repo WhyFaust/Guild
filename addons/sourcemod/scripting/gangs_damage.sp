@@ -8,6 +8,8 @@
 #tryinclude <vip_core>
 #define REQUIRE_PLUGIN
 
+#define PerkName    "damage"
+
 enum struct enum_Item
 {
 	int Bank;
@@ -18,9 +20,6 @@ enum struct enum_Item
 	int NoVip;
 	int ProcentSell;
 }
-
-#define PerkName    "damage"
-
 enum_Item g_Item;
 int g_iPerkLvl[MAXPLAYERS + 1] = -1;
 bool g_bOnlyTerrorist;
@@ -53,22 +52,22 @@ public Plugin myinfo =
 {
 	name = "[GANGS MODULE] Damage",
 	author = "Faust",
-	version = GANGS_VERSION
-};
+	version = GANGS_VERSION,
+	url = "https://uwu-party.ru"
+}
 
-public void Gangs_OnLoaded()
+public void Gangs_OnPlayerLoaded(int iClient)
 {
-	Handle g_hCvar = FindConVar("sm_gangs_terrorist_only");
-	if (g_hCvar != INVALID_HANDLE)
-		g_bOnlyTerrorist = GetConVarBool(g_hCvar);
-	LoadTranslations("gangs.phrases");
-	LoadTranslations("gangs_modules.phrases");
-	CreateTimer(5.0, AddToPerkMenu, _, TIMER_FLAG_NO_MAPCHANGE);
+	if(IsValidClient(iClient))
+		LoadPerkLvl(iClient);
 }
 
 public void Gangs_OnGoToGang(int iClient, char[] sGang, int Inviter)
 {
-	g_iPerkLvl[iClient] = g_iPerkLvl[Inviter];
+	if(iClient != Inviter)
+		g_iPerkLvl[iClient] = g_iPerkLvl[Inviter];
+	else
+		LoadPerkLvl(iClient)
 }
 
 public void Gangs_OnExitFromGang(int iClient)
@@ -76,26 +75,19 @@ public void Gangs_OnExitFromGang(int iClient)
 	g_iPerkLvl[iClient] = -1;
 }
 
-public Action AddToPerkMenu(Handle timer)
+public void OnClientPutInServer(int iClient) 
 {
-	Gangs_AddToPerkMenu(PerkName, DAMAGE_CallBack, true);
+	SDKHook(iClient, SDKHook_OnTakeDamage, OnTakeDamage);
 }
 
 public void OnClientDisconnect(int iClient)
 {
+	SDKUnhook(iClient, SDKHook_OnTakeDamage, OnTakeDamage);
 	g_iPerkLvl[iClient] = -1;
 }
 
-public void OnClientPutInServer(int iClient) 
+public void LoadPerkLvl(int iClient)
 {
-	SDKHook(iClient, SDKHook_OnTakeDamage, OnTakeDamage);
-	if(g_bGangCoreExist) CreateTimer(2.0, LoadPerkLvl, iClient, TIMER_FLAG_NO_MAPCHANGE);
-	else CreateTimer(5.0, ReLoadPerkLvl, iClient, TIMER_FLAG_NO_MAPCHANGE);
-}
-
-public Action LoadPerkLvl(Handle hTimer, int iUserID)
-{
-	int iClient = iUserID;
 	if(IsValidClient(iClient) && Gangs_ClientHasGang(iClient))
 	{
 		int iGangID = Gangs_GetClientGangId(iClient);
@@ -110,35 +102,19 @@ public Action LoadPerkLvl(Handle hTimer, int iUserID)
 	}
 }
 
-public Action ReLoadPerkLvl(Handle hTimer, int iUserID)
-{
-	OnClientPutInServer(iUserID);
-}
-
-public void SQLCallback_GetPerkLvl(Database db, DBResultSet results, const char[] error, int data)
+public void SQLCallback_GetPerkLvl(Database db, DBResultSet results, const char[] error, int iClient)
 {
 	if (error[0])
 	{
-		LogError(error);
+		LogError("[SQLCallback_GetPerkLvl] Error (%i): %s", iClient, error);
 		return;
 	}
-
-	int iClient = data;
 
 	if (!IsValidClient(iClient))
-	{
 		return;
-	}
 
 	if (results.FetchRow())
-	{
 		g_iPerkLvl[iClient] = results.FetchInt(0);
-	}
-	
-	if(g_iPerkLvl[iClient] == -1)
-	{
-		OnClientPutInServer(iClient);
-	}
 }
 
 public void OnPluginEnd()
@@ -150,20 +126,19 @@ public void OnPluginEnd()
 public void OnPluginStart()
 {
 	if(GetEngineVersion() != Engine_CSGO)
-	{
 		SetFailState("This plugin works only on CS:GO");
-	}
 	
-	KFG_load();
-	
+	LoadTranslations("gangs.phrases");
+	LoadTranslations("gangs_modules.phrases"); 
+
 	for(int i = 1; i <= MaxClients; i++)
-	{
 		if(IsValidClient(i))
-		{
-			OnClientPutInServer(i);
-		}
-	}
-	Gangs_OnLoaded();
+			LoadPerkLvl(i);
+
+	KFG_load();
+
+	if(Gangs_GetDatabase() != INVALID_HANDLE)
+		Gangs_OnLoaded();
 }
 
 public void OnMapStart()
@@ -171,9 +146,22 @@ public void OnMapStart()
 	KFG_load();
 }
 
+public void Gangs_OnLoaded()
+{
+	Handle g_hCvar = FindConVar("sm_gangs_terrorist_only");
+	if (g_hCvar != INVALID_HANDLE)
+		g_bOnlyTerrorist = GetConVarBool(g_hCvar);
+	AddToPerkMenu();
+}
+
+public void AddToPerkMenu()
+{
+	Gangs_AddToPerkMenu(PerkName, DAMAGE_CallBack, true);
+}
+
 public void DAMAGE_CallBack(int iClient, int ItemID, const char[] ItemName)
 {
-	if(g_iPerkLvl[iClient] > -1)
+	if(g_iPerkLvl[iClient] >= 0)
 		ShowMenuModule(iClient);
 	else
 		PrintToChat(iClient, "Error load lvl, reconnect");
@@ -181,7 +169,8 @@ public void DAMAGE_CallBack(int iClient, int ItemID, const char[] ItemName)
 
 void ShowMenuModule(int iClient)
 {
-	char sTitle[256]; int ClientCash;
+	char sTitle[256];
+	int ClientCash;
 	if(g_Item.Bank)
 	{
 		switch(g_Item.SellMode)
@@ -251,7 +240,6 @@ public int MenuHandler_MainMenu(Menu hMenu, MenuAction action, int iClient, int 
 {
 	switch(action)
 	{
-		case MenuAction_End: delete hMenu;
 		case MenuAction_Select:
         {
 			int iGangID = Gangs_GetClientGangId(iClient);
@@ -372,6 +360,10 @@ public int MenuHandler_MainMenu(Menu hMenu, MenuAction action, int iClient, int 
 			if(iItem == MenuCancel_ExitBack)
 				Gangs_ShowPerksMenu(iClient);
 		}
+		case MenuAction_End:
+		{
+			delete hMenu;
+		}
 	}
 }
 
@@ -386,6 +378,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 		damage = damage + g_iPerkLvl[attacker] * g_Item.ModifierPerk;
 		return Plugin_Changed;
 	}
+
 	return Plugin_Continue;
 } 
 
@@ -394,7 +387,8 @@ void KFG_load()
 	char path[128];
 	KeyValues kfg = new KeyValues("GANGS_MODULE");
 	BuildPath(Path_SM, path, sizeof(path), "configs/gangs/gangs_module_damage.ini");
-	if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][Damage] - Configuration file not found");
+	if(!kfg.ImportFromFile(path)) 
+		SetFailState("[GANGS MODULE][Damage] - Configuration file not found");
 	kfg.Rewind();
 	g_Item.Bank = kfg.GetNum("bank");
 	g_Item.SellMode = kfg.GetNum("sell_mode");
@@ -402,14 +396,20 @@ void KFG_load()
 	g_Item.ModifierPerk = kfg.GetFloat("modifier");
 	g_Item.MaxLvl = kfg.GetNum("max");
 	g_Item.NoVip = kfg.GetNum("no_vip");
+	
 	g_Item.ProcentSell = kfg.GetNum("procent_sell");
 	if(g_Item.ProcentSell > 100)
+	{
 		g_Item.ProcentSell = 100;
+	}
 	else if(g_Item.ProcentSell < 0)
+	{
 		if(g_Item.ProcentSell == -1)
 			g_Item.ProcentSell = -1;
 		else
 			g_Item.ProcentSell = 0;
+	}
+	
 	delete kfg;
 }
 

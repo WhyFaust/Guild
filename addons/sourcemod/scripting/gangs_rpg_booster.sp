@@ -4,6 +4,10 @@
 #include <csgocolors>
 #include <smrpg>
 
+#define PerkName    "rpg_booster"
+
+bool g_bGangCoreExist = false;
+
 enum struct enum_Item
 {
 	int Bank;
@@ -13,12 +17,8 @@ enum struct enum_Item
 	int MaxLvl;
 	int ProcentSell;
 }
-
-#define PerkName    "rpg_booster"
-
 enum_Item g_Item;
 int g_iPerkLvl[MAXPLAYERS + 1] = -1;
-bool g_bGangCoreExist = false;
  
 public void OnAllPluginsLoaded()
 {
@@ -41,12 +41,22 @@ public Plugin myinfo =
 {
 	name = "[GANGS MODULE] RPG Booster",
 	author = "Faust",
-	version = GANGS_VERSION
-};
+	version = GANGS_VERSION,
+	url = "https://uwu-party.ru"
+}
+
+public void Gangs_OnPlayerLoaded(int iClient)
+{
+	if(IsValidClient(iClient))
+		LoadPerkLvl(iClient);
+}
 
 public void Gangs_OnGoToGang(int iClient, char[] sGang, int Inviter)
 {
-	g_iPerkLvl[iClient] = g_iPerkLvl[Inviter];
+	if(iClient != Inviter)
+		g_iPerkLvl[iClient] = g_iPerkLvl[Inviter];
+	else
+		LoadPerkLvl(iClient)
 }
 
 public void Gangs_OnExitFromGang(int iClient)
@@ -54,33 +64,13 @@ public void Gangs_OnExitFromGang(int iClient)
 	g_iPerkLvl[iClient] = -1;
 }
 
-public void Gangs_OnLoaded()
-{
-	LoadTranslations("gangs.phrases");
-	LoadTranslations("gangs_modules.phrases");
-	CreateTimer(5.0, AddToPerkMenu, _, TIMER_FLAG_NO_MAPCHANGE);
-}
-
-public Action AddToPerkMenu(Handle timer)
-{
-	Gangs_AddToPerkMenu(PerkName, HEALTH_CallBack, true);
-}
-
 public void OnClientDisconnect(int iClient)
 {
 	g_iPerkLvl[iClient] = -1;
 }
 
-public void OnClientPutInServer(int iClient)
+public void LoadPerkLvl(int iClient)
 {
-	if(g_bGangCoreExist)
-		CreateTimer(2.0, LoadPerkLvl, iClient, TIMER_FLAG_NO_MAPCHANGE);
-	else CreateTimer(5.0, ReLoadPerkLvl, iClient, TIMER_FLAG_NO_MAPCHANGE);
-}
-
-public Action LoadPerkLvl(Handle hTimer, int iUserID)
-{
-	int iClient = iUserID;
 	if(IsValidClient(iClient) && Gangs_ClientHasGang(iClient))
 	{
 		int iGangID = Gangs_GetClientGangId(iClient);
@@ -95,35 +85,19 @@ public Action LoadPerkLvl(Handle hTimer, int iUserID)
 	}
 }
 
-public Action ReLoadPerkLvl(Handle hTimer, int iUserID)
-{
-	OnClientPutInServer(iUserID);
-}
-
-public void SQLCallback_GetPerkLvl(Database db, DBResultSet results, const char[] error, int data)
+public void SQLCallback_GetPerkLvl(Database db, DBResultSet results, const char[] error, int iClient)
 {
 	if (error[0])
 	{
-		LogError(error);
+		LogError("[SQLCallback_GetPerkLvl] Error (%i): %s", iClient, error);
 		return;
 	}
-
-	int iClient = data;
 
 	if (!IsValidClient(iClient))
-	{
 		return;
-	}
 
 	if (results.FetchRow())
-	{
 		g_iPerkLvl[iClient] = results.FetchInt(0);
-	}
-	
-	if(g_iPerkLvl[iClient] == -1)
-	{
-		OnClientPutInServer(iClient);
-	}
 }
 
 public void OnPluginEnd()
@@ -135,20 +109,15 @@ public void OnPluginEnd()
 public void OnPluginStart()
 {
 	if(GetEngineVersion() != Engine_CSGO)
-	{
 		SetFailState("This plugin works only on CS:GO");
-	}
-	
+
+	LoadTranslations("gangs.phrases");
+	LoadTranslations("gangs_modules.phrases");
+
 	KFG_load();
-	
-	for(int i = 1; i <= MaxClients; i++)
-	{
-		if(IsValidClient(i))
-		{
-			OnClientPutInServer(i);
-		}
-	}
-	Gangs_OnLoaded();
+
+	if(Gangs_GetDatabase() != INVALID_HANDLE)
+		Gangs_OnLoaded();
 }
 
 public void OnMapStart()
@@ -156,13 +125,14 @@ public void OnMapStart()
 	KFG_load();
 }
 
-public void SMRPG_OnClientExperiencePost(int iClient, int iOldExp, int iNewExp)
+public void Gangs_OnLoaded()
 {
-	if(IsValidClient(iClient) && g_iPerkLvl[iClient] > 0)
-	{
-		int iExp = RoundToFloor((iNewExp - iOldExp)*(g_Item.Modifier * g_iPerkLvl[iClient]));
-		SMRPG_SetClientExperience(iClient, iNewExp+iExp);
-	}
+	AddToPerkMenu();
+}
+
+public void AddToPerkMenu()
+{
+	Gangs_AddToPerkMenu(PerkName, HEALTH_CallBack, true);
 }
 
 public void HEALTH_CallBack(int iClient, int ItemID, const char[] ItemName)
@@ -364,6 +334,15 @@ public int MenuHandler_MainMenu(Menu hMenu, MenuAction action, int iClient, int 
 		case MenuAction_Cancel:
 			if(iItem == MenuCancel_ExitBack)
 				Gangs_ShowPerksMenu(iClient);
+	}
+}
+
+public void SMRPG_OnClientExperiencePost(int iClient, int iOldExp, int iNewExp)
+{
+	if(IsValidClient(iClient) && g_iPerkLvl[iClient] > 0)
+	{
+		int iExp = RoundToFloor((iNewExp - iOldExp)*(g_Item.Modifier * g_iPerkLvl[iClient]));
+		SMRPG_SetClientExperience(iClient, iNewExp+iExp);
 	}
 }
 

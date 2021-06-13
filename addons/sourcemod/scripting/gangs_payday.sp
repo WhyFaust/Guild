@@ -20,6 +20,8 @@
 #define IS_MySQL					(1<<1)
 #define IS_LOADING					(1<<2)
 
+#define PerkName    "payday"
+
 int	g_iClientInfo[MAXPLAYERS+1];
 
 enum struct enum_Item
@@ -36,18 +38,21 @@ enum struct enum_Item
 	int Modifier;
 	int ModifierMode;
 }
+enum_Item g_Item;
 
 Database g_hDatabase;
 Handle g_hTimer[MAXPLAYERS+1];
 int g_iTimePlayer[MAXPLAYERS+1] = 0;
 
-#define PerkName    "payday"
-
-enum_Item g_Item;
 int g_iPerkLvl[MAXPLAYERS + 1] = -1;
 bool g_bGangCoreExist = false;
 
- 
+public void OnAllPluginsLoaded()
+{
+	DB_OnPluginStart();
+	g_bGangCoreExist = LibraryExists("gangs");
+}
+
 public void OnLibraryRemoved(const char[] name)
 {
 	if (StrEqual(name, "gangs"))
@@ -66,35 +71,27 @@ public Plugin myinfo =
 {
 	name = "[GANGS MODULE] PayDay",
 	author = "Faust",
-	version = GANGS_VERSION
-};
+	version = GANGS_VERSION,
+	url = "https://uwu-party.ru"
+}
 
-public void OnAllPluginsLoaded()
+public void Gangs_OnPlayerLoaded(int iClient)
 {
-	DB_OnPluginStart();
-	g_bGangCoreExist = LibraryExists("gangs");
+	if(IsValidClient(iClient))
+		LoadPerkLvl(iClient);
 }
 
 public void Gangs_OnGoToGang(int iClient, char[] sGang, int Inviter)
 {
-	g_iPerkLvl[iClient] = g_iPerkLvl[Inviter];
+	if(iClient != Inviter)
+		g_iPerkLvl[iClient] = g_iPerkLvl[Inviter];
+	else
+		LoadPerkLvl(iClient)
 }
 
 public void Gangs_OnExitFromGang(int iClient)
 {
 	g_iPerkLvl[iClient] = -1;
-}
-
-public void Gangs_OnLoaded()
-{
-	LoadTranslations("gangs.phrases");
-	LoadTranslations("gangs_modules.phrases");
-	CreateTimer(5.0, AddToPerkMenu, _, TIMER_FLAG_NO_MAPCHANGE);
-}
-
-public Action AddToPerkMenu(Handle timer)
-{
-	Gangs_AddToPerkMenu(PerkName, PAYDAY_CallBack, true);
 }
 
 public void OnClientDisconnect(int iClient)
@@ -125,10 +122,6 @@ public void UpdateClientData(int iClient)
 
 public void OnClientPutInServer(int iClient)
 {
-	if(g_bGangCoreExist)
-		CreateTimer(2.0, LoadPerkLvl, iClient, TIMER_FLAG_NO_MAPCHANGE);
-	else CreateTimer(5.0, ReLoadPerkLvl, iClient, TIMER_FLAG_NO_MAPCHANGE);
-	
 	g_hTimer[iClient] = CreateTimer(60.0, TimeTimer, iClient, TIMER_REPEAT);
 	
 	GetClientData(iClient);
@@ -194,138 +187,36 @@ public void SQLCallback_GetClientData(Database db, DBResultSet results, const ch
 	}
 }
 
-public Action TimeTimer(Handle hTimer, int iUserID)
+public void LoadPerkLvl(int iClient)
 {
-	int iClient = iUserID;
-	if(IsValidClient(iClient) && Gangs_ClientHasGang(iClient) && g_iPerkLvl[iClient] > 0)
-	{
-		g_iTimePlayer[iClient]++;
-		if(g_iTimePlayer[iClient] == g_Item.Time)
-		{
-			//ВЫДАЧА
-			int iPrice = 0;
-			if(g_Item.Mode)
-			{
-					char path[128];
-					KeyValues kfg = new KeyValues("GANGS_MODULE");
-					BuildPath(Path_SM, path, sizeof(path), "configs/gangs/gangs_module_payday.ini");
-					if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][PayDay] - Configuration file not found");
-					kfg.Rewind();
-					
-					if(kfg.JumpToKey("Ranks"))
-					{
-						char sRank[129];
-						IntToString(Gangs_GetClientGangRank(iClient), sRank, sizeof(sRank));
-						char szBuffer[256];
-						kfg.GetString(sRank, szBuffer, sizeof(szBuffer));
-						int iModifier = StringToInt(szBuffer);
-						iPrice = iModifier*g_iPerkLvl[iClient];
-					}
-					
-					delete kfg;
-			}
-			else
-				iPrice = g_Item.Modifier*g_iPerkLvl[iClient];
-				
-			if(iPrice>0)
-			{
-				switch(g_Item.ModifierMode)
-				{
-					case 0:
-					{
-						Gangs_GiveClientCash(iClient, "rubles", iPrice);
-						CPrintToChat(iClient, "%t %t", "Prefix", "PaydayGive", iPrice, "rubles");
-					}
-					case 1:
-					{
-						Gangs_GiveClientCash(iClient, "shop", iPrice);
-						CPrintToChat(iClient, "%t %t", "Prefix", "PaydayGive", iPrice, "shop");
-					}
-					case 2:
-					{
-						Gangs_GiveClientCash(iClient, "shopgold", iPrice);
-						CPrintToChat(iClient, "%t %t", "Prefix", "PaydayGive", iPrice, "shopgold");
-					}
-					case 3:
-					{
-						Gangs_GiveClientCash(iClient, "wcsgold", iPrice);
-						CPrintToChat(iClient, "%t %t", "Prefix", "PaydayGive", iPrice, "wcsgold");
-					}
-					case 4:
-					{
-						Gangs_GiveClientCash(iClient, "lkrubles", iPrice);
-						CPrintToChat(iClient, "%t %t", "Prefix", "PaydayGive", iPrice, "lkrubles");
-					}
-					case 5:
-					{
-						Gangs_GiveClientCash(iClient, "myjb", iPrice);
-						CPrintToChat(iClient, "%t %t", "Prefix", "PaydayGive", iPrice, "myjb");
-					}
-				}
-			}
-			//
-			g_iTimePlayer[iClient] = 0;
-			
-			char sSteamID[64];
-			GetClientAuthId(iClient, AuthId_Steam2, sSteamID, sizeof(sSteamID));
-			
-			char sQuery[300];
-			Format(sQuery, sizeof(sQuery), "UPDATE payday_player \
-											SET time = %i \
-											WHERE steam_id = '%s';", 
-											g_iTimePlayer[iClient], sSteamID);
-			g_hDatabase.Query(SQLCallback_Void, sQuery, iClient);
-		}
-	}
-}
-
-public Action LoadPerkLvl(Handle hTimer, int iUserID)
-{
-	int iClient = iUserID;
 	if(IsValidClient(iClient) && Gangs_ClientHasGang(iClient))
 	{
-		int gangid = Gangs_GetClientGangId(iClient);
+		int iGangID = Gangs_GetClientGangId(iClient);
 		char sQuery[300];
 		Format(sQuery, sizeof(sQuery), "SELECT %s \
 										FROM gang_perk \
 										WHERE gang_id = %i", 
-										PerkName, gangid);
+										PerkName, iGangID);
 
-		Database db = Gangs_GetDatabase();
-		db.Query(SQLCallback_GetPerkLvl, sQuery, iClient);
-		delete db;
+		Database hDatabase = Gangs_GetDatabase();
+		hDatabase.Query(SQLCallback_GetPerkLvl, sQuery, iClient);
+		delete hDatabase;
 	}
 }
 
-public Action ReLoadPerkLvl(Handle hTimer, int iUserID)
-{
-	OnClientPutInServer(iUserID);
-}
-
-public void SQLCallback_GetPerkLvl(Database db, DBResultSet results, const char[] error, int data)
+public void SQLCallback_GetPerkLvl(Database db, DBResultSet results, const char[] error, int iClient)
 {
 	if (error[0])
 	{
-		LogError("[SQLCallback_GetPerkLvl] Error (%i): %s", data, error);
+		LogError("[SQLCallback_GetPerkLvl] Error (%i): %s", iClient, error);
 		return;
 	}
-
-	int iClient = data;
 
 	if (!IsValidClient(iClient))
-	{
 		return;
-	}
 
 	if (results.FetchRow())
-	{
 		g_iPerkLvl[iClient] = results.FetchInt(0);
-	}
-	
-	if(g_iPerkLvl[iClient] == -1)
-	{
-		OnClientPutInServer(iClient);
-	}
 }
 
 public void OnPluginEnd()
@@ -336,16 +227,30 @@ public void OnPluginEnd()
 public void OnPluginStart()
 {
 	if(GetEngineVersion() != Engine_CSGO)
-	{
 		SetFailState("This plugin works only on CS:GO");
-	}
-	
+
+	LoadTranslations("gangs.phrases");
+	LoadTranslations("gangs_modules.phrases");
+
 	KFG_load();
+
+	if(Gangs_GetDatabase() != INVALID_HANDLE)
+		Gangs_OnLoaded();
 }
 
 public void OnMapStart()
 {
 	KFG_load();
+}
+
+public void Gangs_OnLoaded()
+{
+	AddToPerkMenu();
+}
+
+public void AddToPerkMenu()
+{
+	Gangs_AddToPerkMenu(PerkName, PAYDAY_CallBack, true);
 }
 
 public void PAYDAY_CallBack(int iClient, int ItemID, const char[] ItemName)
@@ -421,7 +326,6 @@ public int MenuHandler_MainMenu(Menu hMenu, MenuAction action, int iClient, int 
 {
 	switch(action)
 	{
-		case MenuAction_End: delete hMenu;
 		case MenuAction_Select:
         {
 			char sInfo[16];
@@ -545,8 +449,14 @@ public int MenuHandler_MainMenu(Menu hMenu, MenuAction action, int iClient, int 
 			}
 		}
 		case MenuAction_Cancel:
+		{
 			if(iItem == MenuCancel_ExitBack)
 				Gangs_ShowPerksMenu(iClient);
+		}
+		case MenuAction_End:
+		{
+			delete hMenu;
+		}
 	}
 }
 
@@ -591,8 +501,6 @@ void DB_OnPluginStart()
 
 void DB_Connect()
 {
-	//DebugMessage("DB_Connect")
-	
 	if (GLOBAL_INFO & IS_LOADING)
 	{
 		return;
@@ -624,7 +532,6 @@ public void OnDBConnect(Database hDatabase, const char[] szError, any data)
 	{
 		SetFailState("OnDBConnect %s", szError);
 		UNSET_BIT(GLOBAL_INFO, IS_MySQL);
-	//	CreateTimer(5.0, Timer_DB_Reconnect);
 		return;
 	}
 
@@ -649,9 +556,92 @@ public void OnDBConnect(Database hDatabase, const char[] szError, any data)
 		}
 	}
 	
-	//DebugMessage("OnDBConnect %x, %u - > (MySQL: %b)", g_hDatabase, g_hDatabase, GLOBAL_INFO & IS_MySQL)
-	
 	CreateTables();
+}
+
+public Action TimeTimer(Handle hTimer, int iUserID)
+{
+	int iClient = iUserID;
+	if(IsValidClient(iClient) && Gangs_ClientHasGang(iClient) && g_iPerkLvl[iClient] > 0)
+	{
+		g_iTimePlayer[iClient]++;
+		if(g_iTimePlayer[iClient] == g_Item.Time)
+		{
+			//ВЫДАЧА
+			int iPrice = 0;
+			if(g_Item.Mode)
+			{
+					char path[128];
+					KeyValues kfg = new KeyValues("GANGS_MODULE");
+					BuildPath(Path_SM, path, sizeof(path), "configs/gangs/gangs_module_payday.ini");
+					if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][PayDay] - Configuration file not found");
+					kfg.Rewind();
+					
+					if(kfg.JumpToKey("Ranks"))
+					{
+						char sRank[129];
+						IntToString(Gangs_GetClientGangRank(iClient), sRank, sizeof(sRank));
+						char szBuffer[256];
+						kfg.GetString(sRank, szBuffer, sizeof(szBuffer));
+						int iModifier = StringToInt(szBuffer);
+						iPrice = iModifier*g_iPerkLvl[iClient];
+					}
+					
+					delete kfg;
+			}
+			else
+				iPrice = g_Item.Modifier*g_iPerkLvl[iClient];
+				
+			if(iPrice>0)
+			{
+				switch(g_Item.ModifierMode)
+				{
+					case 0:
+					{
+						Gangs_GiveClientCash(iClient, "rubles", iPrice);
+						CPrintToChat(iClient, "%t %t", "Prefix", "PaydayGive", iPrice, "rubles");
+					}
+					case 1:
+					{
+						Gangs_GiveClientCash(iClient, "shop", iPrice);
+						CPrintToChat(iClient, "%t %t", "Prefix", "PaydayGive", iPrice, "shop");
+					}
+					case 2:
+					{
+						Gangs_GiveClientCash(iClient, "shopgold", iPrice);
+						CPrintToChat(iClient, "%t %t", "Prefix", "PaydayGive", iPrice, "shopgold");
+					}
+					case 3:
+					{
+						Gangs_GiveClientCash(iClient, "wcsgold", iPrice);
+						CPrintToChat(iClient, "%t %t", "Prefix", "PaydayGive", iPrice, "wcsgold");
+					}
+					case 4:
+					{
+						Gangs_GiveClientCash(iClient, "lkrubles", iPrice);
+						CPrintToChat(iClient, "%t %t", "Prefix", "PaydayGive", iPrice, "lkrubles");
+					}
+					case 5:
+					{
+						Gangs_GiveClientCash(iClient, "myjb", iPrice);
+						CPrintToChat(iClient, "%t %t", "Prefix", "PaydayGive", iPrice, "myjb");
+					}
+				}
+			}
+			//
+			g_iTimePlayer[iClient] = 0;
+			
+			char sSteamID[64];
+			GetClientAuthId(iClient, AuthId_Steam2, sSteamID, sizeof(sSteamID));
+			
+			char sQuery[300];
+			Format(sQuery, sizeof(sQuery), "UPDATE payday_player \
+											SET time = %i \
+											WHERE steam_id = '%s';", 
+											g_iTimePlayer[iClient], sSteamID);
+			g_hDatabase.Query(SQLCallback_Void, sQuery, iClient);
+		}
+	}
 }
 
 void CreateTables()

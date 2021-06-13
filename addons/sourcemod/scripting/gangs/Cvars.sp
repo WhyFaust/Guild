@@ -59,12 +59,12 @@ public void OnConfigsExecuted()
                 RegConsoleCmd(sCommand, Command_Gang, "Open the gang menu!");
             }
         }
-        
-                    
+            
         g_iPerksCount = -1;
         g_iGamesCount = -1;
         g_iStatsCount = -1;
         ClearArrays();
+
         Call_StartForward(hGangs_OnLoaded);
         Call_Finish();
     }

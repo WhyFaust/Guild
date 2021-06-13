@@ -9,6 +9,8 @@
 #tryinclude <gamecms_system>
 #define REQUIRE_PLUGIN
 
+#define PerkName    "size"
+
 enum struct enum_Item
 {
 	int Bank;
@@ -17,9 +19,6 @@ enum struct enum_Item
 	int MaxLvl;
 	int ProcentSell;
 }
-
-#define PerkName    "size"
-
 enum_Item g_Item;
 int g_iPerkLvl[MAXPLAYERS + 1] = -1;
 bool g_bGangCoreExist = false;
@@ -47,7 +46,6 @@ public APLRes AskPluginLoad2(Handle hMyself, bool bLate, char[] sError, int err_
 	CreateNative("Gangs_Size_GetCurrectLvl", Native_GetCurrectLvl);
 	RegPluginLibrary("gangs_size");
 
-	//g_bLateLoad = bLate;
 	return APLRes_Success;
 }
 
@@ -61,6 +59,7 @@ public int Native_GetCurrectLvl(Handle plugin, int numParams)
 	int iClient = GetNativeCell(1);
 	if (!IsValidClient(iClient))
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid iClient index (%i)", iClient);
+
 	return view_as<int>(g_iPerkLvl[iClient]);
 }
 
@@ -68,12 +67,22 @@ public Plugin myinfo =
 {
 	name = "[GANGS MODULE] Size",
 	author = "Faust",
-	version = GANGS_VERSION
-};
+	version = GANGS_VERSION,
+	url = "https://uwu-party.ru"
+}
+
+public void Gangs_OnPlayerLoaded(int iClient)
+{
+	if(IsValidClient(iClient))
+		LoadPerkLvl(iClient);
+}
 
 public void Gangs_OnGoToGang(int iClient, char[] sGang, int Inviter)
 {
-	g_iPerkLvl[iClient] = g_iPerkLvl[Inviter];
+	if(iClient != Inviter)
+		g_iPerkLvl[iClient] = g_iPerkLvl[Inviter];
+	else
+		LoadPerkLvl(iClient)
 }
 
 public void Gangs_OnExitFromGang(int iClient)
@@ -81,31 +90,12 @@ public void Gangs_OnExitFromGang(int iClient)
 	g_iPerkLvl[iClient] = -1;
 }
 
-public void Gangs_OnLoaded()
-{
-	LoadTranslations("gangs.phrases");
-	LoadTranslations("gangs_modules.phrases");
-	CreateTimer(5.0, AddToPerkMenu, _, TIMER_FLAG_NO_MAPCHANGE);
-}
-
-public Action AddToPerkMenu(Handle timer)
-{
-	Gangs_AddToPerkMenu(PerkName, SIZE_CallBack, true);
-}
-
 public void OnClientDisconnect(int iClient)
 {
 	g_iPerkLvl[iClient] = -1;
 }
 
-public void OnClientPutInServer(int iClient)
-{
-	if(g_bGangCoreExist)
-		CreateTimer(2.0, LoadPerkLvl, iClient, TIMER_FLAG_NO_MAPCHANGE);
-	else CreateTimer(5.0, ReLoadPerkLvl, iClient, TIMER_FLAG_NO_MAPCHANGE);
-}
-
-public Action LoadPerkLvl(Handle hTimer, int iUserID)
+public void LoadPerkLvl(int iUserID)
 {
 	int iClient = iUserID;
 	if(IsValidClient(iClient) && Gangs_ClientHasGang(iClient))
@@ -122,35 +112,19 @@ public Action LoadPerkLvl(Handle hTimer, int iUserID)
 	}
 }
 
-public Action ReLoadPerkLvl(Handle hTimer, int iUserID)
-{
-	OnClientPutInServer(iUserID);
-}
-
-public void SQLCallback_GetPerkLvl(Database db, DBResultSet results, const char[] error, int data)
+public void SQLCallback_GetPerkLvl(Database db, DBResultSet results, const char[] error, int iClient)
 {
 	if (error[0])
 	{
-		LogError(error);
+		LogError("[SQLCallback_GetPerkLvl] Error (%i): %s", iClient, error);
 		return;
 	}
-
-	int iClient = data;
 
 	if (!IsValidClient(iClient))
-	{
 		return;
-	}
 
 	if (results.FetchRow())
-	{
 		g_iPerkLvl[iClient] = results.FetchInt(0);
-	}
-	
-	if(g_iPerkLvl[iClient] == -1)
-	{
-		OnClientPutInServer(iClient);
-	}
 }
 
 public void OnPluginEnd()
@@ -162,25 +136,30 @@ public void OnPluginEnd()
 public void OnPluginStart()
 {
 	if(GetEngineVersion() != Engine_CSGO)
-	{
 		SetFailState("This plugin works only on CS:GO");
-	}
-	
+
+	LoadTranslations("gangs.phrases");
+	LoadTranslations("gangs_modules.phrases");
+
 	KFG_load();
-	
-	for(int i = 1; i <= MaxClients; i++)
-	{
-		if(IsValidClient(i))
-		{
-			OnClientPutInServer(i);
-		}
-	}
-	Gangs_OnLoaded();
+
+	if(Gangs_GetDatabase() != INVALID_HANDLE)
+		Gangs_OnLoaded();
 }
 
 public void OnMapStart()
 {
 	KFG_load();
+}
+
+public void Gangs_OnLoaded()
+{
+	AddToPerkMenu();
+}
+
+public void AddToPerkMenu()
+{
+	Gangs_AddToPerkMenu(PerkName, SIZE_CallBack, true);
 }
 
 public void SIZE_CallBack(int iClient, int ItemID, const char[] ItemName)

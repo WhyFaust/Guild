@@ -122,10 +122,10 @@ void OpenGangsMenu(int iClient)
 			Format(sString, sizeof(sString), "%s%T \n", sString, "CurrentGang", iClient, ga_sGangName[iClient], "Level", GetGangLvl(ga_iScore[iClient]));
 			if(g_iCreateGangDays>0)
 			{
-				int days= (ga_iEndTime[iClient]-GetTime())/86400;
-				if(days<0) 
-					days = 0;
-				Format(sString, sizeof(sString), "%s%T \n", sString, "GangExpired", iClient, days);
+				int iRemainDays = (ga_iEndTime[iClient] - GetTime()) / 86400;
+				if(iRemainDays < 0) 
+					iRemainDays = 0;
+				Format(sString, sizeof(sString), "%s%T \n", sString, "GangExpired", iClient, iRemainDays);
 			}
 		}
 		else

@@ -50,14 +50,10 @@ public Action RefreshSteamID(Handle hTimer, int iUserID)
     }
 }
 
-public Action Timer_AlertGang(Handle hTimer, int userid)
+public Action Timer_AlertGang(Handle hTimer, int iClient)
 {
-    int iClient = userid;
-    
     if(!IsValidClient(iClient))
-    {
         return;
-    }
     
     char szName[MAX_NAME_LENGTH];
     GetClientName(iClient, szName, sizeof(szName));
@@ -133,15 +129,15 @@ public bool CheckBadNameGang(const char[] sName)
     if(g_bDebug)
         LogToFile("addons/sourcemod/logs/gangs_debug.txt", "----------END CHECK BAD NAME----------");
     CloseHandle(hFile);
+
     return bTrue;
 }
 
 void PrintToGang(int iClient, bool bPrintToClient = false, const char[] sMsg, any ...)
 {
     if(!IsValidClient(iClient))
-    {
         return;
-    }
+
     char sFormattedMsg[256];
     VFormat(sFormattedMsg, sizeof(sFormattedMsg), sMsg, 4); 
 
@@ -156,9 +152,7 @@ void PrintToGang(int iClient, bool bPrintToClient = false, const char[] sMsg, an
             else
             {
                 if(i != iClient)
-                {
                     CPrintToChat(i, sFormattedMsg);
-                }
             }
         }
     }

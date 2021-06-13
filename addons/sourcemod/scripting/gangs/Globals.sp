@@ -22,7 +22,7 @@ char g_sDbStatisticName[64];
 //Globals
 ArrayList g_hPerkName, g_hPerkID, g_hPerkArray, g_hGameName, g_hGameID, g_hGamesArray, g_hStatName, g_hStatID, g_hStatsArray;
 int g_iPerksCount, g_iGamesCount, g_iStatsCount;
-Handle hGangs_OnLoaded, hSortTimer, hSortTimer1, hSortTimer2;
+Handle hGangs_OnLoaded, hGangs_OnPlayerLoaded, hSortTimer, hSortTimer1, hSortTimer2;
 
 char g_sFile[256];
 

@@ -11,6 +11,8 @@
 #tryinclude <vip_core>
 #define REQUIRE_PLUGIN
 
+#define PerkName    "fast_reload"
+
 enum struct enum_Item
 {
 	int Bank;
@@ -21,9 +23,6 @@ enum struct enum_Item
 	int NoVip;
 	int ProcentSell;
 }
-
-#define PerkName    "fast_reload"
-
 enum_Item g_Item;
 int g_iPerkLvl[MAXPLAYERS + 1] = -1;
 bool g_bOnlyTerrorist;
@@ -50,22 +49,22 @@ public Plugin myinfo =
 {
 	name = "[GANGS MODULE] Fast reload",
 	author = "Faust",
-	version = GANGS_VERSION
-};
+	version = GANGS_VERSION,
+	url = "https://uwu-party.ru"
+}
 
-public void Gangs_OnLoaded()
+public void Gangs_OnPlayerLoaded(int iClient)
 {
-	Handle g_hCvar = FindConVar("sm_gangs_terrorist_only");
-	if (g_hCvar != INVALID_HANDLE)
-		g_bOnlyTerrorist = GetConVarBool(g_hCvar);
-	LoadTranslations("gangs.phrases");
-	LoadTranslations("gangs_modules.phrases");
-	CreateTimer(5.0, AddToPerkMenu, _, TIMER_FLAG_NO_MAPCHANGE);
+	if(IsValidClient(iClient))
+		LoadPerkLvl(iClient);
 }
 
 public void Gangs_OnGoToGang(int iClient, char[] sGang, int Inviter)
 {
-	g_iPerkLvl[iClient] = g_iPerkLvl[Inviter];
+	if(iClient != Inviter)
+		g_iPerkLvl[iClient] = g_iPerkLvl[Inviter];
+	else
+		LoadPerkLvl(iClient)
 }
 
 public void Gangs_OnExitFromGang(int iClient)
@@ -73,27 +72,13 @@ public void Gangs_OnExitFromGang(int iClient)
 	g_iPerkLvl[iClient] = -1;
 }
 
-public Action AddToPerkMenu(Handle timer)
-{
-	Gangs_AddToPerkMenu(PerkName, FAST_RELOAD_CallBack, true);
-}
-
 public void OnClientDisconnect(int iClient)
 {
 	g_iPerkLvl[iClient] = 0;
 }
 
-public void OnClientPutInServer(int iClient)
+public void LoadPerkLvl(int iClient)
 {
-	if(g_bGangCoreExist)
-		CreateTimer(2.0, LoadPerkLvl, iClient, TIMER_FLAG_NO_MAPCHANGE);
-	else 
-		CreateTimer(5.0, ReLoadPerkLvl, iClient, TIMER_FLAG_NO_MAPCHANGE);
-}
-
-public Action LoadPerkLvl(Handle hTimer, int iUserID)
-{
-	int iClient = iUserID;
 	if(IsValidClient(iClient) && Gangs_ClientHasGang(iClient))
 	{
 		int iGangID = Gangs_GetClientGangId(iClient);
@@ -108,16 +93,11 @@ public Action LoadPerkLvl(Handle hTimer, int iUserID)
 	}
 }
 
-public Action ReLoadPerkLvl(Handle hTimer, int iUserID)
-{
-	OnClientPutInServer(iUserID);
-}
-
 public void SQLCallback_GetPerkLvl(Database db, DBResultSet results, const char[] error, int iClient)
 {
 	if(error[0])
 	{
-		LogError(error);
+		LogError("[SQLCallback_GetPerkLvl] Error (%i): %s", iClient, error);
 		return;
 	}
 
@@ -126,9 +106,6 @@ public void SQLCallback_GetPerkLvl(Database db, DBResultSet results, const char[
 
 	if (results.FetchRow())
 		g_iPerkLvl[iClient] = results.FetchInt(0);
-	
-	if(g_iPerkLvl[iClient] == -1)
-		OnClientPutInServer(iClient);
 }
 
 public void OnPluginEnd()
@@ -141,185 +118,37 @@ public void OnPluginStart()
 {
 	if(GetEngineVersion() != Engine_CSGO)
 		SetFailState("This plugin works only on CS:GO");
-	
+
+	LoadTranslations("gangs.phrases");
+	LoadTranslations("gangs_modules.phrases");
+
 	int iEntities = GetMaxEntities();
 	for(int i = MaxClients+1; i <= iEntities; i++)
 		if(IsValidEntity(i) && HasEntProp(i, Prop_Send, "m_reloadState"))
 			SDKHook(i, SDKHook_ReloadPost, Hook_OnReloadPost);
-	
+
 	KFG_load();
-	
-	for(int i = 1; i <= MaxClients; i++)
-		if(IsValidClient(i))
-			OnClientPutInServer(i);
 
-	Gangs_OnLoaded();
-}
-
-public void OnEntityCreated(int entity, const char[] classname)
-{
-	if(HasEntProp(entity, Prop_Send, "m_reloadState"))
-		SDKHook(entity, SDKHook_ReloadPost, Hook_OnReloadPost);
-}
-
-public void Hook_OnReloadPost(int weapon, bool bSuccessful)
-{
-	int iClient = Weapon_GetOwner(weapon);
-	if(iClient <= 0)
-		return;
-		
-	if(g_bOnlyTerrorist && GetClientTeam(iClient) != 2)
-		return;
-	
-	if(GetEntProp(weapon, Prop_Send, "m_reloadState") != 2)
-		return;
-	
-	if(IsFakeClient(iClient) || !Gangs_ClientHasGang(iClient) || g_iPerkLvl[iClient]<1)
-		return;
-	
-	float fReloadIncrease = 1.0 / (1.0 + g_Item.Modifier);
-	
-	float fIdleTime = GetEntPropFloat(weapon, Prop_Send, "m_flTimeWeaponIdle");
-	float fGameTime = GetGameTime();
-	float fIdleTimeNew = (fIdleTime - fGameTime) * fReloadIncrease + fGameTime;
-
-	SetEntPropFloat(weapon, Prop_Send, "m_flTimeWeaponIdle", fIdleTimeNew);
-}
-
-public Action OnPlayerRunCmd(int iClient, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2])
-{
-	static bool ClientIsReloading[MAXPLAYERS+1];
-	if(!IsClientInGame(iClient))
-		return Plugin_Continue;
-
-	char sWeapon[64];
-	int iWeapon = Client_GetActiveWeaponName(iClient, sWeapon, sizeof(sWeapon));
-	if(iWeapon == INVALID_ENT_REFERENCE)
-		return Plugin_Continue;
-	
-	bool bIsReloading = Weapon_IsReloading(iWeapon);
-	if(!bIsReloading && HasEntProp(iWeapon, Prop_Send, "m_reloadState") && GetEntProp(iWeapon, Prop_Send, "m_reloadState") > 0)
-		bIsReloading = true;
-	
-	if(bIsReloading && !ClientIsReloading[iClient])
-		IncreaseReloadSpeed(iClient);
-	
-	ClientIsReloading[iClient] = bIsReloading;
-	
-	return Plugin_Continue;
-}
-
-void IncreaseReloadSpeed(int iClient)
-{
-	if(IsFakeClient(iClient) || !Gangs_ClientHasGang(iClient) || g_iPerkLvl[iClient]<1)
-		return;
-	
-	char sWeapon[64];
-	int iWeapon = Client_GetActiveWeaponName(iClient, sWeapon, sizeof(sWeapon));
-	
-	if(iWeapon == INVALID_ENT_REFERENCE)
-		return;
-	
-	bool bIsShotgun = HasEntProp(iWeapon, Prop_Send, "m_reloadState");
-	if(bIsShotgun)
-	{
-		int iReloadState = GetEntProp(iWeapon, Prop_Send, "m_reloadState");
-		if(iReloadState == 0)
-			return;
-	}
-	
-	float fNextAttack = GetEntPropFloat(iWeapon, Prop_Send, "m_flNextPrimaryAttack");
-	float fGameTime = GetGameTime();
-	
-	float fReloadIncrease = 1.0 / (1.0 + g_Item.Modifier);
-	
-	SetEntPropFloat(iWeapon, Prop_Send, "m_flPlaybackRate", 1.0 / fReloadIncrease);
-	
-	int iViewModel = GetEntPropEnt(iClient, Prop_Send, "m_hViewModel");
-	if(iViewModel != INVALID_ENT_REFERENCE)
-		SetEntPropFloat(iViewModel, Prop_Send, "m_flPlaybackRate", 1.0 / fReloadIncrease);
-	
-	float fNextAttackNew = (fNextAttack - fGameTime) * fReloadIncrease;
-	
-	if(bIsShotgun)
-	{
-		DataPack hData;
-		CreateDataTimer(0.01, Timer_CheckShotgunEnd, hData, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
-		hData.WriteCell(EntIndexToEntRef(iWeapon));
-		hData.WriteCell(GetClientUserId(iClient));
-	}
-	else
-	{
-		DataPack hData;
-		CreateDataTimer(fNextAttackNew, Timer_ResetPlaybackRate, hData, TIMER_FLAG_NO_MAPCHANGE);
-		hData.WriteCell(EntIndexToEntRef(iWeapon));
-		hData.WriteCell(GetClientUserId(iClient));
-	}
-	
-	fNextAttackNew += fGameTime;
-	SetEntPropFloat(iWeapon, Prop_Send, "m_flTimeWeaponIdle", fNextAttackNew);
-	SetEntPropFloat(iWeapon, Prop_Send, "m_flNextPrimaryAttack", fNextAttackNew);
-	SetEntPropFloat(iClient, Prop_Send, "m_flNextAttack", fNextAttackNew);
-}
-
-public Action Timer_CheckShotgunEnd(Handle timer, DataPack data)
-{
-	data.Reset();
-	
-	int iWeapon = EntRefToEntIndex(data.ReadCell());
-	int iClient = GetClientOfUserId(data.ReadCell());
-	
-	if(iWeapon == INVALID_ENT_REFERENCE)
-	{
-		if(iClient > 0)
-			ResetClientViewModel(iClient);
-		return Plugin_Stop;
-	}
-	
-	int iOwner = Weapon_GetOwner(iWeapon);
-	if(iOwner <= 0)
-	{
-		if(iClient > 0)
-			ResetClientViewModel(iClient);
-		
-		SetEntPropFloat(iWeapon, Prop_Send, "m_flPlaybackRate", 1.0);
-		
-		return Plugin_Stop;
-	}
-
-	int iReloadState = GetEntProp(iWeapon, Prop_Send, "m_reloadState");
-	
-	if(iReloadState > 0)
-		return Plugin_Continue;
-	
-	SetEntPropFloat(iWeapon, Prop_Send, "m_flPlaybackRate", 1.0);
-	
-	
-	if(iClient > 0)
-		ResetClientViewModel(iClient);
-	
-	return Plugin_Stop;
-}
-
-public Action Timer_ResetPlaybackRate(Handle timer, DataPack data)
-{
-	data.Reset();
-	
-	int iWeapon = EntRefToEntIndex(data.ReadCell());
-	int iClient = GetClientOfUserId(data.ReadCell());
-	
-	if(iWeapon != INVALID_ENT_REFERENCE)	
-		SetEntPropFloat(iWeapon, Prop_Send, "m_flPlaybackRate", 1.0);
-	
-	if(iClient > 0)
-		ResetClientViewModel(iClient);
-	
-	return Plugin_Stop;
+	if(Gangs_GetDatabase() != INVALID_HANDLE)
+		Gangs_OnLoaded();
 }
 
 public void OnMapStart()
 {
 	KFG_load();
+}
+
+public void Gangs_OnLoaded()
+{
+	Handle g_hCvar = FindConVar("sm_gangs_terrorist_only");
+	if (g_hCvar != INVALID_HANDLE)
+		g_bOnlyTerrorist = GetConVarBool(g_hCvar);
+	AddToPerkMenu();
+}
+
+public void AddToPerkMenu()
+{
+	Gangs_AddToPerkMenu(PerkName, FAST_RELOAD_CallBack, true);
 }
 
 public void FAST_RELOAD_CallBack(int iClient, int ItemID, const char[] ItemName)
@@ -527,6 +356,163 @@ public int MenuHandler_MainMenu(Menu hMenu, MenuAction action, int iClient, int 
 			delete hMenu;
 		}
 	}
+}
+
+public void OnEntityCreated(int entity, const char[] classname)
+{
+	if(HasEntProp(entity, Prop_Send, "m_reloadState"))
+		SDKHook(entity, SDKHook_ReloadPost, Hook_OnReloadPost);
+}
+
+public void Hook_OnReloadPost(int weapon, bool bSuccessful)
+{
+	int iClient = Weapon_GetOwner(weapon);
+
+	if(!IsValidClient(iClient) || !Gangs_ClientHasGang(iClient) || g_iPerkLvl[iClient]<1)
+		return;
+
+	if(g_bOnlyTerrorist && GetClientTeam(iClient) != 2)
+		return;
+
+	if(GetEntProp(weapon, Prop_Send, "m_reloadState") != 2)
+		return;
+
+	float fReloadIncrease = 1.0 / (1.0 + g_Item.Modifier);
+	float fIdleTime = GetEntPropFloat(weapon, Prop_Send, "m_flTimeWeaponIdle");
+	float fGameTime = GetGameTime();
+	float fIdleTimeNew = (fIdleTime - fGameTime) * fReloadIncrease + fGameTime;
+	SetEntPropFloat(weapon, Prop_Send, "m_flTimeWeaponIdle", fIdleTimeNew);
+}
+
+public Action OnPlayerRunCmd(int iClient, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2])
+{
+	static bool ClientIsReloading[MAXPLAYERS+1];
+	if(!IsClientInGame(iClient))
+		return Plugin_Continue;
+
+	char sWeapon[64];
+	int iWeapon = Client_GetActiveWeaponName(iClient, sWeapon, sizeof(sWeapon));
+	if(iWeapon == INVALID_ENT_REFERENCE)
+		return Plugin_Continue;
+	
+	bool bIsReloading = Weapon_IsReloading(iWeapon);
+	if(!bIsReloading && HasEntProp(iWeapon, Prop_Send, "m_reloadState") && GetEntProp(iWeapon, Prop_Send, "m_reloadState") > 0)
+		bIsReloading = true;
+	
+	if(bIsReloading && !ClientIsReloading[iClient])
+		IncreaseReloadSpeed(iClient);
+	
+	ClientIsReloading[iClient] = bIsReloading;
+	
+	return Plugin_Continue;
+}
+
+void IncreaseReloadSpeed(int iClient)
+{
+	if(IsFakeClient(iClient) || !Gangs_ClientHasGang(iClient) || g_iPerkLvl[iClient]<1)
+		return;
+	
+	char sWeapon[64];
+	int iWeapon = Client_GetActiveWeaponName(iClient, sWeapon, sizeof(sWeapon));
+	
+	if(iWeapon == INVALID_ENT_REFERENCE)
+		return;
+	
+	bool bIsShotgun = HasEntProp(iWeapon, Prop_Send, "m_reloadState");
+	if(bIsShotgun)
+	{
+		int iReloadState = GetEntProp(iWeapon, Prop_Send, "m_reloadState");
+		if(iReloadState == 0)
+			return;
+	}
+	
+	float fNextAttack = GetEntPropFloat(iWeapon, Prop_Send, "m_flNextPrimaryAttack");
+	float fGameTime = GetGameTime();
+	
+	float fReloadIncrease = 1.0 / (1.0 + g_Item.Modifier);
+	
+	SetEntPropFloat(iWeapon, Prop_Send, "m_flPlaybackRate", 1.0 / fReloadIncrease);
+	
+	int iViewModel = GetEntPropEnt(iClient, Prop_Send, "m_hViewModel");
+	if(iViewModel != INVALID_ENT_REFERENCE)
+		SetEntPropFloat(iViewModel, Prop_Send, "m_flPlaybackRate", 1.0 / fReloadIncrease);
+	
+	float fNextAttackNew = (fNextAttack - fGameTime) * fReloadIncrease;
+	
+	if(bIsShotgun)
+	{
+		DataPack hData;
+		CreateDataTimer(0.01, Timer_CheckShotgunEnd, hData, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+		hData.WriteCell(EntIndexToEntRef(iWeapon));
+		hData.WriteCell(GetClientUserId(iClient));
+	}
+	else
+	{
+		DataPack hData;
+		CreateDataTimer(fNextAttackNew, Timer_ResetPlaybackRate, hData, TIMER_FLAG_NO_MAPCHANGE);
+		hData.WriteCell(EntIndexToEntRef(iWeapon));
+		hData.WriteCell(GetClientUserId(iClient));
+	}
+	
+	fNextAttackNew += fGameTime;
+	SetEntPropFloat(iWeapon, Prop_Send, "m_flTimeWeaponIdle", fNextAttackNew);
+	SetEntPropFloat(iWeapon, Prop_Send, "m_flNextPrimaryAttack", fNextAttackNew);
+	SetEntPropFloat(iClient, Prop_Send, "m_flNextAttack", fNextAttackNew);
+}
+
+public Action Timer_CheckShotgunEnd(Handle timer, DataPack data)
+{
+	data.Reset();
+	
+	int iWeapon = EntRefToEntIndex(data.ReadCell());
+	int iClient = GetClientOfUserId(data.ReadCell());
+	
+	if(iWeapon == INVALID_ENT_REFERENCE)
+	{
+		if(iClient > 0)
+			ResetClientViewModel(iClient);
+		return Plugin_Stop;
+	}
+	
+	int iOwner = Weapon_GetOwner(iWeapon);
+	if(iOwner <= 0)
+	{
+		if(iClient > 0)
+			ResetClientViewModel(iClient);
+		
+		SetEntPropFloat(iWeapon, Prop_Send, "m_flPlaybackRate", 1.0);
+		
+		return Plugin_Stop;
+	}
+
+	int iReloadState = GetEntProp(iWeapon, Prop_Send, "m_reloadState");
+	
+	if(iReloadState > 0)
+		return Plugin_Continue;
+	
+	SetEntPropFloat(iWeapon, Prop_Send, "m_flPlaybackRate", 1.0);
+	
+	
+	if(iClient > 0)
+		ResetClientViewModel(iClient);
+	
+	return Plugin_Stop;
+}
+
+public Action Timer_ResetPlaybackRate(Handle timer, DataPack data)
+{
+	data.Reset();
+	
+	int iWeapon = EntRefToEntIndex(data.ReadCell());
+	int iClient = GetClientOfUserId(data.ReadCell());
+	
+	if(iWeapon != INVALID_ENT_REFERENCE)	
+		SetEntPropFloat(iWeapon, Prop_Send, "m_flPlaybackRate", 1.0);
+	
+	if(iClient > 0)
+		ResetClientViewModel(iClient);
+	
+	return Plugin_Stop;
 }
 
 void KFG_load()

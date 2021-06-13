@@ -1,6 +1,8 @@
 void CreateForwards()
 {
 	hGangs_OnLoaded = CreateGlobalForward("Gangs_OnLoaded", ET_Ignore);
+
+	hGangs_OnPlayerLoaded = CreateGlobalForward("Gangs_OnPlayerLoaded", ET_Ignore, Param_Cell);
 	
 	g_hOnGangGoToGang = CreateGlobalForward("Gangs_OnGoToGang", ET_Ignore, Param_Cell, Param_String, Param_Cell);
 	

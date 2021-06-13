@@ -229,7 +229,7 @@ void LoadSteamID(int iClient)
 											INNER JOIN gang_group AS gang_table \
 											ON player_table.gang_id = gang_table.id \
 											WHERE steam_id = '%s';", 
-											ga_sSteamID[iClient], g_iServerID);
+											ga_sSteamID[iClient]);
 			g_hDatabase.Query(SQLCallback_CheckSQL_Player, sQuery, iClient);
 			
 			if(g_bDebug)
@@ -289,12 +289,12 @@ public void SQLCallback_CheckSQL_Player(Database db, DBResultSet result, const c
 			ga_bHasGang[iClient] = true;
 			ga_bLoaded[iClient] = true;
 
-			char sQuery_2[300];
-			Format(sQuery_2, sizeof(sQuery_2), "SELECT name, rubles, credits, gold, wcs_gold, lk_rubles, myjb_credits \
+			char sQuery[300];
+			Format(sQuery, sizeof(sQuery), "SELECT name, rubles, credits, gold, wcs_gold, lk_rubles, myjb_credits \
 												FROM gang_group \
-												WHERE `id` = %i AND server_id = %i;", 
-												ga_iGangId[iClient], g_iServerID);
-			g_hDatabase.Query(SQLCallback_CheckSQL_Groups, sQuery_2, iClient);
+												WHERE id = %i;", 
+												ga_iGangId[iClient]);
+			g_hDatabase.Query(SQLCallback_CheckSQL_Groups, sQuery, iClient);
 		}
 		else
 		{
@@ -331,10 +331,8 @@ public void SQLCallback_CheckSQL_Groups(Database db, DBResultSet results, const 
 	}
 	else 
 	{
-		if(results.RowCount == 1)
+		if(results.RowCount == 1 && results.FetchRow())
 		{
-			results.FetchRow();
-
 			results.FetchString(0, ga_sGangName[iClient], sizeof(ga_sGangName[]));
 			ga_iBankRubles[iClient] = results.FetchInt(1);
 			ga_iBankCredits[iClient] = results.FetchInt(2);
@@ -363,9 +361,14 @@ public void SQLCallback_Kills(Database db, DBResultSet results, const char[] err
 
 	if(!IsValidClient(iClient))
 		return;
-	else 
-		if(results.FetchRow())
+	
+	if(results.FetchRow())
+	{
 			ga_iScore[iClient] = results.FetchInt(0);
+			Call_StartForward(hGangs_OnPlayerLoaded);
+			Call_PushCell(iClient);
+			Call_Finish();
+	}
 }
 
 /*****************************************************************
@@ -406,11 +409,12 @@ public void SQLCallback_CreateGroup(Database db, DBResultSet results, const char
 	char sQuery[300];
 	if(!bGangInDatabase)
 	{
-		int iCreateDate = GetTime() + g_iCreateGangDays * 86400;
+		int iCreateDate = GetTime();
+		int iEndDate = GetTime() + g_iCreateGangDays * 86400;
 		Format(sQuery, sizeof(sQuery), "INSERT INTO gang_group \
-										(name, server_id, create_date) \
-										VALUES ('%s', %i, %i);", 
-										szEscapedGang, g_iServerID, iCreateDate);
+										(name, server_id, create_date, end_date) \
+										VALUES ('%s', %i, %i, %i);", 
+										szEscapedGang, g_iServerID, iCreateDate, iEndDate);
 		g_hDatabase.Query(SQLCallback_CheckGroupHelp, sQuery, iClient);
 	}
 	else
