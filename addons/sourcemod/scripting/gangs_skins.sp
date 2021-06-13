@@ -180,9 +180,6 @@ public void OnPluginStart()
 			ResetVariables(i);
 
 	OnMapStart();
-
-	if(Gangs_GetDatabase() != INVALID_HANDLE)
-		Gangs_OnLoaded();
 }
 
 public void OnMapStart()

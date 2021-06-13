@@ -21,7 +21,7 @@ native int Gangs_Size_GetMaxLvl();
  */
 native int Gangs_Size_GetCurrectLvl(int client);
 
-public SharedPlugin __pl_gangs  =
+public SharedPlugin __pl_gangs_size  =
 {
 	name = "gangs_size",
 	file = "gangs_size.smx",

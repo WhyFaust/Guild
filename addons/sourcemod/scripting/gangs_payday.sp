@@ -232,9 +232,6 @@ public void OnPluginStart()
 	LoadTranslations("gangs_modules.phrases");
 
 	KFG_load();
-
-	if(Gangs_GetDatabase() != INVALID_HANDLE)
-		Gangs_OnLoaded();
 }
 
 public void OnMapStart()

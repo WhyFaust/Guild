@@ -127,9 +127,6 @@ public void OnPluginStart()
 	m_iHealth = FindSendPropInfo("CCSPlayer", "m_iHealth");
 
 	KFG_load();
-
-	if(Gangs_GetDatabase() != INVALID_HANDLE)
-		Gangs_OnLoaded();
 }
 
 public void OnMapStart()

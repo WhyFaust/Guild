@@ -136,9 +136,6 @@ public void OnPluginStart()
 			LoadPerkLvl(i);
 
 	KFG_load();
-
-	if(Gangs_GetDatabase() != INVALID_HANDLE)
-		Gangs_OnLoaded();
 }
 
 public void OnMapStart()

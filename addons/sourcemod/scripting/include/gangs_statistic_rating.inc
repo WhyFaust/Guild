@@ -21,7 +21,7 @@ native int Gangs_StatisticRating_GetClientRating(int iClient);
  */
 native int Gangs_StatisticRating_SetClientRating(int iClient, int iRating);
 
-public SharedPlugin __pl_gangs  =
+public SharedPlugin __pl_gangs_statistic_rating  =
 {
 	name = "gangs_statistic_rating",
 	file = "gangs_statistic_rating.smx",

@@ -438,8 +438,8 @@ public int Native_GiveBankClientCash(Handle plugin, int numParams)
 
 public int Native_DissolveGang(Handle plugin, int numParams)
 {
-	int gangid = GetNativeCell(1);
-	DissolveGang(gangid);
+	int iGangID = GetNativeCell(1);
+	DissolveGang(iGangID);
 	
 	return 0;
 }
@@ -468,10 +468,10 @@ public int Native_GetClientGangRank(Handle plugin, int numParams)
 {
 	int iClient = GetNativeCell(1);
 	
-	//if (!IsValidClient(iClient))
-	//{
-	//	return ThrowNativeError(SP_ERROR_NATIVE, "Invalid iClient index (%i)", iClient);
-	//}
+	if (!IsValidClient(iClient))
+	{
+		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid iClient index (%i)", iClient);
+	}
 
 	return view_as<int>(ga_iRank[iClient]);
 }
@@ -479,11 +479,6 @@ public int Native_GetClientGangRank(Handle plugin, int numParams)
 public int Native_GetGangLvl(Handle plugin, int numParams)
 {
 	int iScore = GetNativeCell(1);
-	
-	//if (!IsValidClient(iClient))
-	//{
-	//	return ThrowNativeError(SP_ERROR_NATIVE, "Invalid iClient index (%i)", iClient);
-	//}
 
 	return view_as<int>(GetGangLvl(iScore));
 }
@@ -496,11 +491,6 @@ public int Native_GetGangSize(Handle plugin, int numParams)
 public int Native_GetGangReqScore(Handle plugin, int numParams)
 {
 	int iScore = GetNativeCell(1);
-	
-	//if (!IsValidClient(iClient))
-	//{
-	//	return ThrowNativeError(SP_ERROR_NATIVE, "Invalid iClient index (%i)", iClient);
-	//}
 
 	return view_as<int>(((g_iScoreExpInc*GetGangLvl(iScore)/2)*(GetGangLvl(iScore)+1)));
 }
@@ -509,13 +499,10 @@ public int Native_ClientHasGang(Handle plugin, int numParams)
 {
 	int iClient = GetNativeCell(1);
 	
-	//if (!IsValidClient(iClient))
-	//{
-	//	return ThrowNativeError(SP_ERROR_NATIVE, "Invalid iClient index (%i)", iClient);
-	//}
+	if (!IsValidClient(iClient))
+		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid iClient index (%i)", iClient);
 	
-	//return view_as<int>(ga_bHasGang[iClient]);
-	return ga_bHasGang[iClient];
+	return view_as<int>(ga_bHasGang[iClient]);
 }
 
 public int Native_ShowMainMenu(Handle hPlugin, int iNumParams)
@@ -535,15 +522,19 @@ public int Native_ShowPerksMenu(Handle hPlugin, int iNumParams)
 public int Native_ShowGamesMenu(Handle hPlugin, int iNumParams)
 {
 	int iClient = GetNativeCell(1);
-	if(IsValidClient(iClient)) StartOpeningTopGangsMenu(iClient);
-	else LogError("Native_ShowGamesMenu ошибка: Игрок не найден");
+	if(IsValidClient(iClient)) 
+		StartOpeningTopGangsMenu(iClient);
+	else 
+		LogError("Native_ShowGamesMenu ошибка: Игрок не найден");
 }
 
 public int Native_ShowStatsMenu(Handle hPlugin, int iNumParams)
 {
 	int iClient = GetNativeCell(1);
-	if(IsValidClient(iClient)) StartOpeningStatMenu(iClient);
-	else LogError("Native_ShowStatsMenu ошибка: Игрок не найден");
+	if(IsValidClient(iClient)) 
+		StartOpeningStatMenu(iClient);
+	else 
+		LogError("Native_ShowStatsMenu ошибка: Игрок не найден");
 }
 
 public int Native_ReloadClient(Handle plugin, int numParams)

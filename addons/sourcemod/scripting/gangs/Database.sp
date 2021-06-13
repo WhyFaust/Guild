@@ -462,53 +462,12 @@ public void SQLCallback_CheckGroup(Database db, DBResultSet results, const char[
 		ga_iGangId[iClient] = results.FetchInt(0);
 
 		char sQuery[300];
-		GetClientAuthId(iClient, AuthId_Steam2, ga_sSteamID[iClient], sizeof(ga_sSteamID[]));
 		Format(sQuery, sizeof(sQuery), "SELECT * \
-										FROM gang_player \
-										WHERE steam_id = '%s' AND gang_id = %i;", 
-										ga_sSteamID[iClient], ga_iGangId[iClient]);
-		g_hDatabase.Query(SQLCallback_CheckIfInDatabase_Player, sQuery, iClient);
+										FROM gang_statistic \
+										WHERE gang_id = %i;", 
+										ga_iGangId[iClient], g_iServerID);
+		g_hDatabase.Query(SQLCallback_LoadStatistic, sQuery, iClient);
 	}
-}
-
-public void SQLCallback_CheckIfInDatabase_Player(Database db, DBResultSet results, const char[] error, int iClient)
-{
-	if(error[0])
-	{
-		LogError("[SQLCallback_CheckIfInDatabase_Player] Error (%i): %s", iClient, error);
-		return;
-	}
-
-	if(!IsValidClient(iClient))
-		return;
-
-	bool bPlayerInDatabase = true;
-	if(results.RowCount == 0)
-		bPlayerInDatabase = false;
-	
-	char sQuery[300];
-	char sName[MAX_NAME_LENGTH];
-	GetClientName(iClient, sName, sizeof(sName));
-	int iLen = 2*strlen(sName)+1;
-	char[] szEscapedName = new char[iLen];
-	g_hDatabase.Escape(GetFixString(sName), szEscapedName, iLen);
-	
-	if(!bPlayerInDatabase)
-	{
-		Format(sQuery, sizeof(sQuery), "INSERT INTO gang_player \
-										(gang_id, steam_id, name, rank, inviter_name, invite_date) \
-										VALUES (%i, '%s', '%s', %i, '%s', %i);", 
-										ga_iGangId[iClient], ga_sSteamID[iClient], szEscapedName, ga_iRank[iClient], ga_sInvitedBy[iClient], ga_iDateJoined[iClient]);
-		g_hDatabase.Query(SQLCallback_Void, sQuery, 1);
-		API_OnGoToGang(iClient, ga_sGangName[iClient], ga_iInvitation[iClient]);
-		ga_iInvitation[iClient] = -1;
-	}
-
-	Format(sQuery, sizeof(sQuery), "SELECT * \
-									FROM gang_statistic \
-									WHERE gang_id = %i;", 
-									ga_iGangId[iClient], g_iServerID);
-	g_hDatabase.Query(SQLCallback_LoadStatistic, sQuery, iClient);
 }
 
 public void SQLCallback_LoadStatistic(Database db, DBResultSet results, const char[] error, int iClient)
@@ -567,6 +526,49 @@ public void SQLCallback_LoadPerks(Database db, DBResultSet results, const char[]
 										ga_iGangId[iClient]);
 		g_hDatabase.Query(SQLCallback_Void, sQuery, 4);
 	}
+
+	GetClientAuthId(iClient, AuthId_Steam2, ga_sSteamID[iClient], sizeof(ga_sSteamID[]));
+	Format(sQuery, sizeof(sQuery), "SELECT * \
+									FROM gang_player \
+									WHERE steam_id = '%s' AND gang_id = %i;", 
+									ga_sSteamID[iClient], ga_iGangId[iClient]);
+	g_hDatabase.Query(SQLCallback_CheckIfInDatabase_Player, sQuery, iClient);
+}
+
+public void SQLCallback_CheckIfInDatabase_Player(Database db, DBResultSet results, const char[] error, int iClient)
+{
+	if(error[0])
+	{
+		LogError("[SQLCallback_CheckIfInDatabase_Player] Error (%i): %s", iClient, error);
+		return;
+	}
+
+	if(!IsValidClient(iClient))
+		return;
+
+	bool bPlayerInDatabase = true;
+	if(results.RowCount == 0)
+		bPlayerInDatabase = false;
+	
+	char sQuery[300];
+	char sName[MAX_NAME_LENGTH];
+	GetClientName(iClient, sName, sizeof(sName));
+	int iLen = 2*strlen(sName)+1;
+	char[] szEscapedName = new char[iLen];
+	g_hDatabase.Escape(GetFixString(sName), szEscapedName, iLen);
+	
+	if(!bPlayerInDatabase)
+	{
+		Format(sQuery, sizeof(sQuery), "INSERT INTO gang_player \
+										(gang_id, steam_id, name, rank, inviter_name, invite_date) \
+										VALUES (%i, '%s', '%s', %i, '%s', %i);", 
+										ga_iGangId[iClient], ga_sSteamID[iClient], szEscapedName, ga_iRank[iClient], ga_sInvitedBy[iClient], ga_iDateJoined[iClient]);
+		g_hDatabase.Query(SQLCallback_Void, sQuery, 1);
+		API_OnGoToGang(iClient, ga_sGangName[iClient], ga_iInvitation[iClient]);
+		ga_iInvitation[iClient] = -1;
+	}
+
+
 }
 
 public void SQLCallback_CheckName(Database db, DBResultSet results, const char[] error, DataPack data)

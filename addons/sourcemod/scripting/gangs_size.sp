@@ -5,7 +5,6 @@
 #include <csgocolors>
 
 #undef REQUIRE_PLUGIN
-//#tryinclude <vip_core>
 #tryinclude <gamecms_system>
 #define REQUIRE_PLUGIN
 
@@ -44,6 +43,7 @@ public APLRes AskPluginLoad2(Handle hMyself, bool bLate, char[] sError, int err_
 {
 	CreateNative("Gangs_Size_GetMaxLvl", Native_GetMaxLvl);
 	CreateNative("Gangs_Size_GetCurrectLvl", Native_GetCurrectLvl);
+
 	RegPluginLibrary("gangs_size");
 
 	return APLRes_Success;
@@ -57,6 +57,7 @@ public int Native_GetMaxLvl(Handle plugin, int numParams)
 public int Native_GetCurrectLvl(Handle plugin, int numParams)
 {
 	int iClient = GetNativeCell(1);
+
 	if (!IsValidClient(iClient))
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid iClient index (%i)", iClient);
 
@@ -79,11 +80,11 @@ public void Gangs_OnPlayerLoaded(int iClient)
 
 public void Gangs_OnGoToGang(int iClient, char[] sGang, int Inviter)
 {
-	if(iClient != Inviter)
-		g_iPerkLvl[iClient] = g_iPerkLvl[Inviter];
-	else
+	if(Inviter == iClient)
 		LoadPerkLvl(iClient)
-}
+	else
+		g_iPerkLvl[iClient] = g_iPerkLvl[Inviter];
+}	
 
 public void Gangs_OnExitFromGang(int iClient)
 {
@@ -95,9 +96,8 @@ public void OnClientDisconnect(int iClient)
 	g_iPerkLvl[iClient] = -1;
 }
 
-public void LoadPerkLvl(int iUserID)
+public void LoadPerkLvl(int iClient)
 {
-	int iClient = iUserID;
 	if(IsValidClient(iClient) && Gangs_ClientHasGang(iClient))
 	{
 		int iGangID = Gangs_GetClientGangId(iClient);
@@ -142,9 +142,6 @@ public void OnPluginStart()
 	LoadTranslations("gangs_modules.phrases");
 
 	KFG_load();
-
-	if(Gangs_GetDatabase() != INVALID_HANDLE)
-		Gangs_OnLoaded();
 }
 
 public void OnMapStart()
@@ -172,7 +169,8 @@ public void SIZE_CallBack(int iClient, int ItemID, const char[] ItemName)
 
 void ShowMenuModule(int iClient)
 {
-	char sTitle[256]; int ClientCash;
+	char sTitle[256];
+	int ClientCash;
 	if(g_Item.Bank)
 	{
 		switch(g_Item.SellMode)
@@ -242,7 +240,6 @@ public int MenuHandler_MainMenu(Menu hMenu, MenuAction action, int iClient, int 
 {
 	switch(action)
 	{
-		case MenuAction_End: delete hMenu;
 		case MenuAction_Select:
         {
 			char sInfo[16];
@@ -362,8 +359,14 @@ public int MenuHandler_MainMenu(Menu hMenu, MenuAction action, int iClient, int 
 			}
 		}
 		case MenuAction_Cancel:
+		{
 			if(iItem == MenuCancel_ExitBack)
 				Gangs_ShowPerksMenu(iClient);
+		}
+		case MenuAction_End:
+		{
+			delete hMenu;
+		}
 	}
 }
 

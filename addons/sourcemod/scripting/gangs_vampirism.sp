@@ -153,9 +153,6 @@ public void OnPluginStart()
 	HookEvent("player_death", Event_PlayerDeath);
 
 	KFG_load();
-
-	if(Gangs_GetDatabase() != INVALID_HANDLE)
-		Gangs_OnLoaded();
 }
 
 public void OnMapStart()

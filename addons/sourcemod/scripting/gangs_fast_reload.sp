@@ -128,9 +128,6 @@ public void OnPluginStart()
 			SDKHook(i, SDKHook_ReloadPost, Hook_OnReloadPost);
 
 	KFG_load();
-
-	if(Gangs_GetDatabase() != INVALID_HANDLE)
-		Gangs_OnLoaded();
 }
 
 public void OnMapStart()

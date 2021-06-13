@@ -33,8 +33,25 @@ public Plugin myinfo =
     name = "GANGS CORE",
     author = "Faust",
     description = "Gang system for server cs",
-    version = GANGS_VERSION
-};
+    version = GANGS_VERSION,
+	url = "https://uwu-party.ru"
+}
+
+public void OnAllPluginsLoaded()
+{
+    DB_OnPluginStart();
+
+    g_bLKLoaded = LibraryExists("lk");
+    g_bGameCMSExist = LibraryExists("gamecms_system");
+    g_bModuleSizeExist = LibraryExists("gangs_size");
+    g_bMyJBShopExist = LibraryExists("myjailshop");
+    g_bStatisticRating = LibraryExists("gangs_statistic_rating");
+    
+    if(GetFeatureStatus(FeatureType_Native, "Shop_GetClientGold") == FeatureStatus_Available && GetFeatureStatus(FeatureType_Native, "Shop_SetClientGold") == FeatureStatus_Available)
+        g_bLShopGoldExist = true;
+    else
+        g_bLShopGoldExist = false;
+}
 
 public void OnLibraryRemoved(const char[] name)
 {
@@ -99,22 +116,6 @@ public void OnPluginStart()
     }
 
     OnMapStart();
-}
-
-public void OnAllPluginsLoaded()
-{
-    DB_OnPluginStart();
-
-    g_bLKLoaded = LibraryExists("lk");
-    g_bGameCMSExist = LibraryExists("gamecms_system");
-    g_bModuleSizeExist = LibraryExists("gangs_size");
-    g_bMyJBShopExist = LibraryExists("myjailshop");
-    g_bStatisticRating = LibraryExists("gangs_statistic_rating");
-    
-    if(GetFeatureStatus(FeatureType_Native, "Shop_GetClientGold") == FeatureStatus_Available && GetFeatureStatus(FeatureType_Native, "Shop_SetClientGold") == FeatureStatus_Available)
-        g_bLShopGoldExist = true;
-    else
-        g_bLShopGoldExist = false;
 }
 
 public void OnMapStart()

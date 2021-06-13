@@ -324,7 +324,7 @@ native bool Gangs_TakeBankClientCash(int iClient, char[] sBuffer, int NewCash);
  * @param Inviter 			Индекс игрока, который пригласил
  *
  */
-forward void Gangs_OnGoToGang(int iClient, char[] sGang, int Inviter);
+forward void Gangs_OnGoToGang(int iClient, char[] sGang, int iInviter);
 
 /**
  *
