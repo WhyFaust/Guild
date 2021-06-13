@@ -62,9 +62,7 @@ public void OnLibraryRemoved(const char[] name)
 public void OnLibraryAdded(const char[] name)
 {
 	if (StrEqual(name, "gangs"))
-	{
 		g_bGangCoreExist = true;
-	}
 }
 
 public Plugin myinfo =
@@ -221,7 +219,8 @@ public void SQLCallback_GetPerkLvl(Database db, DBResultSet results, const char[
 
 public void OnPluginEnd()
 {
-	Gangs_DeleteFromPerkMenu(PerkName);
+	if(g_bGangCoreExist)
+		Gangs_DeleteFromPerkMenu(PerkName);
 }
 
 public void OnPluginStart()

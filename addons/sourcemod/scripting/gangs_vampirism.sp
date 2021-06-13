@@ -93,7 +93,7 @@ public void OnClientDisconnect(int iClient)
 {
 	g_iPerkLvl[iClient] = -1;
 	if(!g_Item.Mode)
-		SDKUnHook(iClient, SDKHook_OnTakeDamage, OnTakeDamage);
+		SDKUnhook(iClient, SDKHook_OnTakeDamage, OnTakeDamage);
 }
 
 public void OnClientPutInServer(int iClient) 
@@ -102,7 +102,7 @@ public void OnClientPutInServer(int iClient)
 		SDKHook(iClient, SDKHook_OnTakeDamage, OnTakeDamage);
 }
 
-public Action LoadPerkLvl(Handle hTimer, int iClient)
+public void LoadPerkLvl(int iClient)
 {
 	if(IsValidClient(iClient) && Gangs_ClientHasGang(iClient))
 	{
