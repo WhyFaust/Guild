@@ -243,8 +243,8 @@ public int MenuHandler_MainMenu(Menu hMenu, MenuAction action, int iClient, int 
 
 				char sQuery[300];
 				Format(sQuery, sizeof(sQuery), "UPDATE gang_perk \
-												SET %s=%i \
-												WHERE gang = %i;", 
+												SET %s = %i \
+												WHERE gang_id = %i;", 
 												PerkName, g_iPerkLvl[iClient], iGangID);
 				Database hDatabase = Gangs_GetDatabase();
 				hDatabase.Query(SQLCallback_Void, sQuery);

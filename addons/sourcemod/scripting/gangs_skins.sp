@@ -310,11 +310,12 @@ void SetClientArms(int iClient,char arms[128])
 
 public void SKINS_CallBack(int iClient, int ItemID, const char[] ItemName)
 {
-	char szQuery[256];
-	Format(szQuery, sizeof(szQuery),"SELECT gang, %s FROM gangs_perks;", PerkName);
-	//PrintToChat(iClient, "%s", PerkName);
+	char sQuery[300];
+	Format(sQuery, sizeof(sQuery),"SELECT %s \
+									FROM gang_perk;", 
+									PerkName);
 	Database hDatabase = Gangs_GetDatabase();
-	hDatabase.Query(SQLCallback_OpenSkinMenu, szQuery, iClient);
+	hDatabase.Query(SQLCallback_OpenSkinMenu, sQuery, iClient);
 	delete hDatabase;
 }
 
@@ -322,55 +323,43 @@ public void SQLCallback_OpenSkinMenu(Database db, DBResultSet results, const cha
 {
 	if (error[0])
 	{
-		LogError(error);
+		LogError("[SQLCallback_OpenSkinMenu] Error (%i): %s", iClient, error);
 		return;
 	}
 	
 	if (!IsValidClient(iClient))
 		return;
-	else 
-	{
-		int iRows = results.RowCount;
-		int iFields = results.FieldCount;
-		//PrintToChat(iClient, "%i-%i", iRows, iFields);
-		int i = 0, j;
-		char[][][] sBuffer = new char[iRows][iFields][256];
-		while(results.FetchRow())
-		{
-			for(j = 0; j < iFields; ++j)
-			{
-				results.FetchString(j, sBuffer[i][j], 256);
-				//PrintToChat(iClient, "%s", sBuffer[i][1]);
-			}	
 
-			i++;
-		}
-		ConfigSkins.Rewind();
-		if(ConfigSkins.GotoFirstSubKey())
+	int iRows = results.RowCount;
+	int i = 0;
+	char[][] sBuffer = new char[iRows][256];
+	while(results.FetchRow())
+	{
+		results.FetchString(0, sBuffer[i], 256);
+		i++;
+	}
+
+	ConfigSkins.Rewind();
+	if(ConfigSkins.GotoFirstSubKey())
+	{
+		SkinMenu = CreateArray(128);
+		do
 		{
-			SkinMenu = CreateArray(128);
-			do
+			char szBuffer[64], szBuffer1[64], option[128];
+			bool SkinUse = false;
+			ConfigSkins.GetSectionName(szBuffer1, sizeof(szBuffer1));
+			ConfigSkins.GetString("name", szBuffer, sizeof(szBuffer));
+			for(int j = 0; j < iRows; ++j)
 			{
-				char szBuffer[64], szBuffer1[64], option[128];
-				bool SkinUse = false;
-				ConfigSkins.GetSectionName(szBuffer1, sizeof(szBuffer1));
-				ConfigSkins.GetString("name", szBuffer, sizeof(szBuffer));
-				for(j = 0; j < iRows; ++j)
-				{
-					if(StrEqual(szBuffer1, sBuffer[j][1]))
-						SkinUse = true;
-				}
-				if(SkinUse)
-					Format(option, sizeof(option), "%s-%s-%s", szBuffer1, szBuffer, "ITEMDRAW_DISABLED");
-				else
-					Format(option, sizeof(option), "%s-%s-%s", szBuffer1, szBuffer, "ITEMDRAW_DEFAULT");
-					
-				if(FindStringInArray(SkinMenu, option) == -1)	
-					PushArrayString(SkinMenu, option);
+				if(StrEqual(szBuffer1, sBuffer[j]))
+					SkinUse = true;
 			}
-			while (ConfigSkins.GotoNextKey());
-			OpenMenuSkinGang(iClient);
+			Format(option, sizeof(option), "%s-%s-%s", szBuffer1, szBuffer, (SkinUse) ? "ITEMDRAW_DISABLED" : "ITEMDRAW_DEFAULT");
+			if(FindStringInArray(SkinMenu, option) == -1)	
+				PushArrayString(SkinMenu, option);
 		}
+		while (ConfigSkins.GotoNextKey());
+		OpenMenuSkinGang(iClient);
 	}
 }
 
@@ -378,6 +367,7 @@ void OpenMenuSkinGang(int iClient)
 {
 	if (!IsValidClient(iClient))
 		return;
+
 	Menu menu = CreateMenu(MenuSkin_Callback, MenuAction_Select | MenuAction_End | MenuAction_DisplayItem | MenuAction_Cancel);
 	char tempBuffer[512];
 	Format(tempBuffer, sizeof(tempBuffer), "%T\n%T", "Skin", iClient, "currentskin", iClient, iClient, ga_sGangSkin[iClient]);
@@ -401,6 +391,7 @@ public int MenuSkin_Callback(Menu hMenu, MenuAction action, int iClient, int iIt
 {
 	if (!IsValidClient(iClient))
 		return;
+
 	switch (action)
 	{
 		case MenuAction_Select:
@@ -410,10 +401,16 @@ public int MenuSkin_Callback(Menu hMenu, MenuAction action, int iClient, int iIt
 			OpenMenuSkinSet(iClient, szInfo);
 		}
 		case MenuAction_Cancel:
+		{
 			if(iItem == MenuCancel_ExitBack)
 				Gangs_ShowPerksMenu(iClient);
-		case MenuAction_End: delete hMenu;
+		}
+		case MenuAction_End:
+		{
+			delete hMenu;
+		}
 	}
+
 	return;
 }
 
@@ -421,6 +418,7 @@ void OpenMenuSkinSet(int iClient, char buffer[64])
 {
 	if (!IsValidClient(iClient))
 		return;
+
 	Menu menu = new Menu(MenuSkinSet_Callback, MenuAction_End|MenuAction_Cancel|MenuAction_Select|MenuAction_DrawItem);
 	ConfigSkins.Rewind();
 	if(ConfigSkins.JumpToKey(buffer))
@@ -519,7 +517,6 @@ public int MenuSkinSet_Callback(Menu hMenu, MenuAction action, int iClient, int 
 				else CPrintToChat(iClient, "%t %t", "Prefix", "OnlyAlive");
 			}
 		}
-		case MenuAction_End: delete hMenu;
 		case MenuAction_DrawItem:
 		{
 			if(iItem == 0)
@@ -566,13 +563,17 @@ public int MenuSkinSet_Callback(Menu hMenu, MenuAction action, int iClient, int 
 				else return ITEMDRAW_DEFAULT;
 			}
 		}
+		case MenuAction_End:
+		{
+			delete hMenu;
+		}
 	}
+
 	return 0;
 }
 
-public Action Timer_DeletePrw(Handle hTimer, int userid)
+public Action Timer_DeletePrw(Handle hTimer, int iClient)
 {
-	int iClient = userid;
 	if(IsValidClient(iClient))
 		DeleteEntity(iClient);
 }
@@ -597,7 +598,7 @@ public void SQLCallback_CheckSkin(Database db, DBResultSet results, const char[]
 {
 	if (error[0])
 	{
-		LogError(error);
+		LogError("[SQLCallback_CheckSkin] Error: %s", error);
 		return;
 	}
 	
@@ -723,6 +724,6 @@ public void SQLCallback_Void(Database db, DBResultSet results, const char[] erro
 {
 	if (error[0])
 	{
-		LogError("Error (%i): %s", data, error);
+		LogError("[SQLCallback_OpenSkinMenu] Error (%i): %s", data, error);
 	}
 }

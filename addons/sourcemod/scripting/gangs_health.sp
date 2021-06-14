@@ -121,6 +121,9 @@ public void OnPluginStart()
 {
 	if(GetEngineVersion() != Engine_CSGO)
 		SetFailState("This plugin works only on CS:GO");
+	
+	LoadTranslations("gangs.phrases");
+	LoadTranslations("gangs_modules.phrases");
 
 	HookEvent("player_spawn", Event_PlayerSpawn);
 
