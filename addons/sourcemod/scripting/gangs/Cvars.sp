@@ -64,8 +64,5 @@ public void OnConfigsExecuted()
         g_iGamesCount = -1;
         g_iStatsCount = -1;
         ClearArrays();
-
-        Call_StartForward(hGangs_OnLoaded);
-        Call_Finish();
     }
 }

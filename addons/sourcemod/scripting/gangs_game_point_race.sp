@@ -115,7 +115,7 @@ public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcas
             g_iTimeOut = 0;
             g_hTimeOutTimer = CreateTimer(60.0, Timer_TimeOut, _, TIMER_REPEAT);
         }
-        CPrintToChatAll("%t %t", "Prefix", "GamePointRace_StartNewRound");
+        CPrintToChatAll("%t %t", "Prefix", "GamePointRace_Started");
     }
     if(g_Item.TimeOutMode == 0 && g_iTimeOut > 0)
     {
@@ -382,7 +382,7 @@ void StartGame()
             g_iTimeOut = 0;
             g_hTimeOutTimer = CreateTimer(60.0, Timer_TimeOut, _, TIMER_REPEAT);
         }
-        CPrintToChatAll("%t %t", "Prefix", "GamePointRace_StartNewRound");
+        CPrintToChatAll("%t %t", "Prefix", "GamePointRace_Started");
     }
     else
     {
