@@ -1,2 +1,2 @@
-*.sp gitlab-language=cpp
-*.inc gitlab-language=cpp
+*.sp linguist-language=SourcePawn
+*.inc linguist-language=SourcePawn
