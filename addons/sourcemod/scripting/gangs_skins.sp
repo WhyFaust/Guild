@@ -221,14 +221,9 @@ public void SQLCallback_CheckPerk(Database db, DBResultSet hResults, const char[
 		if(StrContains(sError, "Duplicate column name", false))
 		{
 			char sQuery[256];
-			if(Gangs_GetDatabaseDriver())
-				Format(sQuery, sizeof(sQuery), "ALTER TABLE gang_perk \
-												ADD COLUMN %s varchar(32) NULL DEFAULT NULL;", 
-												PerkName);
-			else
-				Format(sQuery, sizeof(sQuery), "ALTER TABLE gang_perk \
-												ADD COLUMN %s TEXT(32) NULL DEFAULT NULL;", 
-												PerkName);
+			Format(sQuery, sizeof(sQuery), "ALTER TABLE gang_perk \
+											ADD COLUMN %s varchar(32) NULL DEFAULT NULL;", 
+											PerkName);
 			db.Query(SQLCallback_Void, sQuery);
 		}
 		else

@@ -21,15 +21,6 @@ native Database Gangs_GetDatabase();
 
 /**
  *
- * Возвращает Database Driver.
- * 1 - MySQL
- * 0 - SQLite
- *
- */
-native Database Gangs_GetDatabaseDriver();
-
-/**
- *
  * Возвращает ServerID.
  *
  */

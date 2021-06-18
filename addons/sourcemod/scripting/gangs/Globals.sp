@@ -1,16 +1,5 @@
-#define GLOBAL_INFO			g_iClientInfo[0]
-
 #define SZF(%0) 			%0, sizeof(%0)
 #define SZFA(%0,%1)         %0[%1], sizeof(%0[])
-
-#define SET_BIT(%0,%1) 		%0 |= %1
-#define UNSET_BIT(%0,%1) 	%0 &= ~%1
-
-#define IS_STARTED					(1<<0)
-#define IS_MySQL					(1<<1)
-#define IS_LOADING					(1<<2)
-
-int			g_iClientInfo[MAXPLAYERS+1];
 
 ConVar g_cvCustomCommands;
 

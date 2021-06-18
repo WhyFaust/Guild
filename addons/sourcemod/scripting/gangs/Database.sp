@@ -5,13 +5,18 @@ void DB_OnPluginStart()
 
 void DB_Connect()
 {
-	if (GLOBAL_INFO & IS_LOADING)
-		return;
-
 	if (g_hDatabase != null)
 		return;
 
-	Database.Connect(OnDBConnect, "gangs");
+	if (SQL_CheckConfig("gangs"))
+	{
+		Database.Connect(OnDBConnect, "gangs");
+	}
+	else
+	{
+		SetFailState("[OnDBConnect] Can not find \"gangs\" in databases.cfg ");
+		return;
+	}
 
 }
 
@@ -30,61 +35,77 @@ public void OnDBConnect(Database hDatabase, const char[] szError, any data)
 
 void CreateTables()
 {
-	g_hDatabase.Query(SQLCallback_CreateTables, "CREATE TABLE IF NOT EXISTS gang_group (\
-												id int(20) NOT NULL AUTO_INCREMENT, \
-												name varchar(32) NOT NULL, \
-												server_id int(16) NOT NULL DEFAULT 0, \
-												create_date int(32) NOT NULL, \
-												end_date int(32) NOT NULL, \
-												extend_count int(16) NOT NULL DEFAULT 0, \
-												rubles int(32) NOT NULL DEFAULT 0, \
-												credits int(32) NOT NULL DEFAULT 0, \
-												gold int(32) NOT NULL DEFAULT 0, \
-												wcs_gold int(32) NOT NULL DEFAULT 0, \
-												lk_rubles int(32) NOT NULL DEFAULT 0, \
-												myjb_credits int(32) NOT NULL DEFAULT 0, \
-												PRIMARY KEY (id)) DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;", 1);
-	g_hDatabase.Query(SQLCallback_CreateTables, "CREATE TABLE IF NOT EXISTS gang_player (\
-												id int(20) NOT NULL AUTO_INCREMENT, \
-												gang_id int(20) NOT NULL, \
-												steam_id varchar(32) NOT NULL, \
-												name varchar(32) NOT NULL, \
-												rank int(16) NOT NULL, \
-												inviter_name varchar(30) NULL DEFAULT NULL, \
-												invite_date int(32) NOT NULL, \
-												FOREIGN KEY (gang_id)  REFERENCES gang_group (id), \
-												PRIMARY KEY (id)) DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;", 2);
-	g_hDatabase.Query(SQLCallback_CreateTables, "CREATE TABLE IF NOT EXISTS gang_statistic (\
-												id int(20) NOT NULL AUTO_INCREMENT, \
-												gang_id int(20) NOT NULL, \
-												FOREIGN KEY (gang_id)  REFERENCES gang_group (id), \
-												PRIMARY KEY (id)) DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;", 3);
-	g_hDatabase.Query(SQLCallback_CreateTables, "CREATE TABLE IF NOT EXISTS gang_perk (\
-												id int(20) NOT NULL AUTO_INCREMENT, \
-												gang_id int(20) NOT NULL, \
-												FOREIGN KEY (gang_id)  REFERENCES gang_group (id), \
-												PRIMARY KEY (id)) DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;", 4);
-	g_hDatabase.Query(SQLCallback_CreateTables, "CREATE TABLE IF NOT EXISTS gang_bank_log (\
-												id int(20) NOT NULL AUTO_INCREMENT, \
-												gang_id int(20) NOT NULL, \
-												player_id int(20) NOT NULL, \
-												log varchar(256) NOT NULL, \
-												date int(32) DEFAULT NULL, \
-												FOREIGN KEY (gang_id)  REFERENCES gang_group (id), \
-												FOREIGN KEY (player_id)  REFERENCES gang_player (id), \
-												PRIMARY KEY (id)) DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;", 5);
-	g_hDatabase.Query(SQLCallback_CreateTables, "CREATE TABLE IF NOT EXISTS gang_pref (\
-												id int(20) NOT NULL AUTO_INCREMENT, \
-												steamid varchar(32) NOT NULL, \
-												pref int(16) NOT NULL, \
-												PRIMARY KEY (id)) DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;", 6);
+	Transaction hTxn = new Transaction();
+	hTxn.AddQuery("CREATE TABLE IF NOT EXISTS gang_group (\
+					id int(20) NOT NULL AUTO_INCREMENT, \
+					name varchar(32) NOT NULL, \
+					server_id int(16) NOT NULL DEFAULT 0, \
+					create_date int(32) NOT NULL, \
+					end_date int(32) NOT NULL, \
+					extend_count int(16) NOT NULL DEFAULT 0, \
+					rubles int(32) NOT NULL DEFAULT 0, \
+					credits int(32) NOT NULL DEFAULT 0, \
+					gold int(32) NOT NULL DEFAULT 0, \
+					wcs_gold int(32) NOT NULL DEFAULT 0, \
+					lk_rubles int(32) NOT NULL DEFAULT 0, \
+					myjb_credits int(32) NOT NULL DEFAULT 0, \
+					PRIMARY KEY (id)) DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;");
+	hTxn.AddQuery("CREATE TABLE IF NOT EXISTS gang_player (\
+					id int(20) NOT NULL AUTO_INCREMENT, \
+					gang_id int(20) NOT NULL, \
+					steam_id varchar(32) NOT NULL, \
+					name varchar(32) NOT NULL, \
+					rank int(16) NOT NULL, \
+					inviter_name varchar(30) NULL DEFAULT NULL, \
+					invite_date int(32) NOT NULL, \
+					FOREIGN KEY (gang_id)  REFERENCES gang_group (id), \
+					PRIMARY KEY (id)) DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;");
+	hTxn.AddQuery("CREATE TABLE IF NOT EXISTS gang_statistic (\
+					id int(20) NOT NULL AUTO_INCREMENT, \
+					gang_id int(20) NOT NULL, \
+					FOREIGN KEY (gang_id)  REFERENCES gang_group (id), \
+					PRIMARY KEY (id)) DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;");
+	hTxn.AddQuery("CREATE TABLE IF NOT EXISTS gang_perk (\
+					id int(20) NOT NULL AUTO_INCREMENT, \
+					gang_id int(20) NOT NULL, \
+					FOREIGN KEY (gang_id)  REFERENCES gang_group (id), \
+					PRIMARY KEY (id)) DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;");
+	hTxn.AddQuery("CREATE TABLE IF NOT EXISTS gang_bank_log (\
+					id int(20) NOT NULL AUTO_INCREMENT, \
+					gang_id int(20) NOT NULL, \
+					player_id int(20) NOT NULL, \
+					log varchar(256) NOT NULL, \
+					date int(32) DEFAULT NULL, \
+					FOREIGN KEY (gang_id)  REFERENCES gang_group (id), \
+					FOREIGN KEY (player_id)  REFERENCES gang_player (id), \
+					PRIMARY KEY (id)) DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;");
+	hTxn.AddQuery("CREATE TABLE IF NOT EXISTS gang_pref (\
+					id int(20) NOT NULL AUTO_INCREMENT, \
+					steamid varchar(32) NOT NULL, \
+					pref int(16) NOT NULL, \
+					PRIMARY KEY (id)) DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;");
+	g_hDatabase.Execute(hTxn, SQLCallback_TransactionSuccess, SQLCallback_TransactionFailure);
 
 	char sQuery[300];
-	FormatEx(sQuery, sizeof(sQuery), "SELECT %s FROM gang_statistic;", g_sDbStatisticName);
+	FormatEx(sQuery, sizeof(sQuery), "SELECT %s \
+									FROM gang_statistic;", 
+									g_sDbStatisticName);
 	g_hDatabase.Query(SQLCallback_CreateStatisticTables, sQuery, 7);
+}
 
+public void SQLCallback_TransactionSuccess(Database db, any data, int numQueries, Handle[] results, any[] queryData)
+{
 	Call_StartForward(hGangs_OnLoaded);
 	Call_Finish();
+}
+
+public void SQLCallback_TransactionFailure(Database db, any data, int numQueries, const char[] sError, int failIndex, any[] queryData)
+{
+	if(sError[0])
+	{
+		LogError("[SQLCallback_TransactionFailure] Error : %s (%s)", sError, queryData[failIndex]);
+		return;
+	}
 }
 
 public void SQLCallback_CreateStatisticTables(Database db, DBResultSet hResults, const char[] sError, int data)
@@ -94,14 +115,9 @@ public void SQLCallback_CreateStatisticTables(Database db, DBResultSet hResults,
 		if(StrContains(sError, "Duplicate column name", false))
 		{
 			char sQuery[300];
-			if(GLOBAL_INFO & IS_MySQL)
-				FormatEx(sQuery, sizeof(sQuery), "ALTER TABLE gang_statistic \
-												ADD %s int(16) NOT NULL DEFAULT 0;", 
-												g_sDbStatisticName);
-			else
-				FormatEx(sQuery, sizeof(sQuery), "ALTER TABLE gang_statistic \
-												ADD COLUMN %s INTEGER(16) NOT NULL DEFAULT 0;", 
-												g_sDbStatisticName);
+			FormatEx(sQuery, sizeof(sQuery), "ALTER TABLE gang_statistic \
+											ADD %s int(16) NOT NULL DEFAULT 0;", 
+											g_sDbStatisticName);
 			g_hDatabase.Query(SQLCallback_CreateTables, sQuery, 8);
 		}
 		else
@@ -119,7 +135,10 @@ public void SQLCallback_CreateStatisticTables(Database db, DBResultSet hResults,
 public void SQLCallback_CreateTables(Database db, DBResultSet results, const char[] error, int data)
 {
 	if (error[0])
+	{
 		LogError("[SQLCallback_CreateTables] Error (%i): %s", data, error);
+		return;
+	}
 }
 
 /*****************************************************************

@@ -180,12 +180,8 @@ public void SQLCallback_CheckTable(Database db, DBResultSet hResults, const char
 		if(StrContains(sError, "Duplicate column name", false))
 		{
 			char sQuery[300];
-			if(Gangs_GetDatabaseDriver())
-				Format(sQuery, sizeof(sQuery), "ALTER TABLE gang_statistic \
-												ADD COLUMN rating int(32) NOT NULL DEFAULT 0;");
-			else
-				Format(sQuery, sizeof(sQuery), "ALTER TABLE gang_statistic \
-												ADD COLUMN rating INTEGER(32) NOT NULL DEFAULT 0;");
+			Format(sQuery, sizeof(sQuery), "ALTER TABLE gang_statistic \
+											ADD COLUMN rating int(32) NOT NULL DEFAULT 0;");
 			Database hDatabase = Gangs_GetDatabase();
 			hDatabase.Query(SQLCallback_Void, sQuery);
 			delete hDatabase;

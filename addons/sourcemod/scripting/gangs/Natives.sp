@@ -1,7 +1,6 @@
 public APLRes AskPluginLoad2(Handle hMyself, bool bLate, char[] sError, int err_max)
 {
 	CreateNative("Gangs_GetDatabase", Native_GetDatabase);
-	CreateNative("Gangs_GetDatabaseDriver", Native_GetDatabaseDriver);
 	CreateNative("Gangs_GetServerID", Native_GetServerID);
 	
 	CreateNative("Gangs_ReloadClient", Native_ReloadClient);
@@ -58,11 +57,6 @@ public APLRes AskPluginLoad2(Handle hMyself, bool bLate, char[] sError, int err_
 public int Native_GetDatabase(Handle hPlugin, int iNumParams)
 {
 	return view_as<int>(CloneHandle(g_hDatabase, hPlugin));
-}
-
-public int Native_GetDatabaseDriver(Handle hPlugin, int iNumParams)
-{
-	return (GLOBAL_INFO & IS_MySQL);
 }
 
 public int Native_GetServerID(Handle plugin, int numParams)

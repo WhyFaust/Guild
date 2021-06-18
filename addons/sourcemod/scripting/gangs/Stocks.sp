@@ -113,14 +113,9 @@ public void SQLCallback_CheckPerk(Database db, DBResultSet hResults, const char[
 		if(StrContains(sError, "Duplicate column name", false))
 		{
 			char szQuery[256];
-			if(GLOBAL_INFO & IS_MySQL)
-				FormatEx(szQuery, sizeof(szQuery), "ALTER TABLE gang_perk \
-													ADD COLUMN %s int(32) NOT NULL DEFAULT 0;", 
-													ItemName);
-			else
-				FormatEx(szQuery, sizeof(szQuery), "ALTER TABLE gang_perk \
-													ADD COLUMN %s INTEGER(32) NOT NULL DEFAULT 0;", 
-													ItemName);
+			FormatEx(szQuery, sizeof(szQuery), "ALTER TABLE gang_perk \
+												ADD COLUMN %s int(32) NOT NULL DEFAULT 0;", 
+												ItemName);
 			g_hDatabase.Query(SQLCallback_Void, szQuery, 33);
 		}
 		else
@@ -336,6 +331,10 @@ stock bool IsPluginValid(Handle hPlugin)
 
 stock void CreateArrays()
 {
+            
+	g_iPerksCount = 0;
+	g_iGamesCount = 0;
+	g_iStatsCount = 0;
 	g_hPerkName = new ArrayList(ByteCountToCells(50));
 	g_hPerkID = new ArrayList(ByteCountToCells(1));
 	g_hPerkArray = new ArrayList(ByteCountToCells(64));

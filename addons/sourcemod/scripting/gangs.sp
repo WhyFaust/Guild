@@ -118,6 +118,11 @@ public void OnPluginStart()
     OnMapStart();
 }
 
+public void OnPluginEnd()
+{
+	ClearArrays();
+}
+
 public void OnMapStart()
 {
     if(g_bPluginEnabled)

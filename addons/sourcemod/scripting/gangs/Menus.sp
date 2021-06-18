@@ -192,13 +192,13 @@ void OpenGangsMenu(int iClient)
 		
 		//Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%t", "GangMembers");
 		//menu.AddItem("members", sDisplayBuffer, (ga_bHasGang[iClient])?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
-		if(g_iPerksCount > -1)
+		if(g_iPerksCount > 0)
 		{
 			Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T", "GangPerks", iClient);
 			menu.AddItem("perks", sDisplayBuffer, (ga_bHasGang[iClient])?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		}
 		
-		if(g_iGamesCount > -1)
+		if(g_iGamesCount > 0)
 		{
 			Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T", "GangGames", iClient);
 			menu.AddItem("games", sDisplayBuffer, (ga_bHasGang[iClient])?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
@@ -210,7 +210,7 @@ void OpenGangsMenu(int iClient)
 		Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T", "LeaveGang", iClient);
 		menu.AddItem("leave", sDisplayBuffer, (ga_bHasGang[iClient] && ga_iRank[iClient] != 0)?	ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		
-		if(g_iStatsCount > -1)
+		if(g_iStatsCount > 0)
 		{
 			Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T", "TopGangs", iClient);
 			menu.AddItem("topgangs", sDisplayBuffer);

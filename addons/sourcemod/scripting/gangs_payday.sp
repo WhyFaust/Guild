@@ -8,21 +8,10 @@
 #include <gamecms_system>
 #define REQUIRE_PLUGIN
 
-#define GLOBAL_INFO			g_iClientInfo[0]
-
 #define SZF(%0) 			%0, sizeof(%0)
 #define SZFA(%0,%1)         %0[%1], sizeof(%0[])
 
-#define SET_BIT(%0,%1) 		%0 |= %1
-#define UNSET_BIT(%0,%1) 	%0 &= ~%1
-
-#define IS_STARTED					(1<<0)
-#define IS_MySQL					(1<<1)
-#define IS_LOADING					(1<<2)
-
 #define PerkName    "payday"
-
-int	g_iClientInfo[MAXPLAYERS+1];
 
 enum struct enum_Item
 {
@@ -497,18 +486,8 @@ void DB_OnPluginStart()
 
 void DB_Connect()
 {
-	if (GLOBAL_INFO & IS_LOADING)
-	{
-		return;
-	}
-
 	if (g_hDatabase != null)
-	{
-		UNSET_BIT(GLOBAL_INFO, IS_LOADING);
 		return;
-	}
-	
-	SET_BIT(GLOBAL_INFO, IS_LOADING);
 
 	if (SQL_CheckConfig("payday"))
 	{
@@ -516,9 +495,8 @@ void DB_Connect()
 	}
 	else
 	{
-		char szError[256];
-		g_hDatabase = SQLite_UseDatabase("payday", SZF(szError));
-		OnDBConnect(g_hDatabase, szError, 1);
+		SetFailState("[OnDBConnect] Can not find \"payday\" in databases.cfg ");
+		return;
 	}
 }
 
@@ -527,37 +505,16 @@ public void OnDBConnect(Database hDatabase, const char[] szError, any data)
 	if (hDatabase == null || szError[0])
 	{
 		SetFailState("OnDBConnect %s", szError);
-		UNSET_BIT(GLOBAL_INFO, IS_MySQL);
 		return;
 	}
 
 	g_hDatabase = hDatabase;
 	
-	if (data == 1)
-	{
-		UNSET_BIT(GLOBAL_INFO, IS_MySQL);
-	}
-	else
-	{
-		char szDriver[8];
-		g_hDatabase.Driver.GetIdentifier(SZF(szDriver));
-
-		if (strcmp(szDriver, "mysql", false) == 0)
-		{
-			SET_BIT(GLOBAL_INFO, IS_MySQL);
-		}
-		else
-		{
-			UNSET_BIT(GLOBAL_INFO, IS_MySQL);
-		}
-	}
-	
 	CreateTables();
 }
 
-public Action TimeTimer(Handle hTimer, int iUserID)
+public Action TimeTimer(Handle hTimer, int iClient)
 {
-	int iClient = iUserID;
 	if(IsValidClient(iClient) && Gangs_ClientHasGang(iClient) && g_iPerkLvl[iClient] > 0)
 	{
 		g_iTimePlayer[iClient]++;
@@ -643,7 +600,8 @@ public Action TimeTimer(Handle hTimer, int iUserID)
 void CreateTables()
 {
 	g_hDatabase.Query(SQLCallback_Void, "CREATE TABLE IF NOT EXISTS payday_player (\
-											id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \
-											steam_id TEXT(32) NOT NULL, \
-											time INTEGER(16) NOT NULL DEFAULT 0);", 1);
+										id int(20) NOT NULL AUTO_INCREMENT, \
+										steam_id varchar(32) NOT NULL, \
+										time int(32) NOT NULL DEFAULT 0, \
+										PRIMARY KEY (id)) DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;");
 }
