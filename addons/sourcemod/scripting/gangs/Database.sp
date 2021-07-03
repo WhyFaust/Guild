@@ -17,7 +17,6 @@ void DB_Connect()
 		SetFailState("[OnDBConnect] Can not find \"gangs\" in databases.cfg ");
 		return;
 	}
-
 }
 
 public void OnDBConnect(Database hDatabase, const char[] szError, any data)
@@ -39,6 +38,8 @@ void CreateTables()
 	hTxn.AddQuery("CREATE TABLE IF NOT EXISTS gang_group (\
 					id int(20) NOT NULL AUTO_INCREMENT, \
 					name varchar(32) NOT NULL, \
+					level int(16) NOT NULL DEFAULT 0, \
+					exp int(32) NOT NULL DEFAULT 0, \
 					server_id int(16) NOT NULL DEFAULT 0, \
 					create_date int(32) NOT NULL, \
 					end_date int(32) NOT NULL, \
@@ -151,8 +152,8 @@ void LoadSteamID(int iClient)
 		if(!IsValidClient(iClient))
 			return;
 
-		GetClientAuthId(iClient, AuthId_Steam2, ga_sSteamID[iClient], sizeof(ga_sSteamID[]));
-		if(StrContains(ga_sSteamID[iClient], "STEAM_1", true) == -1) //if ID is invalid
+		GetClientAuthId(iClient, AuthId_Steam2, g_ClientInfo[iClient].steamid, 32);
+		if(StrContains(g_ClientInfo[iClient].steamid, "STEAM_1", true) == -1) //if ID is invalid
 		{
 			CreateTimer(5.0, RefreshSteamID, iClient, TIMER_FLAG_NO_MAPCHANGE);
 		}
@@ -168,17 +169,17 @@ void LoadSteamID(int iClient)
 											FROM gang_player AS player_table \
 											INNER JOIN gang_group AS gang_table \
 											ON player_table.gang_id = gang_table.id \
-											WHERE steam_id = '%s';", 
-											ga_sSteamID[iClient]);
+											WHERE steam_id = '%s' AND gang_table.server_id = %i;", 
+											g_ClientInfo[iClient].steamid, g_iServerID);
 			g_hDatabase.Query(SQLCallback_CheckSQL_Player, sQuery, iClient);
 			
 			if(g_bDebug)
-				LogToFile("addons/sourcemod/logs/gangs_debug.txt", "Load SteamID for %N(%i) SteamID: %s", iClient, iClient, ga_sSteamID[iClient]);
+				LogToFile("addons/sourcemod/logs/gangs_debug.txt", "Load SteamID for %N(%i) SteamID: %s", iClient, iClient, g_ClientInfo[iClient].steamid);
 
 			Format(sQuery, sizeof(sQuery), "SELECT pref \
 											FROM gang_pref \
 											WHERE steamid = '%s';", 
-											ga_sSteamID[iClient]);
+											g_ClientInfo[iClient].steamid);
 			g_hDatabase.Query(SQLCallback_GetPreference, sQuery, iClient);
 		}
 	}
@@ -197,7 +198,7 @@ public void SQLCallback_GetPreference(Database db, DBResultSet results, const ch
 	
 	if(results.FetchRow())
 	{
-		ga_bBlockInvites[iClient] = view_as<bool>(results.FetchInt(0));
+		g_ClientInfo[iClient].blockinvites = view_as<bool>(results.FetchInt(0));
 	}
 }
 
@@ -220,20 +221,17 @@ public void SQLCallback_CheckSQL_Player(Database db, DBResultSet result, const c
 		{
 			result.FetchRow();
 			
-			ga_iPlayerId[iClient] = result.FetchInt(0);
-			ga_iGangId[iClient] = result.FetchInt(1);
-			ga_iRank[iClient] = result.FetchInt(2);
-			result.FetchString(3, ga_sInvitedBy[iClient], sizeof(ga_sInvitedBy[]));
-			ga_iDateJoined[iClient] = result.FetchInt(4);
-			
-			ga_bHasGang[iClient] = true;
-			ga_bLoaded[iClient] = true;
+			g_ClientInfo[iClient].id = result.FetchInt(0);
+			g_ClientInfo[iClient].gangid = result.FetchInt(1);
+			g_ClientInfo[iClient].rank = result.FetchInt(2);
+			result.FetchString(3, g_ClientInfo[iClient].inviter_name, 128);
+			g_ClientInfo[iClient].invite_date = result.FetchInt(4);
 
 			char sQuery[300];
-			Format(sQuery, sizeof(sQuery), "SELECT name, rubles, credits, gold, wcs_gold, lk_rubles, myjb_credits \
-												FROM gang_group \
-												WHERE id = %i;", 
-												ga_iGangId[iClient]);
+			Format(sQuery, sizeof(sQuery), "SELECT * \
+											FROM gang_group \
+											WHERE server_id = %i;",
+											g_iServerID);
 			g_hDatabase.Query(SQLCallback_CheckSQL_Groups, sQuery, iClient);
 		}
 		else
@@ -247,93 +245,100 @@ public void SQLCallback_CheckSQL_Player(Database db, DBResultSet result, const c
 			{
 				CreateTimer(2.0, RepeatCheckRank, iClient, TIMER_FLAG_NO_MAPCHANGE);
 			}
-			else
-			{
-				ga_bHasGang[iClient] = false;
-				ga_bLoaded[iClient] = true;
-			}
 		}
 	}
 }
 
-public void SQLCallback_CheckSQL_Groups(Database db, DBResultSet results, const char[] error, int data)
+public void SQLCallback_CheckSQL_Groups(Database db, DBResultSet results, const char[] error, int iClient)
 {
 	if(error[0])
 	{
-		LogError("[SQLCallback_CheckSQL_Groups] Error (%i): %s", data, error);
+		LogError("[SQLCallback_CheckSQL_Groups] Error (%i): %s", iClient, error);
 		return;
 	}
 
-	int iClient = data;
 	if(!IsValidClient(iClient))
 	{
 		return;
 	}
-	else 
-	{
-		if(results.RowCount == 1 && results.FetchRow())
-		{
-			results.FetchString(0, ga_sGangName[iClient], sizeof(ga_sGangName[]));
-			ga_iBankRubles[iClient] = results.FetchInt(1);
-			ga_iBankCredits[iClient] = results.FetchInt(2);
-			ga_iBankGold[iClient] = results.FetchInt(3);
-			ga_iBankWCSGold[iClient] = results.FetchInt(4);
-			ga_iBankLKRubles[iClient] = results.FetchInt(5);
-			ga_iBankMyJBCredits[iClient] = results.FetchInt(6);
 
-			char sQuery[300];
-			Format(sQuery, sizeof(sQuery), "SELECT %s \
-											FROM gang_statistic \
-											WHERE gang_id = %i;", 
-											g_sDbStatisticName, ga_iGangId[iClient], g_iServerID);
-			g_hDatabase.Query(SQLCallback_Kills, sQuery, iClient);
-		}
-	}
-}
-
-public void SQLCallback_Kills(Database db, DBResultSet results, const char[] error, int iClient)
-{
-	if(error[0])
+	int counter = 0;
+	while(results.FetchRow())
 	{
-		LogError("[SQLCallback_Kills] Error (%i): %s", iClient, error);
-		return;
-	}
+		int fieldindex;
+		if(results.FieldNameToNum("id", fieldindex))
+			g_GangInfo[counter].id = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("name", fieldindex))
+			results.FetchString(fieldindex, g_GangInfo[counter].name, 128);
+		if(results.FieldNameToNum("level", fieldindex))
+			g_GangInfo[counter].level = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("exp", fieldindex))
+			g_GangInfo[counter].exp = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("create_date", fieldindex))
+			g_GangInfo[counter].create_date = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("end_date", fieldindex))
+			g_GangInfo[counter].end_date = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("extend_count", fieldindex))
+			g_GangInfo[counter].extended_count = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("rubles", fieldindex))
+			g_GangInfo[counter].currency.rubles = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("credits", fieldindex))
+			g_GangInfo[counter].currency.credits = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("gold", fieldindex))
+			g_GangInfo[counter].currency.gold = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("wcs_gold", fieldindex))
+			g_GangInfo[counter].currency.wcs_gold = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("lk_rubles", fieldindex))
+			g_GangInfo[counter].currency.lk_rubles = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("myjb_credits", fieldindex))
+			g_GangInfo[counter].currency.myjb_credits = results.FetchInt(fieldindex);
 
-	if(!IsValidClient(iClient))
-		return;
-	
-	if(results.FetchRow())
-	{
-			ga_iScore[iClient] = results.FetchInt(0);
-			Call_StartForward(hGangs_OnPlayerLoaded);
-			Call_PushCell(iClient);
-			Call_Finish();
+		Call_StartForward(hGangs_OnPlayerLoaded);
+		Call_PushCell(iClient);
+		Call_Finish();
 	}
 }
 
 /*****************************************************************
 ***********************	 HELPER FUNCTIONS  ***********************
 ******************************************************************/
-void UpdateSQL(int iClient)
+void UpdateSQL(int iClient, char[] gangName = "")
 {
-	if(ga_bHasGang[iClient])
+	char sQuery[300];
+	if(StrEqual(gangName, ""))
 	{
-		char sQuery[300];
+		Format(sQuery, sizeof(sQuery), "SELECT * \
+										FROM gang_group \
+										WHERE id = %i AND server_id = %i;", 
+										g_ClientInfo[iClient].gangid, g_iServerID);
+	}
+	else
+	{
 		Format(sQuery, sizeof(sQuery), "SELECT * \
 										FROM gang_group \
 										WHERE name = '%s' AND server_id = %i;", 
-										ga_sGangName[iClient], g_iServerID);
-		g_hDatabase.Query(SQLCallback_CreateGroup, sQuery, iClient);
+										gangName, g_iServerID);
 	}
+	DataPack data;
+	data.WriteCell(iClient);
+	data.WriteString(gangName);
+	data.Reset();
+	g_hDatabase.Query(SQLCallback_CreateGroup, sQuery, data);
+	delete data;
 }
 
-public void SQLCallback_CreateGroup(Database db, DBResultSet results, const char[] error, int iClient)
+public void SQLCallback_CreateGroup(Database db, DBResultSet results, const char[] error, DataPack data)
 {
 	if(error[0])
 	{
-		LogError("[SQLCallback_CreateGroup] Error (%i): %s", iClient, error);
+		LogError("[SQLCallback_CreateGroup] Error (%i): %s", data, error);
 		return;
 	}
+	
+	int iClient = data.ReadCell();
+	char sGangName[128];
+	data.ReadString(sGangName, sizeof(sGangName));
+	data.Reset();
 
 	if(!IsValidClient(iClient))
 		return;
@@ -342,9 +347,9 @@ public void SQLCallback_CreateGroup(Database db, DBResultSet results, const char
 	if(results.RowCount == 0)
 		bGangInDatabase = false;
 
-	int iLen = 2*strlen(ga_sGangName[iClient])+1;
+	int iLen = 2*strlen(sGangName)+1;
 	char[] szEscapedGang = new char[iLen];
-	g_hDatabase.Escape(GetFixString(ga_sGangName[iClient]), szEscapedGang, iLen);
+	g_hDatabase.Escape(GetFixString(sGangName), szEscapedGang, iLen);
 
 	char sQuery[300];
 	if(!bGangInDatabase)
@@ -355,7 +360,7 @@ public void SQLCallback_CreateGroup(Database db, DBResultSet results, const char
 										(name, server_id, create_date, end_date) \
 										VALUES ('%s', %i, %i, %i);", 
 										szEscapedGang, g_iServerID, iCreateDate, iEndDate);
-		g_hDatabase.Query(SQLCallback_CheckGroupHelp, sQuery, iClient);
+		g_hDatabase.Query(SQLCallback_CheckGroupHelp, sQuery, data);
 	}
 	else
 	{
@@ -365,15 +370,21 @@ public void SQLCallback_CreateGroup(Database db, DBResultSet results, const char
 										szEscapedGang, g_iServerID);
 		g_hDatabase.Query(SQLCallback_CheckGroup, sQuery, iClient);
 	}
+	delete data;
 }
 
-public void SQLCallback_CheckGroupHelp(Database db, DBResultSet results, const char[] error, int iClient)
+public void SQLCallback_CheckGroupHelp(Database db, DBResultSet results, const char[] error, DataPack data)
 {
 	if(error[0])
 	{
-		LogError("[SQLCallback_CheckGroupHelp] Error (%i): %s", iClient, error);
+		LogError("[SQLCallback_CheckGroupHelp] Error (%i): %s", data, error);
 		return;
 	}
+
+	int iClient = data.ReadCell();
+	char sGangName[128];
+	data.ReadString(sGangName, sizeof(sGangName));
+	delete data;
 
 	if(!IsValidClient(iClient))
 		return;
@@ -382,7 +393,7 @@ public void SQLCallback_CheckGroupHelp(Database db, DBResultSet results, const c
 	Format(sQuery, sizeof(sQuery), "SELECT id \
 									FROM gang_group \
 									WHERE name = '%s' AND server_id = %i;", 
-									ga_sGangName[iClient], g_iServerID);
+									sGangName, g_iServerID);
 	g_hDatabase.Query(SQLCallback_CheckGroup, sQuery, iClient);
 }
 
@@ -399,47 +410,15 @@ public void SQLCallback_CheckGroup(Database db, DBResultSet results, const char[
 
 	if (results.FetchRow())
 	{
-		ga_iGangId[iClient] = results.FetchInt(0);
+		g_ClientInfo[iClient].gangid = results.FetchInt(0);
 
 		char sQuery[300];
 		Format(sQuery, sizeof(sQuery), "SELECT * \
-										FROM gang_statistic \
+										FROM gang_perk \
 										WHERE gang_id = %i;", 
-										ga_iGangId[iClient], g_iServerID);
-		g_hDatabase.Query(SQLCallback_LoadStatistic, sQuery, iClient);
+										g_ClientInfo[iClient].gangid, g_iServerID);
+		g_hDatabase.Query(SQLCallback_LoadPerks, sQuery, iClient);
 	}
-}
-
-public void SQLCallback_LoadStatistic(Database db, DBResultSet results, const char[] error, int iClient)
-{
-	if(error[0])
-	{
-		LogError("[SQLCallback_LoadStatistic] Error (%i): %s", iClient, error);
-		return;
-	}
-
-	if(!IsValidClient(iClient))
-		return;
-
-	bool bGangInDatabase = true;
-	if(results.RowCount == 0)
-		bGangInDatabase = false;
-
-	char sQuery[300];
-	if(!bGangInDatabase)
-	{
-		Format(sQuery, sizeof(sQuery), "INSERT INTO gang_statistic \
-										(gang_id, %s) \
-										VALUES(%i, %i)", 
-										g_sDbStatisticName, ga_iGangId[iClient], ga_iScore[iClient]);
-		g_hDatabase.Query(SQLCallback_Void, sQuery, 3);
-	}
-
-	Format(sQuery, sizeof(sQuery), "SELECT * \
-									FROM gang_perk \
-									WHERE gang_id = %i;", 
-									ga_iGangId[iClient], g_iServerID);
-	g_hDatabase.Query(SQLCallback_LoadPerks, sQuery, iClient);
 }
 
 public void SQLCallback_LoadPerks(Database db, DBResultSet results, const char[] error, int iClient)
@@ -463,15 +442,15 @@ public void SQLCallback_LoadPerks(Database db, DBResultSet results, const char[]
 		Format(sQuery, sizeof(sQuery), "INSERT INTO gang_perk \
 										(gang_id) \
 										VALUES (%i);", 
-										ga_iGangId[iClient]);
+										g_ClientInfo[iClient].gangid);
 		g_hDatabase.Query(SQLCallback_Void, sQuery, 4);
 	}
 
-	GetClientAuthId(iClient, AuthId_Steam2, ga_sSteamID[iClient], sizeof(ga_sSteamID[]));
+	GetClientAuthId(iClient, AuthId_Steam2, g_ClientInfo[iClient].steamid, 32);
 	Format(sQuery, sizeof(sQuery), "SELECT * \
 									FROM gang_player \
 									WHERE steam_id = '%s' AND gang_id = %i;", 
-									ga_sSteamID[iClient], ga_iGangId[iClient]);
+									g_ClientInfo[iClient].steamid, g_ClientInfo[iClient].gangid);
 	g_hDatabase.Query(SQLCallback_CheckIfInDatabase_Player, sQuery, iClient);
 }
 
@@ -502,10 +481,10 @@ public void SQLCallback_CheckIfInDatabase_Player(Database db, DBResultSet result
 		Format(sQuery, sizeof(sQuery), "INSERT INTO gang_player \
 										(gang_id, steam_id, name, rank, inviter_name, invite_date) \
 										VALUES (%i, '%s', '%s', %i, '%s', %i);", 
-										ga_iGangId[iClient], ga_sSteamID[iClient], szEscapedName, ga_iRank[iClient], ga_sInvitedBy[iClient], ga_iDateJoined[iClient]);
+										g_ClientInfo[iClient].gangid, g_ClientInfo[iClient].steamid, szEscapedName, g_ClientInfo[iClient].rank, g_ClientInfo[iClient].inviter_name, g_ClientInfo[iClient].invite_date);
 		g_hDatabase.Query(SQLCallback_Void, sQuery, 1);
-		API_OnGoToGang(iClient, ga_sGangName[iClient], ga_iInvitation[iClient]);
-		ga_iInvitation[iClient] = -1;
+		API_OnGoToGang(iClient, g_GangInfo[GetGangLocalId(iClient)].name, g_ClientInfo[iClient].inviter_id);
+		g_ClientInfo[iClient].inviter_id = -1;
 	}
 
 
@@ -534,25 +513,14 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 		{
 			if(results.RowCount == 0)
 			{
-				strcopy(ga_sGangName[iClient], sizeof(ga_sGangName[]), sText);
-				if(CheckBadNameGang(ga_sGangName[iClient]))
+				if(CheckBadNameGang(sText))
 				{
-					ga_bHasGang[iClient] = true;
-					ga_iDateJoined[iClient] = GetTime();
-					ga_sInvitedBy[iClient] = "N/A";
-					ga_iRank[iClient] = 0;
-					ga_iGangSize[iClient] = 1;
-
+					g_ClientInfo[iClient].invite_date = GetTime();
+					g_ClientInfo[iClient].inviter_name = "N/A";
+					g_ClientInfo[iClient].rank = 0;
+					g_GangInfo[GetGangLocalId(iClient)].players_count = 1;
 					
-					ga_iExtendCount[iClient] = 0;
-					
-					ga_iBankRubles[iClient] = 0;
-					ga_iBankCredits[iClient] = 0;
-					ga_iBankGold[iClient] = 0;
-					ga_iBankWCSGold[iClient] = 0;
-					ga_iBankLKRubles[iClient] = 0;
-					
-					UpdateSQL(iClient);
+					UpdateSQL(iClient, sText);
 					
 					if(g_bCreateGangSellMode == 0 && g_bGameCMSExist)
 					{
@@ -562,7 +530,7 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 						else Discount = GameCMS_GetClientDiscount(iClient);
 						GameCMS_SetClientRubles(iClient, GameCMS_GetClientRubles(iClient) - Colculate(iClient, g_iCreateGangPrice, Discount));
 						if(g_bLog)
-							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i рублей", iClient, ga_sGangName[iClient], Colculate(iClient, g_iCreateGangPrice, Discount));
+							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i рублей", iClient, sText, Colculate(iClient, g_iCreateGangPrice, Discount));
 					}
 					else if(g_bCreateGangSellMode == 1)
 					{
@@ -575,34 +543,34 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 							Store_SetClientCredits(iClient, Store_GetClientCredits(iClient) - g_iCreateGangPrice);
 						}
 						if(g_bLog)
-							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i кредитов", iClient, ga_sGangName[iClient], g_iCreateGangPrice);
+							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i кредитов", iClient, sText, g_iCreateGangPrice);
 					}
 					else if(g_bCreateGangSellMode == 2 && g_bLShopGoldExist)
 					{
 						Shop_SetClientGold(iClient, Shop_GetClientGold(iClient) - g_iCreateGangPrice);
 						if(g_bLog)
-							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i голды", iClient, ga_sGangName[iClient], g_iCreateGangPrice);
+							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i голды", iClient, sText, g_iCreateGangPrice);
 					}
 					//else if(g_bCreateGangSellMode == 3 && g_bWCSLoaded)
 					else if(g_bCreateGangSellMode == 3)
 					{
 						WCS_TakeGold(iClient, g_iCreateGangPrice);
 						if(g_bLog)
-							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i WCS голды", iClient, ga_sGangName[iClient], g_iCreateGangPrice);
+							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i WCS голды", iClient, sText, g_iCreateGangPrice);
 					}
 					else if(g_bCreateGangSellMode == 4 && g_bLKLoaded)
 					{
 						LK_ChangeBalance(iClient, LK_Cash, LK_Take, g_iCreateGangPrice);
 									
 						if(g_bLog)
-							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i MyJailShop Creditss", iClient, ga_sGangName[iClient], g_iCreateGangPrice);
+							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i MyJailShop Creditss", iClient, sText, g_iCreateGangPrice);
 					}
 					else if(g_bCreateGangSellMode == 5 && g_bMyJBShopExist)
 					{
 						MyJailShop_SetCredits(iClient, MyJailShop_GetCredits(iClient) - g_iCreateGangPrice);
 									
 						if(g_bLog)
-							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i LK рублей", iClient, ga_sGangName[iClient], g_iCreateGangPrice);
+							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i LK рублей", iClient, sText, g_iCreateGangPrice);
 					}
 					else CPrintToChat(iClient, "%t %t", "Prefix", "Error");
 					
@@ -610,7 +578,7 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 					
 					char szName[MAX_NAME_LENGTH];
 					GetClientName(iClient, szName, sizeof(szName));
-					CPrintToChatAll("%t %t", "Prefix", "GangCreated", szName, ga_sGangName[iClient]);
+					CPrintToChatAll("%t %t", "Prefix", "GangCreated", szName, sText);
 				}
 				else
 				{
@@ -628,21 +596,13 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 		{
 			if(results.RowCount == 0)
 			{
-				strcopy(ga_sGangName[iClient], sizeof(ga_sGangName[]), sText);
-				if(CheckBadNameGang(ga_sGangName[iClient]))
+				if(CheckBadNameGang(sText))
 				{
-					for(int i = 1; i <= MaxClients; i++)
-					{
-						if(IsValidClient(i) && ga_iGangId[i] == ga_iGangId[iClient])
-						{
-							strcopy(ga_sGangName[i], sizeof(ga_sGangName[]), sText);
-						}
-					}
 					char sQuery[300];
 					Format(sQuery, sizeof(sQuery), "UPDATE gang_group \
 													SET `name` = '%s' \
 													WHERE id = %i AND server_id = %i;", 
-													sText, ga_iGangId[iClient], g_iServerID);
+													sText, g_ClientInfo[iClient].gangid, g_iServerID);
 					g_hDatabase.Query(SQLCallback_Void, sQuery, 5);
 					
 					if(g_bRenamePriceSellMode == 0 && g_bGameCMSExist)
@@ -653,7 +613,7 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 						else Discount = GameCMS_GetClientDiscount(iClient);
 						
 						if(g_bEnableBank && g_bRenameBank)
-							SetBankRubles(iClient, ga_iBankRubles[iClient] - Colculate(iClient, g_iRenamePrice, Discount));
+							SetBankRubles(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.rubles - Colculate(iClient, g_iRenamePrice, Discount));
 						else
 							GameCMS_SetClientRubles(iClient, GameCMS_GetClientRubles(iClient) - Colculate(iClient, g_iRenamePrice, Discount));
 						
@@ -663,7 +623,7 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 					else if(g_bRenamePriceSellMode == 1)
 					{
 						if(g_bEnableBank && g_bBankShop && g_bRenameBank)
-							SetBankCredits(iClient, ga_iBankCredits[iClient] - g_iRenamePrice);
+							SetBankCredits(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.credits - g_iRenamePrice);
 						else
 						{
 							if(g_bShopLoaded)
@@ -678,7 +638,7 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 					else if(g_bRenamePriceSellMode == 2 && g_bLShopGoldExist)
 					{
 						if(g_bEnableBank && g_bBankShopGold && g_bRenameBank)
-							SetBankGold(iClient, ga_iBankGold[iClient] - g_iRenamePrice);
+							SetBankGold(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.gold - g_iRenamePrice);
 						else
 							Shop_SetClientGold(iClient, Shop_GetClientGold(iClient) - g_iRenamePrice);
 						
@@ -689,7 +649,7 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 					else if(g_bRenamePriceSellMode == 3)
 					{
 						if(g_bEnableBank && g_bBankWcsGold && g_bRenameBank)
-							SetBankWCSGold(iClient, ga_iBankWCSGold[iClient] - g_iRenamePrice);
+							SetBankWCSGold(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold - g_iRenamePrice);
 						else
 							WCS_TakeGold(iClient, g_iRenamePrice);
 						
@@ -699,7 +659,7 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 					else if(g_bRenamePriceSellMode == 4 && g_bLKLoaded)
 					{
 						if(g_bEnableBank && g_bBankLkRubles && g_bRenameBank)
-							SetBankLKRubles(iClient, ga_iBankLKRubles[iClient] - g_iRenamePrice);
+							SetBankLKRubles(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles - g_iRenamePrice);
 						else
 							LK_ChangeBalance(iClient, LK_Cash, LK_Take, g_iRenamePrice);
 									
@@ -709,7 +669,7 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 					else if(g_bRenamePriceSellMode == 5 && g_bMyJBShopExist)
 					{
 						if(g_bEnableBank && g_bBankLkRubles && g_bRenameBank)
-							SetBankMyJBCredits(iClient, ga_iBankMyJBCredits[iClient] - g_iRenamePrice);
+							SetBankMyJBCredits(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits - g_iRenamePrice);
 						else
 							MyJailShop_SetCredits(iClient, MyJailShop_GetCredits(iClient) - g_iRenamePrice);
 									

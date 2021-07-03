@@ -301,7 +301,7 @@ void ShowMenuModule(int iClient)
 		case 5:
 			Format(sItem, sizeof(sItem), "%T [%i %T]", "buy", iClient, g_Item.Price, "myjb", iClient);
 	}
-	hMenu.AddItem("buy", sItem, (ClientCash >= g_Item.Price && g_iPerkLvl[iClient] < g_Item.MaxLvl && Gangs_GetGangLvl(Gangs_GetClientGangScore(iClient)) >= g_Item.ReqLvl) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+	hMenu.AddItem("buy", sItem, (ClientCash >= g_Item.Price && g_iPerkLvl[iClient] < g_Item.MaxLvl && Gangs_GetGangLvl(iClient) >= g_Item.ReqLvl) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 	Format(sItem, sizeof(sItem), "%T", "sell", iClient);
 	hMenu.AddItem("sell", sItem, (g_iPerkLvl[iClient] > 0 && Gangs_GetClientGangRank(iClient) == 0) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 	hMenu.Display(iClient, MENU_TIME_FOREVER);

@@ -3,17 +3,17 @@
 ******************************************************************/
 void StartOpeningGangMenu(int iClient)
 {
-	if (ga_bHasGang[iClient])
+	if (g_ClientInfo[iClient].gangid >= 0)
 	{
-		int iLen = 2*strlen(ga_sGangName[iClient])+1;
+		int iLen = 2*strlen(g_GangInfo[GetGangLocalId(iClient)].name)+1;
 		char[] szEscapedGang = new char[iLen];
-		g_hDatabase.Escape(GetFixString(ga_sGangName[iClient]), szEscapedGang, iLen);
+		g_hDatabase.Escape(GetFixString(g_GangInfo[GetGangLocalId(iClient)].name), szEscapedGang, iLen);
 
 		char sQuery[300];
 		Format(sQuery, sizeof(sQuery), "SELECT end_date \
 										FROM gang_group \
 										WHERE id = %i AND server_id = %i;", 
-										ga_iGangId[iClient], g_iServerID);
+										g_ClientInfo[iClient].gangid, g_iServerID);
 		g_hDatabase.Query(SQLCallback_OneOpenGangMenu, sQuery, iClient);
 	}
 	else
@@ -39,17 +39,17 @@ public void SQLCallback_OneOpenGangMenu(Database db, DBResultSet results, const 
 	{
 		if (results.FetchRow() && results.RowCount == 1)
 		{
-			ga_iEndTime[iClient] = results.FetchInt(0);
+			g_GangInfo[GetGangLocalId(iClient)].end_date = results.FetchInt(0);
 			
-			int iLen = 2*strlen(ga_sGangName[iClient])+1;
+			int iLen = 2*strlen(g_GangInfo[GetGangLocalId(iClient)].name)+1;
 			char[] szEscapedGang = new char[iLen];
-			g_hDatabase.Escape(GetFixString(ga_sGangName[iClient]), szEscapedGang, iLen);
+			g_hDatabase.Escape(GetFixString(g_GangInfo[GetGangLocalId(iClient)].name), szEscapedGang, iLen);
 
 			char sQuery[300];
 			Format(sQuery, sizeof(sQuery), "SELECT * \
 											FROM gang_player \
 											WHERE gang_id = %i;", 
-											ga_iGangId[iClient]);
+											g_ClientInfo[iClient].gangid);
 			g_hDatabase.Query(SQLCallback_TwoOpenGangMenu, sQuery, iClient);
 		}
 	}
@@ -66,7 +66,7 @@ public void SQLCallback_TwoOpenGangMenu(Database db, DBResultSet results, const 
 	if (!IsValidClient(iClient))
 		return;
 
-	ga_iGangSize[iClient] = results.RowCount;
+	g_GangInfo[GetGangLocalId(iClient)].players_count = results.RowCount;
 	OpenGangsMenu(iClient);
 }
 
@@ -117,12 +117,12 @@ void OpenGangsMenu(int iClient)
 			Format(sString, sizeof(sString), "%s%T %i\n", sString, "myjb", iClient, MyJailShop_GetCredits(iClient));
 		}
 		
-		if(ga_bHasGang[iClient])
+		if(g_ClientInfo[iClient].gangid >= 0)
 		{
-			Format(sString, sizeof(sString), "%s%T \n", sString, "CurrentGang", iClient, ga_sGangName[iClient], "Level", GetGangLvl(ga_iScore[iClient]));
+			Format(sString, sizeof(sString), "%s%T \n", sString, "CurrentGang", iClient, g_GangInfo[GetGangLocalId(iClient)].name, "Level", g_GangInfo[GetGangLocalId(iClient)].level);
 			if(g_iCreateGangDays>0)
 			{
-				int iRemainDays = (ga_iEndTime[iClient] - GetTime()) / 86400;
+				int iRemainDays = (g_GangInfo[GetGangLocalId(iClient)].end_date - GetTime()) / 86400;
 				if(iRemainDays < 0) 
 					iRemainDays = 0;
 				Format(sString, sizeof(sString), "%s%T \n", sString, "GangExpired", iClient, iRemainDays);
@@ -137,7 +137,7 @@ void OpenGangsMenu(int iClient)
 		
 		char sDisplayBuffer[128];
 		
-		if(!ga_bHasGang[iClient])
+		if(g_ClientInfo[iClient].gangid < 0)
 		{
 			if(g_bCreateGangSellMode == 0 && g_bGameCMSExist)
 			{
@@ -178,37 +178,35 @@ void OpenGangsMenu(int iClient)
 				menu.AddItem("create", sDisplayBuffer, (MyJailShop_GetCredits(iClient) < g_iCreateGangPrice)?ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
 			}
 		}
-		else if(ga_bHasGang[iClient] && g_bEnableBank)
+		else if(g_ClientInfo[iClient].gangid >= 0 && g_bEnableBank)
 		{
 			Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T", "Bank", iClient);
 			menu.AddItem("bank", sDisplayBuffer, ITEMDRAW_DEFAULT);
 		}
 		
-		if(ga_bHasGang[iClient])
+		if(g_ClientInfo[iClient].gangid >= 0)
 		{
 			Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T", "Stat", iClient);
 			menu.AddItem("stat", sDisplayBuffer, ITEMDRAW_DEFAULT);
 		}
 		
-		//Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%t", "GangMembers");
-		//menu.AddItem("members", sDisplayBuffer, (ga_bHasGang[iClient])?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		if(g_iPerksCount > 0)
 		{
 			Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T", "GangPerks", iClient);
-			menu.AddItem("perks", sDisplayBuffer, (ga_bHasGang[iClient])?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+			menu.AddItem("perks", sDisplayBuffer, (g_ClientInfo[iClient].gangid >= 0)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		}
 		
 		if(g_iGamesCount > 0)
 		{
 			Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T", "GangGames", iClient);
-			menu.AddItem("games", sDisplayBuffer, (ga_bHasGang[iClient])?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+			menu.AddItem("games", sDisplayBuffer, (g_ClientInfo[iClient].gangid >= 0)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		}
 		
 		Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T", "GangAdmin", iClient);
-		menu.AddItem("admin", sDisplayBuffer, (ga_bHasGang[iClient] && ((GetClientRightStatus(iClient, "extend") || GetClientRightStatus(iClient, "rename")) || ga_iRank[iClient] == 0))?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+		menu.AddItem("admin", sDisplayBuffer, (g_ClientInfo[iClient].gangid >= 0 && ((GetClientRightStatus(iClient, "extend") || GetClientRightStatus(iClient, "rename")) || g_ClientInfo[iClient].rank == 0))?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		
 		Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T", "LeaveGang", iClient);
-		menu.AddItem("leave", sDisplayBuffer, (ga_bHasGang[iClient] && ga_iRank[iClient] != 0)?	ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+		menu.AddItem("leave", sDisplayBuffer, (g_ClientInfo[iClient].gangid >= 0 && g_ClientInfo[iClient].rank != 0)?	ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		
 		if(g_iStatsCount > 0)
 		{
@@ -216,9 +214,9 @@ void OpenGangsMenu(int iClient)
 			menu.AddItem("topgangs", sDisplayBuffer);
 		}
 
-		if(!ga_bHasGang[iClient])
+		if(g_ClientInfo[iClient].gangid < 0)
 		{
-			if (!ga_bBlockInvites[iClient])
+			if (!g_ClientInfo[iClient].blockinvites)
 				Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T", "BlockInvites", iClient);
 			else
 				Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T", "UnblockInvites", iClient);
@@ -350,13 +348,13 @@ void BlockInvites(int iClient)
 	if (!IsValidClient(iClient))
 		return;
 	
-	ga_bBlockInvites[iClient] = !ga_bBlockInvites[iClient]; // toggle
+	g_ClientInfo[iClient].blockinvites = !g_ClientInfo[iClient].blockinvites;
 	
 	char sQuery[300];
 	Format(sQuery, sizeof(sQuery), "SELECT pref \
 									FROM gang_pref \
 									WHERE steamid = '%s';", 
-									ga_sSteamID[iClient]);
+									g_ClientInfo[iClient].steamid);
 	g_hDatabase.Query(SQLCallback_CheckPreference, sQuery, iClient);
 }
 
@@ -377,14 +375,14 @@ public void SQLCallback_CheckPreference(Database db, DBResultSet results, const 
 		Format(sQuery, sizeof(sQuery), "UPDATE gang_pref \
 										SET pref = '%i' \
 										WHERE steamid = '%s';", 
-										ga_bBlockInvites[iClient], ga_sSteamID[iClient]);
+										g_ClientInfo[iClient].blockinvites, g_ClientInfo[iClient].steamid);
 	}
 	else
 	{
 		Format(sQuery, sizeof(sQuery), "INSERT INTO gang_pref \
 										(pref, steamid) \
 										VALUES('%i', '%s');", 
-										ga_bBlockInvites[iClient], ga_sSteamID[iClient]);
+										g_ClientInfo[iClient].blockinvites, g_ClientInfo[iClient].steamid);
 	}
 	g_hDatabase.Query(SQLCallback_Void, sQuery, 25);
 	StartOpeningGangMenu(iClient);
@@ -550,41 +548,43 @@ public void SQLCallback_StatMenu(Database db, DBResultSet results, const char[] 
 	else
 	{		
 		char sGangName[128];
-		g_iGangAmmount = 0;
+		int iGangAmmount = 0;
 		ga_iTempInt2[iClient] = 1;
 		bool status = false;
 		while (results.FetchRow())
 		{
-			g_iGangAmmount++;
+			iGangAmmount++;
 			results.FetchString(0, sGangName, sizeof(sGangName));
-			if(!StrEqual(sGangName, ga_sGangName[iClient], true) && !status)
+			if(!StrEqual(sGangName, g_GangInfo[GetGangLocalId(iClient)].name, true) && !status)
 				ga_iTempInt2[iClient]++;
 			else
 				status = true;
-			
-			if(StrEqual(sGangName, ga_sGangName[iClient], true))
-				ga_iTempInt1[iClient] = results.FetchInt(1);
 		}
-		DisplayStatMenu(iClient);
+		DisplayStatMenu(iClient, iGangAmmount);
 	}
 }
 
-public void DisplayStatMenu(int iClient)
+public void DisplayStatMenu(int iClient, int iGangAmmount)
 {
 	if (IsValidClient(iClient))
 	{
+		DataPack data = new DataPack();
+		data.WriteCell(iClient);
+		data.WriteCell(iGangAmmount);
+		data.Reset();
+
 		char sQuery[256];
 		Format(sQuery, sizeof(sQuery), "SELECT gang_table.name, player_table.name, gang_table.create_date \
 										FROM gang_player AS player_table \
 										INNER JOIN gang_group AS gang_table \
 										ON player_table.gang_id = gang_table.id \
 										WHERE gang_id = %i AND rank = 0 AND server_id = %i;", 
-										ga_iGangId[iClient], g_iServerID);
-		g_hDatabase.Query(SQLCallback_OpenStatistics, sQuery, iClient);
+										g_ClientInfo[iClient].gangid, g_iServerID);
+		g_hDatabase.Query(SQLCallback_OpenStatistics, sQuery, data);
 	}
 }
 
-public void SQLCallback_OpenStatistics(Database db, DBResultSet results, const char[] error, int data)
+public void SQLCallback_OpenStatistics(Database db, DBResultSet results, const char[] error, DataPack data)
 {
 	if (error[0])
 	{
@@ -592,20 +592,21 @@ public void SQLCallback_OpenStatistics(Database db, DBResultSet results, const c
 		return;
 	}
 
-	int iClient = data;
+	int iClient = data.ReadCell();
+	int iGangAmmount = data.ReadCell();
+	delete data;
+
 	if (!IsValidClient(iClient))
 	{
 		return;
 	}
-	else
+
+	char sTempArray[2][128]; // Gang Name | Player Name 
+	char sFormattedTime[64];
+	char sDisplayString[128];
+	
+	if(results.FetchRow())
 	{
-		char sTempArray[2][128]; // Gang Name | Player Name 
-		char sFormattedTime[64];
-		char sDisplayString[128];
-		
-		results.FetchRow();
-
-
 		results.FetchString(0, sTempArray[0], sizeof(sTempArray[]));
 		results.FetchString(1, sTempArray[1], sizeof(sTempArray[]));
 		int iDate = results.FetchInt(2);
@@ -615,10 +616,7 @@ public void SQLCallback_OpenStatistics(Database db, DBResultSet results, const c
 		Format(sTitleString, sizeof(sTitleString), "%T %s", "Stat", iClient, sTempArray[0]);
 		menu.SetTitle(sTitleString);
 
-		//Format(sDisplayString, sizeof(sDisplayString), "%T : %s %t", "MenuGangName", iClient, sTempArray[0], "Level", GetGangLvl(ga_iScore[iClient]));
-		//menu.AddItem("", sDisplayString, ITEMDRAW_DISABLED);
-
-		Format(sDisplayString, sizeof(sDisplayString), "%T : %i/%i %T", "Score", iClient, ga_iTempInt1[iClient], g_iScoreExpInc*GetGangLvl(ga_iScore[iClient]), "Level", iClient, GetGangLvl(ga_iScore[iClient]));
+		Format(sDisplayString, sizeof(sDisplayString), "%T : %i/%i %T", "Score", iClient, g_GangInfo[GetGangLocalId(iClient)].exp, g_iScoreExpInc*g_GangInfo[GetGangLocalId(iClient)].level, "Level", iClient, g_GangInfo[GetGangLocalId(iClient)].level);
 		menu.AddItem("", sDisplayString, ITEMDRAW_DISABLED);
 
 		if(g_bStatisticRating)
@@ -626,16 +624,16 @@ public void SQLCallback_OpenStatistics(Database db, DBResultSet results, const c
 			Format(sDisplayString, sizeof(sDisplayString), "%T : %i", "Rating", iClient, Gangs_StatisticRating_GetClientRating(iClient));
 			menu.AddItem("", sDisplayString, ITEMDRAW_DISABLED);
 		}
-		
+
 		if(g_bModuleSizeExist)
 		{
-			Format(sDisplayString, sizeof(sDisplayString), "%T", "NumMemb", iClient, ga_iGangSize[iClient]
+			Format(sDisplayString, sizeof(sDisplayString), "%T", "NumMemb", iClient, g_GangInfo[GetGangLocalId(iClient)].players_count
 														, g_iSize + Gangs_Size_GetCurrectLvl(iClient));
 			menu.AddItem("members", sDisplayString);
 		}
 		else
 		{
-			Format(sDisplayString, sizeof(sDisplayString), "%T", "NumMemb", iClient, ga_iGangSize[iClient], g_iSize);
+			Format(sDisplayString, sizeof(sDisplayString), "%T", "NumMemb", iClient, g_GangInfo[GetGangLocalId(iClient)].players_count, g_iSize);
 			menu.AddItem("members", sDisplayString);
 		}
 
@@ -643,7 +641,7 @@ public void SQLCallback_OpenStatistics(Database db, DBResultSet results, const c
 		Format(sDisplayString, sizeof(sDisplayString), "%T : %s", "DateCreated", iClient, sFormattedTime);
 		menu.AddItem("", sDisplayString, ITEMDRAW_DISABLED);
 
-		Format(sDisplayString, sizeof(sDisplayString), "%T : %i/%i", "GangRank", iClient, ga_iTempInt2[iClient], g_iGangAmmount);
+		Format(sDisplayString, sizeof(sDisplayString), "%T : %i/%i", "GangRank", iClient, ga_iTempInt2[iClient], iGangAmmount);
 		menu.AddItem("", sDisplayString, ITEMDRAW_DISABLED);
 
 		Format(sDisplayString, sizeof(sDisplayString), "%T", "CreatedBy", iClient, sTempArray[1]);
@@ -684,17 +682,14 @@ public int StatMenuCallback_Void(Menu menu, MenuAction action, int param1, int p
 ******************************************************************/
 void StartOpeningMembersMenu(int iClient)
 {
-	if(!StrEqual(ga_sGangName[iClient], ""))
-	{
-		char sQuery[1000];
-		Format(sQuery, sizeof(sQuery), "SELECT player_table.id, player_table.steam_id, player_table.name, player_table.inviter_name, player_table.rank, player_table.invite_date, gang_table.id \
-										FROM gang_player AS player_table \
-										INNER JOIN gang_group AS gang_table \
-										ON player_table.gang_id = gang_table.id \
-										WHERE gang_id = %i;", 
-										ga_iGangId[iClient], g_iServerID);
-		g_hDatabase.Query(SQLCallback_OpenMembersMenu, sQuery, iClient);
-	}
+	char sQuery[1000];
+	Format(sQuery, sizeof(sQuery), "SELECT player_table.id, player_table.steam_id, player_table.name, player_table.inviter_name, player_table.rank, player_table.invite_date, gang_table.id \
+									FROM gang_player AS player_table \
+									INNER JOIN gang_group AS gang_table \
+									ON player_table.gang_id = gang_table.id \
+									WHERE gang_id = %i;", 
+									g_ClientInfo[iClient].gangid, g_iServerID);
+	g_hDatabase.Query(SQLCallback_OpenMembersMenu, sQuery, iClient);
 }
 
 public void SQLCallback_OpenMembersMenu(Database db, DBResultSet results, const char[] error, int data)
@@ -721,9 +716,9 @@ public void SQLCallback_OpenMembersMenu(Database db, DBResultSet results, const 
 		char sDisplayString[128];
 		Format(sDisplayString, sizeof(sDisplayString), "%T\n \n", "InviteToGang", iClient);
 		if(g_bModuleSizeExist)
-			menu.AddItem("invite", sDisplayString, (GetClientRightStatus(iClient, "invite") && (ga_iGangSize[iClient] < g_iSize + Gangs_Size_GetCurrectLvl(iClient)))?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+			menu.AddItem("invite", sDisplayString, (GetClientRightStatus(iClient, "invite") && (g_GangInfo[GetGangLocalId(iClient)].players_count < g_iSize + Gangs_Size_GetCurrectLvl(iClient)))?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		else
-			menu.AddItem("invite", sDisplayString, (GetClientRightStatus(iClient, "invite")	 && (ga_iGangSize[iClient] < g_iSize))?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+			menu.AddItem("invite", sDisplayString, (GetClientRightStatus(iClient, "invite")	 && (g_GangInfo[GetGangLocalId(iClient)].players_count < g_iSize))?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		
 		
 		while(results.FetchRow())
@@ -824,7 +819,7 @@ void OpenIndividualMemberMenu(int iClient, char[] sInfo)
 	Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T %s", "DateJoined", iClient, sFormattedTime);
 	menu.AddItem("", sDisplayBuffer, ITEMDRAW_DISABLED);
 	
-	if(GetClientRightStatus(iClient, "kick") || GetClientRightStatus(iClient, "ranks") || GetClientRightStatus(iClient, "bank_logs") || ga_iRank[iClient] == 0)
+	if(GetClientRightStatus(iClient, "kick") || GetClientRightStatus(iClient, "ranks") || GetClientRightStatus(iClient, "bank_logs") || g_ClientInfo[iClient].rank == 0)
 	{
 		Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T", "Management", iClient);
 		menu.AddItem(sInfo, sDisplayBuffer);
@@ -850,21 +845,21 @@ public int IndividualMemberMenu_Callback(Menu menu, MenuAction action, int param
 			Menu menu1 = CreateMenu(IndividualManagementMemberMenu_Callback, MenuAction_Select | MenuAction_End | MenuAction_DisplayItem | MenuAction_Cancel);
 			SetMenuTitle(menu1, "%T:", "Management", iClient);
 			char sDisplayBuffer[64];
-			if(GetClientRightStatus(iClient, "kick") && !StrEqual(sTempArray[4], "0") && CheckRankImmune(ga_iRank[iClient], sTempArray[4]))
+			if(GetClientRightStatus(iClient, "kick") && !StrEqual(sTempArray[4], "0") && CheckRankImmune(g_ClientInfo[iClient].rank, sTempArray[4]))
 			{
 				Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T", "KickAMember", iClient);
 				Format(sInfo, sizeof(sInfo), "kick;%s;%s", sTempArray[0], sTempArray[2]);
 				menu1.AddItem(sInfo, sDisplayBuffer);
 			}
-			if(GetClientRightStatus(iClient, "ranks") && !StrEqual(sTempArray[4], "0") && CheckRankImmune(ga_iRank[iClient], sTempArray[4]))
+			if(GetClientRightStatus(iClient, "ranks") && !StrEqual(sTempArray[4], "0") && CheckRankImmune(g_ClientInfo[iClient].rank, sTempArray[4]))
 			{
 				Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T", "Promote", iClient);
 				Format(sInfo, sizeof(sInfo), "ranks;%s;%s;%s;%s", sTempArray[1], sTempArray[2], sTempArray[3], sTempArray[6]);
 				menu1.AddItem(sInfo, sDisplayBuffer);
 			}
-			if(ga_iRank[iClient] == 0)
+			if(g_ClientInfo[iClient].rank == 0)
 			{
-				if(!StrEqual(ga_sSteamID[iClient], sTempArray[0]))
+				if(!StrEqual(g_ClientInfo[iClient].steamid, sTempArray[0]))
 				{
 					Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T", "TransferLeader", iClient);
 					Format(sInfo, sizeof(sInfo), "transferleader;%s;%s;%s", sTempArray[0], sTempArray[2], sTempArray[4]);
@@ -915,11 +910,11 @@ public int IndividualManagementMemberMenu_Callback(Menu menu, MenuAction action,
 												sTempArray[1]);
 				g_hDatabase.Query(SQLCallback_Void, sQuery, 26);
 				
-				CPrintToChatAll("%t %t", "Prefix", "GangMemberKick", sTempArray[2], ga_sGangName[iClient]);
+				CPrintToChatAll("%t %t", "Prefix", "GangMemberKick", sTempArray[2], g_GangInfo[GetGangLocalId(iClient)].name);
 				
 				for(int i = 1; i <= MaxClients; i++)
 					if(IsValidClient(i))
-						if(StringToInt(sTempArray[1]) == ga_iPlayerId[i])
+						if(StringToInt(sTempArray[1]) == g_ClientInfo[i].id)
 						{
 							API_OnExitFromGang(i);
 							ResetVariables(i, false);
@@ -937,10 +932,10 @@ public int IndividualManagementMemberMenu_Callback(Menu menu, MenuAction action,
 				Format(sQuery, sizeof(sQuery), "UPDATE gang_player \
 												SET rank = '%s' \
 												WHERE player_id = %i;", 
-												sTempArray[3], ga_iPlayerId[iClient]);
+												sTempArray[3], g_ClientInfo[iClient].id);
 				g_hDatabase.Query(SQLCallback_Void, sQuery, 27);
 
-				ga_iRank[iClient] = StringToInt(sTempArray[3]);
+				g_ClientInfo[iClient].rank = StringToInt(sTempArray[3]);
 
 				Format(sQuery, sizeof(sQuery), "UPDATE gang_player \
 												SET rank = 0 \
@@ -949,7 +944,7 @@ public int IndividualManagementMemberMenu_Callback(Menu menu, MenuAction action,
 				g_hDatabase.Query(SQLCallback_Void, sQuery, 28);
 				
 				if(iTarget != -1)
-					ga_iRank[iTarget] = 0;
+					g_ClientInfo[iClient].rank = 0;
 				char szName[MAX_NAME_LENGTH];
 				GetClientName(iClient, szName, sizeof(szName));
 				CPrintToChatAll("%t %t", "Prefix", "LeaderTransfered", szName, sTempArray[2]);
@@ -1060,28 +1055,28 @@ void DisplayBankMenu(int iClient)
 	Format(title, sizeof(title), "%T\n%T:", "Bank", iClient, "Balance", iClient);
 	if(g_bBankRubles && g_bGameCMSExist)
 	{
-		Format(title, sizeof(title), "%s\n %i %T", title, ga_iBankRubles[iClient], "rubles", iClient);
+		Format(title, sizeof(title), "%s\n %i %T", title, g_GangInfo[GetGangLocalId(iClient)].currency.rubles, "rubles", iClient);
 	}
 	if(g_bBankShop)
 	{
-		Format(title, sizeof(title), "%s\n %i %T", title, ga_iBankCredits[iClient], "shop", iClient);
+		Format(title, sizeof(title), "%s\n %i %T", title, g_GangInfo[GetGangLocalId(iClient)].currency.credits, "shop", iClient);
 	}
 	if(g_bBankShopGold && g_bLShopGoldExist)
 	{
-		Format(title, sizeof(title), "%s\n %i %T", title, ga_iBankGold[iClient], "shopgold", iClient);
+		Format(title, sizeof(title), "%s\n %i %T", title, g_GangInfo[GetGangLocalId(iClient)].currency.gold, "shopgold", iClient);
 	}
 	//if(g_bBankWcsGold && g_bWCSLoaded)
 	if(g_bBankWcsGold)
 	{
-		Format(title, sizeof(title), "%s\n %i %T", title, ga_iBankWCSGold[iClient], "wcsgold", iClient);
+		Format(title, sizeof(title), "%s\n %i %T", title, g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold, "wcsgold", iClient);
 	}
 	if(g_bBankLkRubles && g_bLKLoaded)
 	{
-		Format(title, sizeof(title), "%s\n %i %T", title, ga_iBankLKRubles[iClient], "lkrubles", iClient);
+		Format(title, sizeof(title), "%s\n %i %T", title, g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles, "lkrubles", iClient);
 	}
 	if(g_bBankMyJBCredits && g_bMyJBShopExist)
 	{
-		Format(title, sizeof(title), "%s\n %i %T", title, ga_iBankMyJBCredits[iClient], "myjb", iClient);
+		Format(title, sizeof(title), "%s\n %i %T", title, g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits, "myjb", iClient);
 	}
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
@@ -1206,7 +1201,7 @@ void OpenInvitationMenu(int iClient)
 		{
 			Format(sInfoString, sizeof(sInfoString), "%i", i);
 			Format(sDisplayString, sizeof(sDisplayString), "%N", i);
-			menu.AddItem(sInfoString, sDisplayString, (ga_bHasGang[i] || ga_bBlockInvites[i])?ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
+			menu.AddItem(sInfoString, sDisplayString, (g_ClientInfo[i].gangid >= 0 || g_ClientInfo[i].blockinvites)?ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
 		}
 	}
 
@@ -1221,18 +1216,18 @@ public int InvitationMenu_Callback(Menu menu, MenuAction action, int param1, int
 	{
 		case MenuAction_Select:
 		{
-			if(!ga_bInvitationSent[param1])
+			if(!g_ClientInfo[param1].invation_sent)
 			{
 				char sInfo[64];
 				GetMenuItem(menu, param2, sInfo, sizeof(sInfo));
 				int iUserID = StringToInt(sInfo);
 
-				ga_iInvitation[iUserID] = param1;
-				ga_bInvitationSent[param1] = true;
+				g_ClientInfo[iUserID].inviter_id = param1;
+				g_ClientInfo[param1].invation_sent = true;
 
 				if(g_bModuleSizeExist)
 				{
-					if(ga_iGangSize[param1] >= g_iSize + Gangs_Size_GetCurrectLvl(param1))
+					if(g_GangInfo[GetGangLocalId(param1)].players_count >= g_iSize + Gangs_Size_GetCurrectLvl(param1))
 					{
 						CPrintToChat(param1, "%t %t", "Prefix", "GangIsFull");
 						return;
@@ -1240,7 +1235,7 @@ public int InvitationMenu_Callback(Menu menu, MenuAction action, int param1, int
 				}
 				else
 				{
-					if(ga_iGangSize[param1] >= g_iSize)
+					if(g_GangInfo[GetGangLocalId(param1)].players_count >= g_iSize)
 					{
 						CPrintToChat(param1, "%t %t", "Prefix", "GangIsFull");
 						return;
@@ -1249,7 +1244,7 @@ public int InvitationMenu_Callback(Menu menu, MenuAction action, int param1, int
 
 				if(!g_bInviteStyle)
 				{
-					CPrintToChat(iUserID, "%t %t", "Prefix", "AcceptInstructions", ga_sGangName[param1]);
+					CPrintToChat(iUserID, "%t %t", "Prefix", "AcceptInstructions", g_GangInfo[GetGangLocalId(param1)].name);
 					DataPack data = new DataPack();
 					data.WriteCell(param1);
 					data.WriteCell(iUserID);
@@ -1291,17 +1286,17 @@ public Action AcceptTimer(Handle timer, DataPack data)
 	delete data;
 	if (IsValidClient(iClient) && IsValidClient(iTarget))
 	{
-		if (ga_bInvitationSent[iClient])
+		if (g_ClientInfo[iClient].invation_sent)
 		{
 			char sName[64];
 			GetClientName(iTarget, sName, sizeof(sName));
-			ga_bInvitationSent[iClient] = false;
+			g_ClientInfo[iClient].invation_sent = false;
 			CPrintToChat(iClient, "%t %t", "Prefix", "AcceptTimeoutSender", sName);
 		}
-		if (ga_iInvitation[iTarget] != -1)
+		if (g_ClientInfo[iTarget].inviter_id != -1)
 		{
-			ga_iInvitation[iTarget] = -1;
-			CPrintToChat(iTarget, "%t %t", "Prefix", "AcceptTimeoutReceiver", ga_sGangName[iClient]);
+			g_ClientInfo[iTarget].inviter_id = -1;
+			CPrintToChat(iTarget, "%t %t", "Prefix", "AcceptTimeoutReceiver", g_GangInfo[GetGangLocalId(iClient)].name);
 		}
 	}
 		
@@ -1321,14 +1316,14 @@ void OpenGangInvitationMenu(int iClient)
 	Format(sTitleString, sizeof(sTitleString), "%T", "GangInvitation", iClient);
 	SetMenuTitle(menu, sTitleString);
 
-	int sender = ga_iInvitation[iClient];
+	int sender = g_ClientInfo[iClient].inviter_id;
 	char szName[MAX_NAME_LENGTH];
 	GetClientName(sender, szName, sizeof(szName));
 
 	Format(sDisplayString, sizeof(sDisplayString), "%T", "InviteString", iClient, szName);
 	menu.AddItem("", sDisplayString, ITEMDRAW_DISABLED);
 
-	Format(sDisplayString, sizeof(sDisplayString), "%T", "WouldYouLikeToJoin", iClient, ga_sGangName[sender]);
+	Format(sDisplayString, sizeof(sDisplayString), "%T", "WouldYouLikeToJoin", iClient, g_GangInfo[GetGangLocalId(iClient)].name);
 	menu.AddItem("", sDisplayString, ITEMDRAW_DISABLED);
 
 	Format(sDisplayString, sizeof(sDisplayString), "%T", "IWouldLikeTo", iClient);
@@ -1352,52 +1347,44 @@ public int SentInviteMenu_Callback(Menu menu, MenuAction action, int param1, int
 		{
 			char sInfo[64];
 			GetMenuItem(menu, param2, sInfo, sizeof(sInfo));
-			int sender = ga_iInvitation[param1];
+			int sender = g_ClientInfo[param1].inviter_id;
 			
 			if(StrEqual(sInfo, "yes"))
 			{
-				ga_sGangName[param1] = ga_sGangName[sender];
-				ga_iDateJoined[param1] = GetTime();
-				ga_bHasGang[param1] =  true;
+				g_ClientInfo[param1].gangid = g_ClientInfo[sender].gangid;
+				g_ClientInfo[param1].invite_date = GetTime();
 				ga_bSetName[param1] = false;
 				
-				ga_iScore[param1] = ga_iScore[sender];
-				ga_iBankRubles[param1] = ga_iBankRubles[sender];
-				ga_iBankCredits[param1] = ga_iBankCredits[sender];
-				ga_iBankGold[param1] = ga_iBankGold[sender];
-				ga_iBankWCSGold[param1] = ga_iBankWCSGold[sender];
-				ga_iBankLKRubles[param1] = ga_iBankLKRubles[sender];
-				ga_iExtendCount[param1] = ga_iExtendCount[sender];
-				ga_iGangSize[param1] = ++ga_iGangSize[sender];
+				g_GangInfo[GetGangLocalId(param1)].players_count++;
 				
-				ga_bInvitationSent[sender] = false;
+				g_ClientInfo[sender].invation_sent = false;
 
 				char szName[MAX_NAME_LENGTH];
 				GetClientName(sender, szName, sizeof(szName));
-				ga_sInvitedBy[param1] = szName;
-				ga_iRank[param1] = GetLastConfigRank();
+				g_ClientInfo[param1].inviter_name = szName;
+				g_ClientInfo[param1].rank = GetLastConfigRank();
 				UpdateSQL(param1);
 				
 				GetClientName(param1, szName, sizeof(szName));
 				
-				CPrintToChatAll("%t %t", "Prefix", "GangJoined", szName, ga_sGangName[param1]);
+				CPrintToChatAll("%t %t", "Prefix", "GangJoined", szName, g_GangInfo[GetGangLocalId(param1)].name);
 			}
 			else if(StrEqual(sInfo, "no"))		
 			{
-				ga_bInvitationSent[sender] = false;
+				g_ClientInfo[sender].invation_sent = false;
 			}
 		}
 		case MenuAction_Cancel:
 		{
-			int sender = ga_iInvitation[param1];
-			ga_bInvitationSent[sender] = false;
+			int sender = g_ClientInfo[param1].inviter_id;
+			g_ClientInfo[sender].invation_sent = false;
 			
 			StartOpeningGangMenu(param1);
 		}
 		case MenuAction_End:
 		{
-			int sender = ga_iInvitation[param1];
-			ga_bInvitationSent[sender] = false;
+			int sender = g_ClientInfo[param1].inviter_id;
+			g_ClientInfo[sender].invation_sent = false;
 			
 			delete menu;
 		}
@@ -1596,7 +1583,7 @@ public int AdministrationPromoDemoteMenu_CallBack(Menu menu, MenuAction action, 
 			{
 				if(IsValidClient(i))
 				{
-					if(StrEqual(ga_sGangName[i],sTempArray[2]))
+					if(StrEqual(g_GangInfo[GetGangLocalId(i)].name,sTempArray[2]))
 					{
 						CPrintToChat(i, "%t %t", "Prefix", "ChangeRank", sTempArray[3], sRank);
 					}
@@ -1639,14 +1626,7 @@ void OpenAdministrationMenu(int iClient)
 	char sDisplayString[128];
 	
 	Format(sDisplayString, sizeof(sDisplayString), "%T", "InviteToGang", iClient);
-	//if(g_bModuleSizeExist)
-	//	menu.AddItem("invite", sDisplayString, (ga_bHasGang[iClient] && GetClientRightStatus(iClient, "invite") && (ga_iGangSize[iClient] < g_iSize + Gangs_Size_GetCurrectLvl(iClient)))?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
-	//else
-	//	menu.AddItem("invite", sDisplayString, (ga_bHasGang[iClient] && GetClientRightStatus(iClient, "invite")	 && (ga_iGangSize[iClient] < g_iSize))?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
-	
-	//Format(sDisplayString, sizeof(sDisplayString), "%T", "KickAMember", iClient);
-	//menu.AddItem("kick", sDisplayString, (GetClientRightStatus(iClient, "kick"))?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
-	
+
 	if(g_bRenamePriceSellMode == 0 && g_bGameCMSExist)
 	{
 		int Discount;
@@ -1656,7 +1636,7 @@ void OpenAdministrationMenu(int iClient)
 		
 		Format(sDisplayString, sizeof(sDisplayString), "%T [%i %T]", "RenameGang", iClient, Colculate(iClient, g_iRenamePrice, Discount), "rubles", iClient);
 		if(g_bEnableBank && g_bBankRubles && g_bRenameBank)
-			menu.AddItem("rename", sDisplayString, (!GetClientRightStatus(iClient, "rename") || ga_iBankRubles[iClient] < g_iRenamePrice || (!g_bMenuInfo && g_bGameCMSExist && !GameCMS_Registered(iClient)))?ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
+			menu.AddItem("rename", sDisplayString, (!GetClientRightStatus(iClient, "rename") || g_GangInfo[GetGangLocalId(iClient)].currency.rubles < g_iRenamePrice || (!g_bMenuInfo && g_bGameCMSExist && !GameCMS_Registered(iClient)))?ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
 		else
 			menu.AddItem("rename", sDisplayString, (!GetClientRightStatus(iClient, "rename") || GameCMS_GetClientRubles(iClient) < g_iRenamePrice || (!g_bMenuInfo && g_bGameCMSExist && !GameCMS_Registered(iClient)))?ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
 	}
@@ -1664,7 +1644,7 @@ void OpenAdministrationMenu(int iClient)
 	{
 		Format(sDisplayString, sizeof(sDisplayString), "%T [%i %T]", "RenameGang", iClient, g_iRenamePrice, "shop", iClient);
 		if(g_bEnableBank && g_bBankShop && g_bRenameBank)
-			menu.AddItem("rename", sDisplayString, (GetClientRightStatus(iClient, "rename") && ga_iBankCredits[iClient] >= g_iRenamePrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+			menu.AddItem("rename", sDisplayString, (GetClientRightStatus(iClient, "rename") && g_GangInfo[GetGangLocalId(iClient)].currency.credits >= g_iRenamePrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		else
 		{
 			if(g_bShopLoaded)
@@ -1677,7 +1657,7 @@ void OpenAdministrationMenu(int iClient)
 	{
 		Format(sDisplayString, sizeof(sDisplayString), "%T [%i %T]", "RenameGang", iClient, g_iRenamePrice, "shopgold", iClient);
 		if(g_bEnableBank && g_bBankShopGold && g_bRenameBank)
-			menu.AddItem("rename", sDisplayString, (GetClientRightStatus(iClient, "rename") && ga_iBankGold[iClient] >= g_iRenamePrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+			menu.AddItem("rename", sDisplayString, (GetClientRightStatus(iClient, "rename") && g_GangInfo[GetGangLocalId(iClient)].currency.gold >= g_iRenamePrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		else
 			menu.AddItem("rename", sDisplayString, (GetClientRightStatus(iClient, "rename") && Shop_GetClientGold(iClient) >= g_iRenamePrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 	}
@@ -1685,7 +1665,7 @@ void OpenAdministrationMenu(int iClient)
 	{
 		Format(sDisplayString, sizeof(sDisplayString), "%T [%i %T]", "RenameGang", iClient, g_iRenamePrice, "wcsgold", iClient);
 		if(g_bEnableBank && g_bBankWcsGold && g_bRenameBank)
-			menu.AddItem("rename", sDisplayString, (GetClientRightStatus(iClient, "rename") && ga_iBankWCSGold[iClient] >= g_iRenamePrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+			menu.AddItem("rename", sDisplayString, (GetClientRightStatus(iClient, "rename") && g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold >= g_iRenamePrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		else
 			menu.AddItem("rename", sDisplayString, (GetClientRightStatus(iClient, "rename") && WCS_GetGold(iClient) >= g_iRenamePrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 	}
@@ -1693,7 +1673,7 @@ void OpenAdministrationMenu(int iClient)
 	{
 		Format(sDisplayString, sizeof(sDisplayString), "%T [%i %T]", "RenameGang", iClient, g_iRenamePrice, "lkrubles", iClient);
 		if(g_bEnableBank && g_bBankLkRubles && g_bRenameBank)
-			menu.AddItem("rename", sDisplayString, (GetClientRightStatus(iClient, "rename") && ga_iBankLKRubles[iClient] >= g_iRenamePrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+			menu.AddItem("rename", sDisplayString, (GetClientRightStatus(iClient, "rename") && g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles >= g_iRenamePrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		else
 			menu.AddItem("rename", sDisplayString, (GetClientRightStatus(iClient, "rename") && LK_GetBalance(iClient, LK_Cash) >= g_iRenamePrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 	}
@@ -1701,7 +1681,7 @@ void OpenAdministrationMenu(int iClient)
 	{
 		Format(sDisplayString, sizeof(sDisplayString), "%T [%i %T]", "RenameGang", iClient, g_iRenamePrice, "myjb", iClient);
 		if(g_bEnableBank && g_bBankMyJBCredits && g_bRenameBank)
-			menu.AddItem("rename", sDisplayString, (GetClientRightStatus(iClient, "rename") && ga_iBankMyJBCredits[iClient] >= g_iRenamePrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+			menu.AddItem("rename", sDisplayString, (GetClientRightStatus(iClient, "rename") && g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits >= g_iRenamePrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		else
 			menu.AddItem("rename", sDisplayString, (GetClientRightStatus(iClient, "rename") && MyJailShop_GetCredits(iClient) >= g_iRenamePrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 	}
@@ -1710,16 +1690,13 @@ void OpenAdministrationMenu(int iClient)
 	//menu.AddItem("promote", sDisplayString, (GetClientRightStatus(iClient, "ranks"))?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 	
 	Format(sDisplayString, sizeof(sDisplayString), "%T", "Disband", iClient);
-	menu.AddItem("disband", sDisplayString, (ga_iRank[iClient] == 0)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+	menu.AddItem("disband", sDisplayString, (g_ClientInfo[iClient].rank == 0)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 
 	if(g_iCreateGangDays > 0)
 	{
 		Format(sDisplayString, sizeof(sDisplayString), "%T", "Extend", iClient);
 		menu.AddItem("extend", sDisplayString, (GetClientRightStatus(iClient, "extend"))?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 	}
-	
-	//Format(sDisplayString, sizeof(sDisplayString), "%T", "TransferLeader", iClient);
-	//menu.AddItem("transferleader", sDisplayString, (ga_iRank[iClient] == 0)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 
 	menu.ExitBackButton = true;
 
@@ -1765,7 +1742,7 @@ public int AdministrationMenu_Callback(Menu menu, MenuAction action, int param1,
 				Format(sQuery, sizeof(sQuery), "SELECT end_date \
 												FROM gang_group \
 												WHERE gang_id = %i;", 
-												ga_iGangId[param1]);
+												g_ClientInfo[param1].gangid);
 				g_hDatabase.Query(SQLCallback_OpenExtendMenu, sQuery, param1);
 			}
 			//else if(StrEqual(sInfo, "transferleader"))
@@ -1821,7 +1798,7 @@ void OpenAdministrationMenuExtendGang(int iClient, int endtime)
 	
 	int iPrice;
 	if(g_bExtendCostFormula)
-		iPrice = g_iExtendCostPrice+g_iExtendModifier*GetGangLvl(ga_iScore[iClient]);
+		iPrice = g_iExtendCostPrice + g_iExtendModifier * g_GangInfo[GetGangLocalId(iClient)].level;
 	else 
 		iPrice = g_iExtendCostPrice;
 		
@@ -1841,7 +1818,7 @@ void OpenAdministrationMenuExtendGang(int iClient, int endtime)
 		Format(sDisplayString, sizeof(sDisplayString), "%T", "Yes", iClient);
 		
 		if(g_bEnableBank && g_bBankRubles && g_bExtendBank)
-			menu.AddItem("yes", sDisplayString, (ga_iBankRubles[iClient] >= Colculate(iClient, iPrice, Discount))?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+			menu.AddItem("yes", sDisplayString, (g_GangInfo[GetGangLocalId(iClient)].currency.rubles >= Colculate(iClient, iPrice, Discount))?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		else
 			menu.AddItem("yes", sDisplayString, (GameCMS_GetClientRubles(iClient) >= Colculate(iClient, iPrice, Discount))?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 	}
@@ -1857,7 +1834,7 @@ void OpenAdministrationMenuExtendGang(int iClient, int endtime)
 		
 		if(g_bEnableBank && g_bBankShop && g_bExtendBank)
 		{
-			menu.AddItem("yes", sDisplayString, (ga_iBankCredits[iClient] >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+			menu.AddItem("yes", sDisplayString, (g_GangInfo[GetGangLocalId(iClient)].currency.credits >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		}
 		else
 		{
@@ -1878,7 +1855,7 @@ void OpenAdministrationMenuExtendGang(int iClient, int endtime)
 		Format(sDisplayString, sizeof(sDisplayString), "%T", "Yes", iClient);
 		
 		if(g_bEnableBank && g_bBankShopGold && g_bExtendBank)
-			menu.AddItem("yes", sDisplayString, (ga_iBankGold[iClient] >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+			menu.AddItem("yes", sDisplayString, (g_GangInfo[GetGangLocalId(iClient)].currency.gold >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		else
 			menu.AddItem("yes", sDisplayString, (Shop_GetClientGold(iClient) >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 	}
@@ -1893,7 +1870,7 @@ void OpenAdministrationMenuExtendGang(int iClient, int endtime)
 		Format(sDisplayString, sizeof(sDisplayString), "%T", "Yes", iClient);
 		
 		if(g_bEnableBank && g_bBankWcsGold && g_bExtendBank)
-			menu.AddItem("yes", sDisplayString, (ga_iBankWCSGold[iClient] >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+			menu.AddItem("yes", sDisplayString, (g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold>= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		else
 			menu.AddItem("yes", sDisplayString, (WCS_GetGold(iClient) >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 	}
@@ -1908,7 +1885,7 @@ void OpenAdministrationMenuExtendGang(int iClient, int endtime)
 		Format(sDisplayString, sizeof(sDisplayString), "%T", "Yes", iClient);
 		
 		if(g_bEnableBank && g_bBankLkRubles && g_bExtendBank)
-			menu.AddItem("yes", sDisplayString, (ga_iBankLKRubles[iClient] >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+			menu.AddItem("yes", sDisplayString, (g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		else
 			menu.AddItem("yes", sDisplayString, (LK_GetBalance(iClient, LK_Cash) >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 	}
@@ -1923,7 +1900,7 @@ void OpenAdministrationMenuExtendGang(int iClient, int endtime)
 		Format(sDisplayString, sizeof(sDisplayString), "%T", "Yes", iClient);
 		
 		if(g_bEnableBank && g_bBankMyJBCredits && g_bExtendBank)
-			menu.AddItem("yes", sDisplayString, (ga_iBankMyJBCredits[iClient] >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+			menu.AddItem("yes", sDisplayString, (g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 		else
 			menu.AddItem("yes", sDisplayString, (MyJailShop_GetCredits(iClient) >= iPrice)?ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 	}
@@ -1956,7 +1933,7 @@ public int AdministrationMenuExtend_Callback(Menu menu, MenuAction action, int i
 				CPrintToChat(iClient, "%t %t", "Prefix", "GangExtended");
 				int iPrice;
 				if(g_bExtendCostFormula)
-					iPrice = g_iExtendCostPrice + g_iExtendModifier * GetGangLvl(ga_iScore[iClient]);
+					iPrice = g_iExtendCostPrice + g_iExtendModifier * g_GangInfo[GetGangLocalId(iClient)].level;
 				else 
 					iPrice = g_iExtendCostPrice;
 
@@ -1969,7 +1946,7 @@ public int AdministrationMenuExtend_Callback(Menu menu, MenuAction action, int i
 						Discount = GameCMS_GetClientDiscount(iClient);
 					
 					if(g_bEnableBank && g_bBankRubles && g_bExtendBank)
-						SetBankRubles(iClient, ga_iBankRubles[iClient] - Colculate(iClient, iPrice, Discount));
+						SetBankRubles(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.rubles - Colculate(iClient, iPrice, Discount));
 					else
 						GameCMS_SetClientRubles(iClient, GameCMS_GetClientRubles(iClient) - Colculate(iClient, iPrice, Discount));
 				
@@ -1979,7 +1956,7 @@ public int AdministrationMenuExtend_Callback(Menu menu, MenuAction action, int i
 				else if(g_iExtendPriceSellMode == 1)
 				{
 					if(g_bEnableBank && g_bBankShop && g_bExtendBank)
-						SetBankCredits(iClient, ga_iBankCredits[iClient] - iPrice);
+						SetBankCredits(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.credits - iPrice);
 					else
 					{
 						if(g_bShopLoaded)
@@ -1994,7 +1971,7 @@ public int AdministrationMenuExtend_Callback(Menu menu, MenuAction action, int i
 				else if(g_iExtendPriceSellMode == 2 && g_bLShopGoldExist)
 				{
 					if(g_bEnableBank && g_bBankShopGold && g_bExtendBank)
-						SetBankGold(iClient, ga_iBankGold[iClient] - iPrice);
+						SetBankGold(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.gold - iPrice);
 					else
 						Shop_SetClientGold(iClient, Shop_GetClientGold(iClient) - iPrice);
 				
@@ -2005,7 +1982,7 @@ public int AdministrationMenuExtend_Callback(Menu menu, MenuAction action, int i
 				else if(g_iExtendPriceSellMode == 3)
 				{
 					if(g_bEnableBank && g_bBankWcsGold && g_bExtendBank)
-						SetBankWCSGold(iClient, ga_iBankWCSGold[iClient] - iPrice);
+						SetBankWCSGold(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold - iPrice);
 					else
 						WCS_TakeGold(iClient, iPrice);
 				
@@ -2015,7 +1992,7 @@ public int AdministrationMenuExtend_Callback(Menu menu, MenuAction action, int i
 				else if(g_iExtendPriceSellMode == 4 && g_bLKLoaded)
 				{
 					if(g_bEnableBank && g_bBankLkRubles && g_bExtendBank)
-						SetBankLKRubles(iClient, ga_iBankLKRubles[iClient] - iPrice);
+						SetBankLKRubles(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles - iPrice);
 					else
 						LK_ChangeBalance(iClient, LK_Cash, LK_Take, iPrice);
 								
@@ -2025,7 +2002,7 @@ public int AdministrationMenuExtend_Callback(Menu menu, MenuAction action, int i
 				else if(g_iExtendPriceSellMode == 5 && g_bMyJBShopExist)
 				{
 					if(g_bEnableBank && g_bBankMyJBCredits && g_bExtendBank)
-						SetBankMyJBCredits(iClient, ga_iBankMyJBCredits[iClient] - iPrice);
+						SetBankMyJBCredits(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits - iPrice);
 					else
 						MyJailShop_SetCredits(iClient, MyJailShop_GetCredits(iClient) - iPrice);
 								
@@ -2069,7 +2046,7 @@ void OpenLeaveConfirmation(int iClient)
 	
 	Format(tempBuffer, sizeof(tempBuffer), "%T", "AreYouSure", iClient);
 	menu.AddItem("", tempBuffer, ITEMDRAW_DISABLED);
-	if(ga_iRank[iClient] == 0)
+	if(g_ClientInfo[iClient].rank == 0)
 	{
 		Format(tempBuffer, sizeof(tempBuffer), "%T", "OwnerWarning", iClient);
 		menu.AddItem("", tempBuffer, ITEMDRAW_DISABLED);

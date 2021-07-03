@@ -27,49 +27,40 @@ public Action Command_Accept(int iClient, int args)
 		CReplyToCommand(iClient, "%t %t", "Prefix", "WrongTeam");
 		return Plugin_Handled;
 	}
-	if (ga_bHasGang[iClient])
+	if (g_ClientInfo[iClient].gangid != -1)
 	{
 		CReplyToCommand(iClient, "%t %t", "Prefix", "AlreadyInGang");
 		return Plugin_Handled;
 	}
-	if (ga_iInvitation[iClient] == -1)
+	if (g_ClientInfo[iClient].inviter_id == -1)
 	{
 		CReplyToCommand(iClient, "%t %t", "Prefix", "NotInvited");
 		return Plugin_Handled;
 	}
 	
-	int sender = ga_iInvitation[iClient];
-	if (ga_iGangSize[sender] >= g_iSize + Gangs_Size_GetCurrectLvl(sender))
+	int sender = g_ClientInfo[iClient].inviter_id;
+	if (g_GangInfo[GetGangLocalId(sender)].players_count >= g_iSize + Gangs_Size_GetCurrectLvl(sender))
 	{
 		CReplyToCommand(iClient, "%t %t", "Prefix", "GangIsFull");
 		return Plugin_Handled;
 	}
 
-	ga_sGangName[iClient] = ga_sGangName[sender];
-	ga_iDateJoined[iClient] = GetTime();
-	ga_bHasGang[iClient] =	true;
+	g_ClientInfo[iClient].gangid = g_ClientInfo[sender].gangid
+	g_ClientInfo[iClient].invite_date = GetTime();
 	ga_bSetName[iClient] = false;
 
 	char szName[MAX_NAME_LENGTH];
 	GetClientName(sender, szName, sizeof(szName));
-	
-	ga_iScore[iClient] = ga_iScore[sender];
-	ga_iBankRubles[iClient] = ga_iBankRubles[sender];
-	ga_iBankCredits[iClient] = ga_iBankCredits[sender];
-	ga_iBankGold[iClient] = ga_iBankGold[sender];
-	ga_iBankWCSGold[iClient] = ga_iBankWCSGold[sender];
-	ga_iBankLKRubles[iClient] = ga_iBankLKRubles[sender];
-	ga_iExtendCount[iClient] = ga_iExtendCount[sender];
-	ga_iSize[iClient] = ga_iSize[sender];
-	ga_iGangSize[iClient] = ++ga_iGangSize[sender];
-	
-	ga_bInvitationSent[sender] = false;
 
-	ga_sInvitedBy[iClient] = szName;
-	ga_iRank[iClient] = GetLastConfigRank();
+	g_GangInfo[GetGangLocalId(iClient)].players_count++;
+	
+	g_ClientInfo[sender].invation_sent = false;
+
+	g_ClientInfo[iClient].inviter_name = szName;
+	g_ClientInfo[iClient].rank = GetLastConfigRank();
 	UpdateSQL(iClient);
 	GetClientName(iClient, szName, sizeof(szName));
-	CPrintToChatAll("%t %t", "Prefix", "GangJoined", szName, ga_sGangName[iClient]);
+	CPrintToChatAll("%t %t", "Prefix", "GangJoined", szName, g_GangInfo[GetGangLocalId(iClient)].name);
 	return Plugin_Handled;
 }
 

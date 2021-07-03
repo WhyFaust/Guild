@@ -213,7 +213,7 @@ public void SQLCallback_GangStatistics(Database db, DBResultSet results, const c
 	Format(sTitleString, sizeof(sTitleString), "%T", StatName, iClient);
 	menu.SetTitle(sTitleString);
 
-	Format(sDisplayString, sizeof(sDisplayString), "%T : %s %T", "MenuGangName", iClient, sGangName, "Level", iClient, Gangs_GetGangLvl(iGangScore));
+	Format(sDisplayString, sizeof(sDisplayString), "%T : %s %T", "MenuGangName", iClient, sGangName, "Level", iClient, Gangs_GetGangLvl(iClient));
 	menu.AddItem("", sDisplayString, ITEMDRAW_DISABLED);
 	
 	Format(sDisplayString, sizeof(sDisplayString), "%T : %i/%i", "Score", iClient, iGangScore, Gangs_GetGangReqScore(iGangScore));

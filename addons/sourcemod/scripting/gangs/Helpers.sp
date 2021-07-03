@@ -37,9 +37,9 @@ public Action RefreshSteamID(Handle hTimer, int iUserID)
         return;
     }
 
-    GetClientAuthId(iClient, AuthId_Steam2, ga_sSteamID[iClient], sizeof(ga_sSteamID[]));
+    GetClientAuthId(iClient, AuthId_Steam2, g_ClientInfo[iClient].steamid, 32);
     
-    if(StrContains(ga_sSteamID[iClient], "STEAM_1", true) == -1) //still invalid - retry again
+    if(StrContains(g_ClientInfo[iClient].steamid, "STEAM_1", true) == -1) //still invalid - retry again
     {
 
         CreateTimer(5.0, RefreshSteamID, iClient, TIMER_FLAG_NO_MAPCHANGE);
@@ -86,7 +86,7 @@ void DissolveGang(int gangid)
     
     for(int i = 1; i <= MaxClients; i++)
     {
-        if(IsValidClient(i) && ga_iGangId[i] == gangid)
+        if(IsValidClient(i) && g_ClientInfo[i].gangid == gangid)
         {
             API_OnExitFromGang(i);
             ResetVariables(i);
@@ -143,7 +143,7 @@ void PrintToGang(int iClient, bool bPrintToClient = false, const char[] sMsg, an
 
     for(int i = 1; i <= MaxClients; i++)
     {
-        if(IsValidClient(i) && StrEqual(ga_sGangName[i], ga_sGangName[iClient]) && !StrEqual(ga_sGangName[iClient], ""))
+        if(IsValidClient(i) && g_ClientInfo[i].gangid == g_ClientInfo[iClient].gangid)
         {
             if(bPrintToClient)
             {
@@ -159,18 +159,14 @@ void PrintToGang(int iClient, bool bPrintToClient = false, const char[] sMsg, an
 }
 
 void SetTimeEndGang(int iClient, int iTime)
-{				
-    ga_iExtendCount[iClient]++;
-    for(int i = 1; i <= MaxClients; i++)
-        if(IsValidClient(i) && iClient != i)
-            if(ga_iGangId[i] == ga_iGangId[iClient])
-                ga_iExtendCount[i]++;
+{
+    g_GangInfo[GetGangLocalId(iClient)].extended_count++;
 
     char sQuery[300];
     Format(sQuery, sizeof(sQuery), "UPDATE gang_group \
                                     SET end_date = %i, extend_count = %i \
                                     WHERE id = %i;", 
-                                    iTime, ga_iExtendCount[iClient], ga_iGangId[iClient]);
+                                    iTime, g_GangInfo[GetGangLocalId(iClient)].extended_count, g_ClientInfo[iClient].gangid);
     g_hDatabase.Query(SQLCallback_Void, sQuery, 6);
 }
 
@@ -180,47 +176,43 @@ public Action SetBankRubles(int iClient, int shilings)
     Format(sQuery, sizeof(sQuery), "UPDATE gang_group \
                                     SET rubles = %i \
                                     WHERE id = %i AND server_id = %i;", 
-                                    shilings, ga_iGangId[iClient], g_iServerID);
+                                    shilings, g_ClientInfo[iClient].gangid, g_iServerID);
     g_hDatabase.Query(SQLCallback_Void, sQuery, 7);
 
     char log[300];
-    if(shilings > ga_iBankRubles[iClient])
-        Format(log, sizeof(log), "Игрок %N положил в банк %i рублей", iClient, shilings-ga_iBankRubles[iClient]);
+    if(shilings > g_GangInfo[GetGangLocalId(iClient)].currency.rubles)
+        Format(log, sizeof(log), "Игрок %N положил в банк %i рублей", iClient, shilings - g_GangInfo[GetGangLocalId(iClient)].currency.rubles);
     else
-        Format(log, sizeof(log), "Игрок %N забрал из банка %i рублей", iClient, ga_iBankRubles[iClient]-shilings);
+        Format(log, sizeof(log), "Игрок %N забрал из банка %i рублей", iClient, g_GangInfo[GetGangLocalId(iClient)].currency.rubles - shilings);
 
     Format(sQuery, sizeof(sQuery), "INSERT INTO gang_bank_log \
                                     (gang_id, player_id, log, date) \
                                     VALUES (%i, %i, '%s', '%d');", 
-                                    ga_iGangId[iClient], ga_iPlayerId[iClient], log, GetTime());
+                                    g_ClientInfo[iClient].gangid, g_ClientInfo[iClient].id, log, GetTime());
     g_hDatabase.Query(SQLCallback_Void, sQuery, 8);
     
     bool check;
     int money;
-    if(ga_iBankRubles[iClient] < shilings)
+    if(g_GangInfo[GetGangLocalId(iClient)].currency.rubles < shilings)
     {
         check = false;
-        money = shilings - ga_iBankRubles[iClient];
+        money = shilings - g_GangInfo[GetGangLocalId(iClient)].currency.rubles;
     }
     else 
     {
         check = true;
-        money = ga_iBankRubles[iClient] - shilings;
+        money = g_GangInfo[GetGangLocalId(iClient)].currency.rubles - shilings;
     }
     
     if(g_bLog)
     {
         if(check)
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N забрал из казны %i рублей ( Было %i, стало %i)", iClient, money, ga_iBankRubles[iClient], shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N забрал из казны %i рублей ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.rubles, shilings);
         else
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N положил в казну %i рублей ( Было %i, стало %i)", iClient, money, ga_iBankRubles[iClient], shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N положил в казну %i рублей ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.rubles, shilings);
     }
-        
-    ga_iBankRubles[iClient] = shilings;
-    for(int i = 1; i <= MaxClients; i++)
-        if(IsValidClient(i) && iClient != i)
-            if(StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
-                ga_iBankRubles[i] = ga_iBankRubles[iClient];
+
+    g_GangInfo[GetGangLocalId(iClient)].currency.rubles = shilings;
     
     return;
 }
@@ -231,47 +223,43 @@ public Action SetBankCredits(int iClient, int shilings)
     Format(sQuery, sizeof(sQuery), "UPDATE gang_group \
                                     SET credits = %i \
                                     WHERE id = %i AND server_id = %i;", 
-                                    shilings, ga_iGangId[iClient], g_iServerID);
+                                    shilings, g_ClientInfo[iClient].gangid, g_iServerID);
     g_hDatabase.Query(SQLCallback_Void, sQuery, 9);
 
     char log[300];
-    if(shilings > ga_iBankCredits[iClient])
-        Format(log, sizeof(log), "Игрок %N положил в банк %i кредитов", iClient, shilings-ga_iBankCredits[iClient]);
+    if(shilings > g_GangInfo[GetGangLocalId(iClient)].currency.credits)
+        Format(log, sizeof(log), "Игрок %N положил в банк %i кредитов", iClient, shilings - g_GangInfo[GetGangLocalId(iClient)].currency.credits);
     else
-        Format(log, sizeof(log), "Игрок %N забрал из банка %i кредитов", iClient, ga_iBankCredits[iClient]-shilings);
+        Format(log, sizeof(log), "Игрок %N забрал из банка %i кредитов", iClient, g_GangInfo[GetGangLocalId(iClient)].currency.credits - shilings);
     
     Format(sQuery, sizeof(sQuery), "INSERT INTO gang_bank_log \
                                     (gang_id, player_id, log, date) \
                                     VALUES(%i, %i, '%s', %d);", 
-                                    ga_iGangId[iClient], ga_iPlayerId[iClient], log, GetTime());
+                                    g_ClientInfo[iClient].gangid, g_ClientInfo[iClient].id, log, GetTime());
     g_hDatabase.Query(SQLCallback_Void, sQuery, 10);
     
     bool check;
     int money;
-    if(ga_iBankCredits[iClient] < shilings)
+    if(g_GangInfo[GetGangLocalId(iClient)].currency.credits < shilings)
     {
         check = false;
-        money = shilings - ga_iBankCredits[iClient];
+        money = shilings - g_GangInfo[GetGangLocalId(iClient)].currency.credits;
     }
     else 
     {
         check = true;
-        money = ga_iBankCredits[iClient] - shilings;
+        money = g_GangInfo[GetGangLocalId(iClient)].currency.credits - shilings;
     }
     
     if(g_bLog)
     {
         if(check)
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N забрал из казны %i кредитов ( Было %i, стало %i)", iClient, money, ga_iBankCredits[iClient], shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N забрал из казны %i кредитов ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.credits, shilings);
         else
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N положил в казну %i кредитов ( Было %i, стало %i)", iClient, money, ga_iBankCredits[iClient], shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N положил в казну %i кредитов ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.credits, shilings);
     }
 
-    ga_iBankCredits[iClient] = shilings;
-    for(int i = 1; i <= MaxClients; i++)
-        if(IsValidClient(i) && iClient != i)
-            if(StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
-                ga_iBankCredits[i] = ga_iBankCredits[iClient];
+    g_GangInfo[GetGangLocalId(iClient)].currency.credits = shilings;
     
     return;
 }
@@ -282,47 +270,43 @@ public Action SetBankGold(int iClient, int shilings)
     Format(sQuery, sizeof(sQuery), "UPDATE gang_group \
                                     SET gold = %i \
                                     WHERE id = %i AND server_id = %i;", 
-                                    shilings, ga_iGangId[iClient], g_iServerID);
+                                    shilings, g_ClientInfo[iClient].gangid, g_iServerID);
     g_hDatabase.Query(SQLCallback_Void, sQuery, 11);
 
     char log[300];
-    if(shilings > ga_iBankGold[iClient])
-        Format(log, sizeof(log), "Игрок %N положил в банк %i голды", iClient, shilings-ga_iBankGold[iClient]);
+    if(shilings > g_GangInfo[GetGangLocalId(iClient)].currency.gold)
+        Format(log, sizeof(log), "Игрок %N положил в банк %i голды", iClient, shilings - g_GangInfo[GetGangLocalId(iClient)].currency.gold);
     else
-        Format(log, sizeof(log), "Игрок %N забрал из банка %i голды", iClient, ga_iBankGold[iClient]-shilings);
+        Format(log, sizeof(log), "Игрок %N забрал из банка %i голды", iClient, g_GangInfo[GetGangLocalId(iClient)].currency.gold - shilings);
     
     Format(sQuery, sizeof(sQuery), "INSERT INTO gang_bank_log \
                                     (gang_id, player_id, log, date) \
                                     VALUES (%i, %i, '%s', '%d');", 
-                                    ga_iGangId[iClient], ga_iPlayerId[iClient], log, GetTime());
+                                    g_ClientInfo[iClient].gangid, g_ClientInfo[iClient].id, log, GetTime());
     g_hDatabase.Query(SQLCallback_Void, sQuery, 12);
     
     bool check;
     int money;
-    if(ga_iBankGold[iClient] < shilings)
+    if(g_GangInfo[GetGangLocalId(iClient)].currency.gold < shilings)
     {
         check = false;
-        money = shilings - ga_iBankGold[iClient];
+        money = shilings - g_GangInfo[GetGangLocalId(iClient)].currency.gold;
     }
     else 
     {
         check = true;
-        money = ga_iBankGold[iClient] - shilings;
+        money = g_GangInfo[GetGangLocalId(iClient)].currency.gold - shilings;
     }
     
     if(g_bLog)
     {
         if(check)
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N забрал из казны %i голды ( Было %i, стало %i)", iClient, money, ga_iBankGold[iClient], shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N забрал из казны %i голды ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.gold, shilings);
         else
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N положил в казну %i голды ( Было %i, стало %i)", iClient, money, ga_iBankGold[iClient], shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N положил в казну %i голды ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.gold, shilings);
     }
 
-    ga_iBankGold[iClient] = shilings;
-    for(int i = 1; i <= MaxClients; i++)
-        if(IsValidClient(i) && iClient != i)
-            if(StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
-                ga_iBankGold[i] = ga_iBankGold[iClient];
+    g_GangInfo[GetGangLocalId(iClient)].currency.gold = shilings;
     
     return;
 }
@@ -333,47 +317,43 @@ public Action SetBankWCSGold(int iClient, int shilings)
     Format(sQuery, sizeof(sQuery), "UPDATE gang_group \
                                     SET wcsgold = %i \
                                     WHERE id = %i AND server_id = %i;", 
-                                    shilings, ga_iGangId[iClient], g_iServerID);
+                                    shilings, g_ClientInfo[iClient].gangid, g_iServerID);
     g_hDatabase.Query(SQLCallback_Void, sQuery, 13);
 
     char log[300];
-    if(shilings > ga_iBankWCSGold[iClient])
-        Format(log, sizeof(log), "Игрок %N положил в банк %i WCS голды", iClient, shilings-ga_iBankWCSGold[iClient]);
+    if(shilings > g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold)
+        Format(log, sizeof(log), "Игрок %N положил в банк %i WCS голды", iClient, shilings - g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold);
     else
-        Format(log, sizeof(log), "Игрок %N забрал из банка %i WCS голды", iClient, ga_iBankWCSGold[iClient]-shilings);
+        Format(log, sizeof(log), "Игрок %N забрал из банка %i WCS голды", iClient, g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold - shilings);
     
     Format(sQuery, sizeof(sQuery), "INSERT INTO gang_bank_log \
                                     (gang_id, player_id, log, date) \
                                     VALUES (%i, %i, '%s', '%d');", 
-                                    ga_iGangId[iClient], ga_iPlayerId[iClient], log, GetTime());
+                                    g_ClientInfo[iClient].gangid, g_ClientInfo[iClient].id, log, GetTime());
     g_hDatabase.Query(SQLCallback_Void, sQuery, 14);
     
     bool check;
     int money;
-    if(ga_iBankWCSGold[iClient] < shilings)
+    if(g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold < shilings)
     {
         check = false;
-        money = shilings - ga_iBankWCSGold[iClient];
+        money = shilings - g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold;
     }
     else 
     {
         check = true;
-        money = ga_iBankWCSGold[iClient] - shilings;
+        money = g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold - shilings;
     }
     
     if(g_bLog)
     {
         if(check)
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N забрал из казны %i wcs голды ( Было %i, стало %i)", iClient, money, ga_iBankWCSGold[iClient], shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N забрал из казны %i wcs голды ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold, shilings);
         else
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N положил в казну %i wcs голды ( Было %i, стало %i)", iClient, money, ga_iBankWCSGold[iClient], shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N положил в казну %i wcs голды ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold, shilings);
     }
 
-    ga_iBankWCSGold[iClient] = shilings;
-    for(int i = 1; i <= MaxClients; i++)
-        if(IsValidClient(i) && iClient != i)
-            if(StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
-                ga_iBankWCSGold[i] = ga_iBankWCSGold[iClient];
+    g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold = shilings;
     
     return;
 }
@@ -384,47 +364,43 @@ public Action SetBankLKRubles(int iClient, int shilings)
     Format(sQuery, sizeof(sQuery), "UPDATE gang_group \
                                     SET lk_rubles = %i \
                                     WHERE id = %i AND server_id = %i;", 
-                                    shilings, ga_iGangId[iClient], g_iServerID);
+                                    shilings, g_ClientInfo[iClient].gangid, g_iServerID);
     g_hDatabase.Query(SQLCallback_Void, sQuery, 15);
 
     char log[300];
-    if(shilings > ga_iBankLKRubles[iClient])
-        Format(log, sizeof(log), "Игрок %N положил в банк %i LK рубли", iClient, shilings - ga_iBankLKRubles[iClient]);
+    if(shilings > g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles)
+        Format(log, sizeof(log), "Игрок %N положил в банк %i LK рубли", iClient, shilings - g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles);
     else
-        Format(log, sizeof(log), "Игрок %N забрал из банка %i LK рубли", iClient, ga_iBankLKRubles[iClient] - shilings);
+        Format(log, sizeof(log), "Игрок %N забрал из банка %i LK рубли", iClient, g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles - shilings);
     
     Format(sQuery, sizeof(sQuery), "INSERT INTO gang_bank_log \
                                     (gang_id, player_id, log, date) \
                                     VALUES(%i, %i, '%s', '%d');", 
-                                    ga_iGangId[iClient], ga_iPlayerId[iClient], log, GetTime());
+                                    g_ClientInfo[iClient].gangid, g_ClientInfo[iClient].id, log, GetTime());
     g_hDatabase.Query(SQLCallback_Void, sQuery, 16);
     
     bool check;
     int money;
-    if(ga_iBankLKRubles[iClient] < shilings)
+    if(g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles < shilings)
     {
         check = false;
-        money = shilings - ga_iBankLKRubles[iClient];
+        money = shilings - g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles;
     }
     else 
     {
         check = true;
-        money = ga_iBankLKRubles[iClient] - shilings;
+        money = g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles - shilings;
     }
     
     if(g_bLog)
     {
         if(check)
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N забрал из казны %i LK рублей ( Было %i, стало %i)", iClient, money, ga_iBankLKRubles[iClient], shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N забрал из казны %i LK рублей ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles, shilings);
         else
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N положил в казну %i LK рублей ( Было %i, стало %i)", iClient, money, ga_iBankLKRubles[iClient], shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N положил в казну %i LK рублей ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles, shilings);
     }
 
-    ga_iBankLKRubles[iClient] = shilings;
-    for(int i = 1; i <= MaxClients; i++)
-        if(IsValidClient(i) && iClient != i)
-            if(StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
-                ga_iBankLKRubles[i] = ga_iBankLKRubles[iClient];
+    g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles = shilings;
     
     return;
 }
@@ -435,47 +411,43 @@ public Action SetBankMyJBCredits(int iClient, int shilings)
     Format(sQuery, sizeof(sQuery), "UPDATE gang_group \
                                     SET myjb_credits = %i \
                                     WHERE id = %i AND server_id = %i;", 
-                                    shilings, ga_iGangId[iClient], g_iServerID);
+                                    shilings, g_ClientInfo[iClient].gangid, g_iServerID);
     g_hDatabase.Query(SQLCallback_Void, sQuery, 17);
 
     char log[300];
-    if(shilings > ga_iBankMyJBCredits[iClient])
-        Format(log, sizeof(log), "Игрок %N положил в банк %i MyJB Кредиты", iClient, shilings - ga_iBankMyJBCredits[iClient]);
+    if(shilings > g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits)
+        Format(log, sizeof(log), "Игрок %N положил в банк %i MyJB Кредиты", iClient, shilings - g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits);
     else
-        Format(log, sizeof(log), "Игрок %N забрал из банка %i MyJB Кредиты", iClient, ga_iBankMyJBCredits[iClient] - shilings);
+        Format(log, sizeof(log), "Игрок %N забрал из банка %i MyJB Кредиты", iClient, g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits - shilings);
     
     Format(sQuery, sizeof(sQuery), "INSERT INTO gang_bank_log \
                                     (gang_id, player_id, log, date) \
                                     VALUES (%i, %i, '%s', '%d');", 
-                                    ga_iGangId[iClient], ga_iPlayerId[iClient], log, GetTime());
+                                    g_ClientInfo[iClient].gangid, g_ClientInfo[iClient].id, log, GetTime());
     g_hDatabase.Query(SQLCallback_Void, sQuery, 18);
     
     bool check;
     int money;
-    if(ga_iBankMyJBCredits[iClient] < shilings)
+    if(g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits < shilings)
     {
         check = false;
-        money = shilings - ga_iBankLKRubles[iClient];
+        money = shilings - g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles;
     }
     else 
     {
         check = true;
-        money = ga_iBankMyJBCredits[iClient] - shilings;
+        money = g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits - shilings;
     }
     
     if(g_bLog)
     {
         if(check)
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N забрал из казны %i MyJB кредитов ( Было %i, стало %i)", iClient, money, ga_iBankMyJBCredits[iClient], shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N забрал из казны %i MyJB кредитов ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits, shilings);
         else
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N положил в казну %i MyJB кредитов ( Было %i, стало %i)", iClient, money, ga_iBankMyJBCredits[iClient], shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N положил в казну %i MyJB кредитов ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits, shilings);
     }
 
-    ga_iBankMyJBCredits[iClient] = shilings;
-    for(int i = 1; i <= MaxClients; i++)
-        if(IsValidClient(i) && iClient != i)
-            if(StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
-                ga_iBankMyJBCredits[i] = ga_iBankMyJBCredits[iClient];
+    g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits = shilings;
     
     return;
 }
@@ -483,53 +455,51 @@ public Action SetBankMyJBCredits(int iClient, int shilings)
 void RemoveFromGang(int iClient)
 {
     char sQuery[300];
-    if(ga_iRank[iClient] == 0)
+    if(g_ClientInfo[iClient].rank == 0)
     {
         Format(sQuery, sizeof(sQuery), "DELETE FROM gang_player \
                                         WHERE gang_id = %i;", 
-                                        ga_iGangId[iClient]);
+                                        g_ClientInfo[iClient].gangid);
         g_hDatabase.Query(SQLCallback_Void, sQuery, 19);
         Format(sQuery, sizeof(sQuery), "DELETE FROM gang_statistic \
                                         WHERE gang_id = %i;", 
-                                        ga_iGangId[iClient]);
+                                        g_ClientInfo[iClient].gangid);
         g_hDatabase.Query(SQLCallback_Void, sQuery, 20);
         Format(sQuery, sizeof(sQuery), "DELETE FROM gang_bank_log \
                                         WHERE gang_id = %i;", 
-                                        ga_iGangId[iClient]);
+                                        g_ClientInfo[iClient].gangid);
         g_hDatabase.Query(SQLCallback_Void, sQuery, 21);
         Format(sQuery, sizeof(sQuery), "DELETE FROM gang_perk \
                                         WHERE gang_id = %i;", 
-                                        ga_iGangId[iClient]);
+                                        g_ClientInfo[iClient].gangid);
         g_hDatabase.Query(SQLCallback_Void, sQuery, 22);
         Format(sQuery, sizeof(sQuery), "DELETE FROM gang_group \
                                         WHERE id = %i AND server_id = %i;", 
-                                        ga_iGangId[iClient], g_iServerID);
+                                        g_ClientInfo[iClient].gangid, g_iServerID);
         g_hDatabase.Query(SQLCallback_Void, sQuery, 23);
         
         char szName[MAX_NAME_LENGTH];
         GetClientName(iClient, szName, sizeof(szName));
-        CPrintToChatAll("%t %t", "Prefix", "GangDisbanded", szName, ga_sGangName[iClient]);
+        CPrintToChatAll("%t %t", "Prefix", "GangDisbanded", szName, g_GangInfo[GetGangLocalId(iClient)].name);
         for(int i = 1; i <= MaxClients; i++)
         {
-            if(IsValidClient(i) && StrEqual(ga_sGangName[i], ga_sGangName[iClient]) && i != iClient)
+            if(IsValidClient(i) && g_ClientInfo[iClient].gangid == g_ClientInfo[i].gangid)
             {
                 API_OnExitFromGang(i);
                 ResetVariables(i, false);
             }
         }
-        API_OnExitFromGang(iClient);
-        ResetVariables(iClient, false);
     }
     else
     {
         Format(sQuery, sizeof(sQuery), "DELETE FROM gang_player \
                                         WHERE id = %i AND gang_id = %i;", 
-                                        ga_iPlayerId[iClient], ga_iGangId[iClient]);
+                                        g_ClientInfo[iClient].id, g_ClientInfo[iClient].gangid);
         g_hDatabase.Query(SQLCallback_Void, sQuery, 24);
         
         char szName[MAX_NAME_LENGTH];
         GetClientName(iClient, szName, sizeof(szName));
-        CPrintToChatAll("%t %t", "Prefix", "LeftGang", szName, ga_sGangName[iClient]);
+        CPrintToChatAll("%t %t", "Prefix", "LeftGang", szName, g_GangInfo[GetGangLocalId(iClient)].name);
         API_OnExitFromGang(iClient);
         ResetVariables(iClient, false);
     }
@@ -560,6 +530,14 @@ void StartGangCreation(int iClient)
 /*****************************************************************
 ***********************	     OTHER	    **************************
 ******************************************************************/
+public int GetGangLocalId(int iClient)
+{
+    for(int i = 0; i < sizeof(g_GangInfo); i++)
+        if(g_GangInfo[i].id == g_ClientInfo[iClient].gangid)
+            return i;
+    return -1;
+}
+
 public Action Timer_OpenGangMenu(Handle hTimer, int userid)
 {
     int iClient = userid;
@@ -570,37 +548,33 @@ public Action Timer_OpenGangMenu(Handle hTimer, int userid)
 
 void ResetVariables(int iClient, bool full = true)
 {
-    ga_iRank[iClient] = -1;
-    ga_iGangSize[iClient] = -1;
-    ga_iInvitation[iClient] = -1;
-    ga_iDateJoined[iClient] = -1;
-    ga_iSize[iClient] = 0;
-    ga_iScore[iClient] = 0;
-    ga_iBankRubles[iClient] = 0;
-    ga_iBankCredits[iClient] = 0;
-    ga_iBankGold[iClient] = 0;
-    ga_iBankWCSGold[iClient] = 0;
-    ga_iExtendCount[iClient] = 0;
-    ga_iTempInt1[iClient] = 0;
+    g_ClientInfo[iClient].rank = -1;
+    g_GangInfo[GetGangLocalId(iClient)].players_count = -1;
+    g_ClientInfo[iClient].inviter_id = -1;
+    g_ClientInfo[iClient].invite_date = -1;
+    g_GangInfo[GetGangLocalId(iClient)].level = 0;
+    g_GangInfo[GetGangLocalId(iClient)].exp = 0;
+    g_GangInfo[GetGangLocalId(iClient)].currency.rubles = 0;
+    g_GangInfo[GetGangLocalId(iClient)].currency.credits = 0;
+    g_GangInfo[GetGangLocalId(iClient)].currency.gold = 0;
+    g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold = 0;
+    g_GangInfo[GetGangLocalId(iClient)].extended_count = 0;
     ga_iTempInt2[iClient] = 0;
-    ga_iGangId[iClient] = -1;
-    ga_sGangName[iClient] = "";
-    ga_sInvitedBy[iClient] = "";
+    g_ClientInfo[iClient].gangid = -1;
+    g_ClientInfo[iClient].inviter_name = "";
     ga_bSetName[iClient] = false;
-    ga_bHasGang[iClient] = false;
     ga_bRename[iClient] = false;
-    ga_iEndTime[iClient] = -1;
-    ga_bInvitationSent[iClient] = false;
+    g_GangInfo[GetGangLocalId(iClient)].end_date = -1;
+    g_ClientInfo[iClient].invation_sent = false;
     g_iBankCountType[iClient] = 0;
     if(full)
     {
-        ga_sSteamID[iClient] = "";
+        g_ClientInfo[iClient].steamid = "";
+        g_ClientInfo[iClient].blockinvites = false;
         //ga_iProfileID[iClient] = -1;
         //ga_sProfileName[iClient] = "";
         //ga_iProfileSale[iClient] = 0;
         //ga_iDiscount[iClient] = 0;
         //ga_iPlayerShilings[iClient] = 0;
-        ga_bBlockInvites[iClient] = false;
-        ga_bLoaded[iClient] = false;
     }
 }

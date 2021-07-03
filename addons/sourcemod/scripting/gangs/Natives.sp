@@ -171,7 +171,7 @@ public int Native_GetClientGangId(Handle plugin, int numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid iClient index (%i)", iClient);
 	}
 
-	return ga_iGangId[iClient];
+	return g_ClientInfo[iClient].gangid;
 }
 
 public int Native_GetClientGangName(Handle plugin, int numParams)
@@ -183,7 +183,7 @@ public int Native_GetClientGangName(Handle plugin, int numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid iClient index (%i)", iClient);
 	}
 
-	SetNativeString(2, ga_sGangName[iClient], GetNativeCell(3));
+	SetNativeString(2, g_GangInfo[GetGangLocalId(iClient)].name, GetNativeCell(3));
 	return 0;
 }
 
@@ -326,27 +326,27 @@ public int Native_GetBankClientCash(Handle plugin, int numParams)
 
 	if(StrEqual(sPerk, "rubles"))
 	{
-		return ga_iBankRubles[iClient];
+		return g_GangInfo[GetGangLocalId(iClient)].currency.rubles;
 	}
 	else if(StrEqual(sPerk, "shop"))
 	{
-		return ga_iBankCredits[iClient];
+		return g_GangInfo[GetGangLocalId(iClient)].currency.credits;
 	}
 	else if(StrEqual(sPerk, "shopgold"))
 	{
-		return ga_iBankGold[iClient];
+		return g_GangInfo[GetGangLocalId(iClient)].currency.gold;
 	}
 	else if(StrEqual(sPerk, "wcsgold"))
 	{
-		return ga_iBankWCSGold[iClient];
+		return g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold;
 	}
 	else if(StrEqual(sPerk, "lkrubles"))
 	{
-		return ga_iBankLKRubles[iClient];
+		return g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles;
 	}
 	else if(StrEqual(sPerk, "myjb"))
 	{
-		return ga_iBankMyJBCredits[iClient];
+		return g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits;
 	}
 	
 	return 0;
@@ -366,27 +366,27 @@ public int Native_TakeBankClientCash(Handle plugin, int numParams)
 
 	if(StrEqual(sPerk, "rubles"))
 	{
-		SetBankRubles(iClient, ga_iBankRubles[iClient] - Cash);
+		SetBankRubles(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.rubles - Cash);
 	}
 	else if(StrEqual(sPerk, "shop"))
 	{
-		SetBankCredits(iClient, ga_iBankCredits[iClient] - Cash);
+		SetBankCredits(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.credits - Cash);
 	}
 	else if(StrEqual(sPerk, "shopgold"))
 	{
-		SetBankGold(iClient, ga_iBankGold[iClient] - Cash);
+		SetBankGold(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.gold - Cash);
 	}
 	else if(StrEqual(sPerk, "wcsgold"))
 	{
-		SetBankWCSGold(iClient, ga_iBankWCSGold[iClient] - Cash);
+		SetBankWCSGold(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold - Cash);
 	}
 	else if(StrEqual(sPerk, "lkrubles"))
 	{
-		SetBankLKRubles(iClient, ga_iBankLKRubles[iClient] - Cash);
+		SetBankLKRubles(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles - Cash);
 	}
 	else if(StrEqual(sPerk, "myjb"))
 	{
-		SetBankMyJBCredits(iClient, ga_iBankMyJBCredits[iClient] - Cash);
+		SetBankMyJBCredits(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits - Cash);
 	}
 	return 0;
 }
@@ -405,27 +405,27 @@ public int Native_GiveBankClientCash(Handle plugin, int numParams)
 
 	if(StrEqual(sPerk, "rubles"))
 	{
-		SetBankRubles(iClient, ga_iBankRubles[iClient] + Cash);
+		SetBankRubles(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.rubles + Cash);
 	}
 	else if(StrEqual(sPerk, "shop"))
 	{
-		SetBankCredits(iClient, ga_iBankCredits[iClient] + Cash);
+		SetBankCredits(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.credits + Cash);
 	}
 	else if(StrEqual(sPerk, "shopgold"))
 	{
-		SetBankGold(iClient, ga_iBankGold[iClient] + Cash);
+		SetBankGold(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.gold + Cash);
 	}
 	else if(StrEqual(sPerk, "wcsgold"))
 	{
-		SetBankWCSGold(iClient, ga_iBankWCSGold[iClient] + Cash);
+		SetBankWCSGold(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold + Cash);
 	}
 	else if(StrEqual(sPerk, "lkrubles"))
 	{
-		SetBankLKRubles(iClient, ga_iBankLKRubles[iClient] + Cash);
+		SetBankLKRubles(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles + Cash);
 	}
 	else if(StrEqual(sPerk, "myjb"))
 	{
-		SetBankMyJBCredits(iClient, ga_iBankMyJBCredits[iClient] + Cash);
+		SetBankMyJBCredits(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits + Cash);
 	}
 	return 0;
 }
@@ -450,7 +450,7 @@ public int Native_KickMember(Handle plugin, int numParams)
 	char sQuery[300];
 	Format(sQuery, sizeof(sQuery), "DELETE FROM gang_player \
 									WHERE id = %i;", 
-									ga_iPlayerId[iClient], g_iServerID);
+									g_ClientInfo[iClient].id, g_iServerID);
 	g_hDatabase.Query(SQLCallback_Void, sQuery, 31);
 	API_OnExitFromGang(iClient);
 	ResetVariables(iClient, false);
@@ -467,14 +467,14 @@ public int Native_GetClientGangRank(Handle plugin, int numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid iClient index (%i)", iClient);
 	}
 
-	return view_as<int>(ga_iRank[iClient]);
+	return view_as<int>(g_ClientInfo[iClient].rank);
 }
 
 public int Native_GetGangLvl(Handle plugin, int numParams)
 {
-	int iScore = GetNativeCell(1);
+	int iClient = GetNativeCell(1);
 
-	return view_as<int>(GetGangLvl(iScore));
+	return view_as<int>(g_GangInfo[GetGangLocalId(iClient)].level);
 }
 
 public int Native_GetGangSize(Handle plugin, int numParams)
@@ -484,9 +484,9 @@ public int Native_GetGangSize(Handle plugin, int numParams)
 
 public int Native_GetGangReqScore(Handle plugin, int numParams)
 {
-	int iScore = GetNativeCell(1);
+	int iClient = GetNativeCell(1);
 
-	return view_as<int>(((g_iScoreExpInc*GetGangLvl(iScore)/2)*(GetGangLvl(iScore)+1)));
+	return view_as<int>(g_iScoreExpInc*g_GangInfo[GetGangLocalId(iClient)].level);
 }
 
 public int Native_ClientHasGang(Handle plugin, int numParams)
@@ -496,7 +496,7 @@ public int Native_ClientHasGang(Handle plugin, int numParams)
 	if (!IsValidClient(iClient))
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid iClient index (%i)", iClient);
 	
-	return view_as<int>(ga_bHasGang[iClient]);
+	return view_as<int>(g_ClientInfo[iClient].gangid >= 0);
 }
 
 public int Native_ShowMainMenu(Handle hPlugin, int iNumParams)
@@ -543,12 +543,12 @@ public int Native_GetClientGangScore(Handle plugin, int numParams)
 {
 	int iClient = GetNativeCell(1);
 	
-	//if (!IsValidClient(iClient))
-	//{
-	//	return ThrowNativeError(SP_ERROR_NATIVE, "Invalid iClient index (%i)", iClient);
-	//}
+	if (!IsValidClient(iClient))
+	{
+		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid iClient index (%i)", iClient);
+	}
 	
-	return ga_iScore[iClient];
+	return g_GangInfo[GetGangLocalId(iClient)].exp;
 }
 
 public int Native_SetClientGangScore(Handle plugin, int numParams)
@@ -559,19 +559,19 @@ public int Native_SetClientGangScore(Handle plugin, int numParams)
 	if (!IsValidClient(iClient))
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid iClient index (%i)", iClient);
 	
-	ga_iScore[iClient] = iValue;
+	g_GangInfo[GetGangLocalId(iClient)].exp = iValue;
+	while(g_GangInfo[GetGangLocalId(iClient)].exp >= g_iScoreExpInc*g_GangInfo[GetGangLocalId(iClient)].level)
+	{
+		g_GangInfo[GetGangLocalId(iClient)].exp -= g_iScoreExpInc*g_GangInfo[GetGangLocalId(iClient)].level;
+		g_GangInfo[GetGangLocalId(iClient)].level++;
+	}
 
 	char sQuery[300];
-	Format(sQuery, sizeof(sQuery), "UPDATE gang_statistic \
-									SET %s = %i \
-									WHERE gang_id = %i;", 
-									g_sDbStatisticName, ga_iScore[iClient], ga_iGangId[iClient]);
+	Format(sQuery, sizeof(sQuery), "UPDATE gang_groups \
+									SET exp = %i, level = %i \
+									WHERE id = %i;", 
+									g_GangInfo[GetGangLocalId(iClient)].exp, g_GangInfo[GetGangLocalId(iClient)].level, g_ClientInfo[iClient].gangid);
 	g_hDatabase.Query(SQLCallback_Void, sQuery, 32);
 
-	for (int i = 1; i <= MaxClients; i++)
-		if (IsValidClient(i) && iClient != i)
-			if (StrEqual(ga_sGangName[i], ga_sGangName[iClient]))
-				ga_iScore[i] = ga_iScore[iClient];
-	
 	return 0;
 }

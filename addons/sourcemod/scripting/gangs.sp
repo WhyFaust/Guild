@@ -162,9 +162,9 @@ public void OnClientPostAdminCheck(int iClient)
     if(g_bPluginEnabled)
     {	
         LoadSteamID(iClient);
-        GetClientAuthId(iClient, AuthId_Steam2, ga_sSteamID[iClient], sizeof(ga_sSteamID[]));
+        GetClientAuthId(iClient, AuthId_Steam2, g_ClientInfo[iClient].steamid, 32);
         if(g_bDebug)
-            LogToFile("addons/sourcemod/logs/gangs_debug.txt", "Client %N(%i) SteamID: %s connected", iClient, iClient, ga_sSteamID[iClient]);
+            LogToFile("addons/sourcemod/logs/gangs_debug.txt", "Client %N(%i) SteamID: %s connected", iClient, iClient, g_ClientInfo[iClient].steamid);
     }
 }
 
@@ -267,7 +267,7 @@ public Action OnSay(int iClient, const char[] command, int args)
                     if(GameCMS_GetClientRubles(iClient) >= iCount)
                     {
                         GameCMS_SetClientRubles(iClient, GameCMS_GetClientRubles(iClient) - iCount);
-                        SetBankRubles(iClient, ga_iBankRubles[iClient] + iCount);
+                        SetBankRubles(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.rubles + iCount);
                         CPrintToChat(iClient, "%t %t", "Prefix", "BankSuccessfullyAction");
                     }
                     else
@@ -275,10 +275,10 @@ public Action OnSay(int iClient, const char[] command, int args)
                 }
                 case 2:
                 {
-                    if(ga_iBankRubles[iClient] >= iCount)
+                    if(g_GangInfo[GetGangLocalId(iClient)].currency.rubles >= iCount)
                     {
                         GameCMS_SetClientRubles(iClient, GameCMS_GetClientRubles(iClient) + iCount);
-                        SetBankRubles(iClient, ga_iBankRubles[iClient] - iCount);
+                        SetBankRubles(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.rubles - iCount);
                         CPrintToChat(iClient, "%t %t", "Prefix", "BankSuccessfullyAction");
                     }
                     else
@@ -291,7 +291,7 @@ public Action OnSay(int iClient, const char[] command, int args)
                         if(Shop_GetClientCredits(iClient) >= iCount)
                         {
                             Shop_SetClientCredits(iClient, Shop_GetClientCredits(iClient) - iCount);
-                            SetBankCredits(iClient, ga_iBankCredits[iClient] + iCount);
+                            SetBankCredits(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.credits + iCount);
                             CPrintToChat(iClient, "%t %t", "Prefix", "BankSuccessfullyAction");
                         }
                         else
@@ -302,7 +302,7 @@ public Action OnSay(int iClient, const char[] command, int args)
                         if(Store_GetClientCredits(iClient) >= iCount)
                         {
                             Store_SetClientCredits(iClient, Store_GetClientCredits(iClient) - iCount);
-                            SetBankCredits(iClient, ga_iBankCredits[iClient] + iCount);
+                            SetBankCredits(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.credits+ iCount);
                             CPrintToChat(iClient, "%t %t", "Prefix", "BankSuccessfullyAction");
                         }
                         else
@@ -311,10 +311,10 @@ public Action OnSay(int iClient, const char[] command, int args)
                 }
                 case 4:
                 {
-                    if(ga_iBankCredits[iClient] >= iCount)
+                    if(g_GangInfo[GetGangLocalId(iClient)].currency.credits >= iCount)
                     {
                         Shop_SetClientCredits(iClient, Shop_GetClientCredits(iClient) + iCount);
-                        SetBankCredits(iClient, ga_iBankCredits[iClient] - iCount);
+                        SetBankCredits(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.credits - iCount);
                         CPrintToChat(iClient, "%t %t", "Prefix", "BankSuccessfullyAction");
                     }
                     else
@@ -325,7 +325,7 @@ public Action OnSay(int iClient, const char[] command, int args)
                     if(Shop_GetClientGold(iClient) >= iCount)
                     {
                         Shop_SetClientGold(iClient, Shop_GetClientGold(iClient) - iCount);
-                        SetBankCredits(iClient, ga_iBankCredits[iClient] + iCount);
+                        SetBankCredits(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.credits + iCount);
                         CPrintToChat(iClient, "%t %t", "Prefix", "BankSuccessfullyAction");
                     }
                     else
@@ -333,10 +333,10 @@ public Action OnSay(int iClient, const char[] command, int args)
                 }
                 case 6:
                 {
-                    if(ga_iBankCredits[iClient] >= iCount)
+                    if(g_GangInfo[GetGangLocalId(iClient)].currency.credits >= iCount)
                     {
                         Shop_SetClientGold(iClient, Shop_GetClientGold(iClient) + iCount);
-                        SetBankCredits(iClient, ga_iBankCredits[iClient] - iCount);
+                        SetBankCredits(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.credits - iCount);
                         CPrintToChat(iClient, "%t %t", "Prefix", "BankSuccessfullyAction");
                     }
                     else
@@ -347,7 +347,7 @@ public Action OnSay(int iClient, const char[] command, int args)
                     if(WCS_GetGold(iClient) >= iCount)
                     {
                         WCS_TakeGold(iClient, iCount);
-                        SetBankWCSGold(iClient, ga_iBankWCSGold[iClient] + iCount);
+                        SetBankWCSGold(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold + iCount);
                         CPrintToChat(iClient, "%t %t", "Prefix", "BankSuccessfullyAction");
                     }
                     else
@@ -355,10 +355,10 @@ public Action OnSay(int iClient, const char[] command, int args)
                 }
                 case 8:
                 {
-                    if(ga_iBankWCSGold[iClient] >= iCount)
+                    if(g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold >= iCount)
                     {
                         WCS_GiveGold(iClient, iCount);
-                        SetBankWCSGold(iClient, ga_iBankWCSGold[iClient] - iCount);
+                        SetBankWCSGold(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold - iCount);
                         CPrintToChat(iClient, "%t %t", "Prefix", "BankSuccessfullyAction");
                     }
                     else
@@ -369,7 +369,7 @@ public Action OnSay(int iClient, const char[] command, int args)
                     if(LK_GetBalance(iClient, LK_Cash) >= iCount)
                     {
                         LK_ChangeBalance(iClient, LK_Cash, LK_Take, iCount);
-                        SetBankLKRubles(iClient, ga_iBankLKRubles[iClient] + iCount);
+                        SetBankLKRubles(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles + iCount);
                         CPrintToChat(iClient, "%t %t", "Prefix", "BankSuccessfullyAction");
                     }
                     else
@@ -377,10 +377,10 @@ public Action OnSay(int iClient, const char[] command, int args)
                 }
                 case 10:
                 {
-                    if(ga_iBankLKRubles[iClient] >= iCount)
+                    if(g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles >= iCount)
                     {
                         LK_ChangeBalance(iClient, LK_Cash, LK_Add, iCount);
-                        SetBankLKRubles(iClient, ga_iBankLKRubles[iClient] - iCount);
+                        SetBankLKRubles(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles - iCount);
                         CPrintToChat(iClient, "%t %t", "Prefix", "BankSuccessfullyAction");
                     }
                     else
@@ -391,7 +391,7 @@ public Action OnSay(int iClient, const char[] command, int args)
                     if(MyJailShop_GetCredits(iClient) >= iCount)
                     {
                         MyJailShop_SetCredits(iClient, MyJailShop_GetCredits(iClient) - iCount);
-                        SetBankMyJBCredits(iClient, ga_iBankMyJBCredits[iClient] + iCount);
+                        SetBankMyJBCredits(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits + iCount);
                         CPrintToChat(iClient, "%t %t", "Prefix", "BankSuccessfullyAction");
                     }
                     else
@@ -399,10 +399,10 @@ public Action OnSay(int iClient, const char[] command, int args)
                 }
                 case 12:
                 {
-                    if(ga_iBankMyJBCredits[iClient] >= iCount)
+                    if(g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits >= iCount)
                     {
                         MyJailShop_SetCredits(iClient, MyJailShop_GetCredits(iClient) + iCount);
-                        SetBankMyJBCredits(iClient, ga_iBankMyJBCredits[iClient] - iCount);
+                        SetBankMyJBCredits(iClient, g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits - iCount);
                         CPrintToChat(iClient, "%t %t", "Prefix", "BankSuccessfullyAction");
                     }
                     else

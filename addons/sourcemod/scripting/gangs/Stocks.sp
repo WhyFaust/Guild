@@ -381,17 +381,6 @@ stock void ClearArrays()
 	g_hStatsArray.Clear();
 }
 
-stock int GetGangLvl(int iScore)
-{
-	int iLvl = 1;
-	while(RoundToFloor(float(iScore/(((2*g_iScoreExpInc+g_iScoreExpInc*(iLvl-1))/2)*iLvl))) != 0)
-	{
-		iLvl++;
-	}
-	
-	return iLvl;
-}
-
 stock bool GetClientRightStatus(int iClient, char[] sRights)
 {
 	if(IsValidClient(iClient))
@@ -403,7 +392,7 @@ stock bool GetClientRightStatus(int iClient, char[] sRights)
 		ConfigRanks.ImportFromFile(szBuffer);
 		ConfigRanks.Rewind();
 		char buffer[16];
-		IntToString(ga_iRank[iClient], buffer, sizeof(buffer));
+		IntToString(g_ClientInfo[iClient].rank, buffer, sizeof(buffer));
 		if(ConfigRanks.JumpToKey(buffer)) // Попытка перейти к ключу
 		{
 			ConfigRanks.GetString("rights", szBuffer, sizeof(szBuffer));
