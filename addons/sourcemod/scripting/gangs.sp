@@ -34,7 +34,7 @@ public Plugin myinfo =
     author = "Faust",
     description = "Gang system for server cs",
     version = GANGS_VERSION,
-	url = "https://uwu-party.ru"
+	url = "Faust#8073"
 }
 
 public void OnAllPluginsLoaded()

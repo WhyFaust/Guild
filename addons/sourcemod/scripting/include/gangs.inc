@@ -3,7 +3,7 @@
 #endif
 #define gangs_include
 
-#define GANGS_VERSION "1.4.0 [PUBLIC]"
+#define GANGS_VERSION "1.4.1 [PUBLIC]"
 
 stock bool IsValidClient(int iClient, bool bAllowBots = false, bool bAllowDead = true)
 {

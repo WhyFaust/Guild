@@ -61,7 +61,7 @@ public Plugin myinfo =
 	name = "[GANGS MODULE] Skins",
 	author = "Faust",
 	version = GANGS_VERSION,
-	url = "https://uwu-party.ru"
+	url = "Faust#8073"
 }
 
 public void Gangs_OnPlayerLoaded(int iClient)
@@ -273,6 +273,7 @@ void SetClientSkin(int iClient,char model[128])
 {
 	if(FileExists(model, true))
 	{
+		PrecacheModel(model, false);
 		if(IsModelPrecached(model))
 		{
 			SetEntityModel(iClient,model);
@@ -296,7 +297,7 @@ void SetClientArms(int iClient,char arms[128])
 {
 	if(FileExists(arms, true))
 	{
-		//PrecacheModel(arms, true);
+		PrecacheModel(arms, false);
 		if(IsModelPrecached(arms))
 			SetEntPropString(iClient, Prop_Send, "m_szArmsModel", arms);
 		else LogError("Arms '%s' doesn't pass precache", arms);

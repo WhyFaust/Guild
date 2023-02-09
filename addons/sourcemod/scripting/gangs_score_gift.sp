@@ -7,7 +7,8 @@ public Plugin myinfo =
 {
 	name = "[Gangs] Score Gift",
 	author = "R1KO, Faust",
-	version = GANGS_VERSION
+	version = GANGS_VERSION,
+	url = "Faust#8073"
 }
 
 public int Gifts_OnPickUpGift_Post(int iClient, Handle hKeyValues)

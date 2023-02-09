@@ -549,22 +549,24 @@ public Action Timer_OpenGangMenu(Handle hTimer, int userid)
 void ResetVariables(int iClient, bool full = true)
 {
     g_ClientInfo[iClient].rank = -1;
-    g_GangInfo[GetGangLocalId(iClient)].players_count = -1;
     g_ClientInfo[iClient].inviter_id = -1;
     g_ClientInfo[iClient].invite_date = -1;
-    g_GangInfo[GetGangLocalId(iClient)].level = 0;
-    g_GangInfo[GetGangLocalId(iClient)].exp = 0;
-    g_GangInfo[GetGangLocalId(iClient)].currency.rubles = 0;
-    g_GangInfo[GetGangLocalId(iClient)].currency.credits = 0;
-    g_GangInfo[GetGangLocalId(iClient)].currency.gold = 0;
-    g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold = 0;
-    g_GangInfo[GetGangLocalId(iClient)].extended_count = 0;
+    if(g_ClientInfo[iClient].gangid > 0){
+        g_GangInfo[GetGangLocalId(iClient)].players_count = -1;
+        g_GangInfo[GetGangLocalId(iClient)].level = 0;
+        g_GangInfo[GetGangLocalId(iClient)].exp = 0;
+        g_GangInfo[GetGangLocalId(iClient)].currency.rubles = 0;
+        g_GangInfo[GetGangLocalId(iClient)].currency.credits = 0;
+        g_GangInfo[GetGangLocalId(iClient)].currency.gold = 0;
+        g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold = 0;
+        g_GangInfo[GetGangLocalId(iClient)].extended_count = 0;
+        g_GangInfo[GetGangLocalId(iClient)].end_date = -1;
+    }
     ga_iTempInt2[iClient] = 0;
     g_ClientInfo[iClient].gangid = -1;
     g_ClientInfo[iClient].inviter_name = "";
     ga_bSetName[iClient] = false;
     ga_bRename[iClient] = false;
-    g_GangInfo[GetGangLocalId(iClient)].end_date = -1;
     g_ClientInfo[iClient].invation_sent = false;
     g_iBankCountType[iClient] = 0;
     if(full)

@@ -1253,7 +1253,7 @@ public int InvitationMenu_Callback(Menu menu, MenuAction action, int param1, int
 				}
 				else
 				{
-					OpenGangInvitationMenu(iUserID);
+					OpenGangInvitationMenu(iUserID, g_GangInfo[param1].name);
 				}
 				CPrintToChat(param1, "%t %t", "Prefix", "InvitationSent");
 				StartOpeningGangMenu(param1);
@@ -1303,7 +1303,7 @@ public Action AcceptTimer(Handle timer, DataPack data)
 }
 
 
-void OpenGangInvitationMenu(int iClient)
+void OpenGangInvitationMenu(int iClient, char[] sGang)
 {
 	if(!IsValidClient(iClient))
 	{
@@ -1323,7 +1323,7 @@ void OpenGangInvitationMenu(int iClient)
 	Format(sDisplayString, sizeof(sDisplayString), "%T", "InviteString", iClient, szName);
 	menu.AddItem("", sDisplayString, ITEMDRAW_DISABLED);
 
-	Format(sDisplayString, sizeof(sDisplayString), "%T", "WouldYouLikeToJoin", iClient, g_GangInfo[GetGangLocalId(iClient)].name);
+	Format(sDisplayString, sizeof(sDisplayString), "%T", "WouldYouLikeToJoin", iClient, sGang);
 	menu.AddItem("", sDisplayString, ITEMDRAW_DISABLED);
 
 	Format(sDisplayString, sizeof(sDisplayString), "%T", "IWouldLikeTo", iClient);
@@ -1363,7 +1363,7 @@ public int SentInviteMenu_Callback(Menu menu, MenuAction action, int param1, int
 				GetClientName(sender, szName, sizeof(szName));
 				g_ClientInfo[param1].inviter_name = szName;
 				g_ClientInfo[param1].rank = GetLastConfigRank();
-				UpdateSQL(param1);
+				UpdateSQL(param1, g_GangInfo[GetGangLocalId(param1)].name);
 				
 				GetClientName(param1, szName, sizeof(szName));
 				

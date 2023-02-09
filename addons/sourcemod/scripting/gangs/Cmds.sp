@@ -58,7 +58,7 @@ public Action Command_Accept(int iClient, int args)
 
 	g_ClientInfo[iClient].inviter_name = szName;
 	g_ClientInfo[iClient].rank = GetLastConfigRank();
-	UpdateSQL(iClient);
+	UpdateSQL(iClient, g_GangInfo[GetGangLocalId(iClient)].name);
 	GetClientName(iClient, szName, sizeof(szName));
 	CPrintToChatAll("%t %t", "Prefix", "GangJoined", szName, g_GangInfo[GetGangLocalId(iClient)].name);
 	return Plugin_Handled;

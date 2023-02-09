@@ -16,7 +16,8 @@ public Plugin myinfo =
 {
 	name = "[GANGS MODULE] Statistic Standart",
 	author = "Faust",
-	version = GANGS_VERSION
+	version = GANGS_VERSION,
+	url = "Faust#8073"
 };
 
 public void OnAllPluginsLoaded()

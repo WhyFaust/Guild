@@ -81,7 +81,8 @@ public Plugin myinfo =
 {
     name = "[GANGS GAME] Point Race",
     author = "Faust",
-    version = GANGS_VERSION
+    version = GANGS_VERSION,
+	url = "Faust#8073"
 };
 
 public void OnPluginStart()

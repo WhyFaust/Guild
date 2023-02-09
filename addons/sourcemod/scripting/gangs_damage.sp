@@ -53,7 +53,7 @@ public Plugin myinfo =
 	name = "[GANGS MODULE] Damage",
 	author = "Faust",
 	version = GANGS_VERSION,
-	url = "https://uwu-party.ru"
+	url = "Faust#8073"
 }
 
 public void Gangs_OnPlayerLoaded(int iClient)

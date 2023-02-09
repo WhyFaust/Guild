@@ -30,7 +30,8 @@ public Plugin myinfo =
 {
 	name = "[GANGS MODULE] Statistic Rating",
 	author = "Faust",
-	version = GANGS_VERSION
+	version = GANGS_VERSION,
+	url = "Faust#8073"
 };
 
 public APLRes AskPluginLoad2(Handle hMyself, bool bLate, char[] sError, int err_max)

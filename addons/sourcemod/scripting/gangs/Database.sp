@@ -292,11 +292,11 @@ public void SQLCallback_CheckSQL_Groups(Database db, DBResultSet results, const 
 			g_GangInfo[counter].currency.lk_rubles = results.FetchInt(fieldindex);
 		if(results.FieldNameToNum("myjb_credits", fieldindex))
 			g_GangInfo[counter].currency.myjb_credits = results.FetchInt(fieldindex);
-
-		Call_StartForward(hGangs_OnPlayerLoaded);
-		Call_PushCell(iClient);
-		Call_Finish();
+		counter++;
 	}
+	Call_StartForward(hGangs_OnPlayerLoaded);
+	Call_PushCell(iClient);
+	Call_Finish();
 }
 
 /*****************************************************************
@@ -305,26 +305,15 @@ public void SQLCallback_CheckSQL_Groups(Database db, DBResultSet results, const 
 void UpdateSQL(int iClient, char[] gangName = "")
 {
 	char sQuery[300];
-	if(StrEqual(gangName, ""))
-	{
-		Format(sQuery, sizeof(sQuery), "SELECT * \
-										FROM gang_group \
-										WHERE id = %i AND server_id = %i;", 
-										g_ClientInfo[iClient].gangid, g_iServerID);
-	}
-	else
-	{
-		Format(sQuery, sizeof(sQuery), "SELECT * \
-										FROM gang_group \
-										WHERE name = '%s' AND server_id = %i;", 
-										gangName, g_iServerID);
-	}
-	DataPack data;
+	Format(sQuery, sizeof(sQuery), "SELECT * \
+									FROM gang_group \
+									WHERE name = '%s' AND server_id = %i;", 
+									gangName, g_iServerID);
+	DataPack data = new DataPack();
 	data.WriteCell(iClient);
 	data.WriteString(gangName);
 	data.Reset();
 	g_hDatabase.Query(SQLCallback_CreateGroup, sQuery, data);
-	delete data;
 }
 
 public void SQLCallback_CreateGroup(Database db, DBResultSet results, const char[] error, DataPack data)
@@ -370,7 +359,6 @@ public void SQLCallback_CreateGroup(Database db, DBResultSet results, const char
 										szEscapedGang, g_iServerID);
 		g_hDatabase.Query(SQLCallback_CheckGroup, sQuery, iClient);
 	}
-	delete data;
 }
 
 public void SQLCallback_CheckGroupHelp(Database db, DBResultSet results, const char[] error, DataPack data)
@@ -446,6 +434,60 @@ public void SQLCallback_LoadPerks(Database db, DBResultSet results, const char[]
 		g_hDatabase.Query(SQLCallback_Void, sQuery, 4);
 	}
 
+	Format(sQuery, sizeof(sQuery), "SELECT * \
+									FROM gang_group \
+									WHERE server_id = %i;",
+									g_iServerID);
+	g_hDatabase.Query(SQLCallback_GetGroupsInfo, sQuery, iClient);
+}
+
+public void SQLCallback_GetGroupsInfo(Database db, DBResultSet results, const char[] error, int iClient)
+{
+	if(error[0])
+	{
+		LogError("[SQLCallback_GetGroupsInfo] Error (%i): %s", iClient, error);
+		return;
+	}
+
+	if(!IsValidClient(iClient))
+	{
+		return;
+	}
+
+	int counter = 0;
+	while(results.FetchRow())
+	{
+		int fieldindex;
+		if(results.FieldNameToNum("id", fieldindex))
+			g_GangInfo[counter].id = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("name", fieldindex))
+			results.FetchString(fieldindex, g_GangInfo[counter].name, 128);
+		if(results.FieldNameToNum("level", fieldindex))
+			g_GangInfo[counter].level = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("exp", fieldindex))
+			g_GangInfo[counter].exp = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("create_date", fieldindex))
+			g_GangInfo[counter].create_date = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("end_date", fieldindex))
+			g_GangInfo[counter].end_date = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("extend_count", fieldindex))
+			g_GangInfo[counter].extended_count = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("rubles", fieldindex))
+			g_GangInfo[counter].currency.rubles = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("credits", fieldindex))
+			g_GangInfo[counter].currency.credits = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("gold", fieldindex))
+			g_GangInfo[counter].currency.gold = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("wcs_gold", fieldindex))
+			g_GangInfo[counter].currency.wcs_gold = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("lk_rubles", fieldindex))
+			g_GangInfo[counter].currency.lk_rubles = results.FetchInt(fieldindex);
+		if(results.FieldNameToNum("myjb_credits", fieldindex))
+			g_GangInfo[counter].currency.myjb_credits = results.FetchInt(fieldindex);
+		counter++;
+	}
+
+	char sQuery[300];
 	GetClientAuthId(iClient, AuthId_Steam2, g_ClientInfo[iClient].steamid, 32);
 	Format(sQuery, sizeof(sQuery), "SELECT * \
 									FROM gang_player \
@@ -483,11 +525,9 @@ public void SQLCallback_CheckIfInDatabase_Player(Database db, DBResultSet result
 										VALUES (%i, '%s', '%s', %i, '%s', %i);", 
 										g_ClientInfo[iClient].gangid, g_ClientInfo[iClient].steamid, szEscapedName, g_ClientInfo[iClient].rank, g_ClientInfo[iClient].inviter_name, g_ClientInfo[iClient].invite_date);
 		g_hDatabase.Query(SQLCallback_Void, sQuery, 1);
-		API_OnGoToGang(iClient, g_GangInfo[GetGangLocalId(iClient)].name, g_ClientInfo[iClient].inviter_id);
 		g_ClientInfo[iClient].inviter_id = -1;
+		API_OnGoToGang(iClient, g_GangInfo[GetGangLocalId(iClient)].name, g_ClientInfo[iClient].inviter_id);
 	}
-
-
 }
 
 public void SQLCallback_CheckName(Database db, DBResultSet results, const char[] error, DataPack data)
@@ -518,7 +558,6 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 					g_ClientInfo[iClient].invite_date = GetTime();
 					g_ClientInfo[iClient].inviter_name = "N/A";
 					g_ClientInfo[iClient].rank = 0;
-					g_GangInfo[GetGangLocalId(iClient)].players_count = 1;
 					
 					UpdateSQL(iClient, sText);
 					
@@ -573,8 +612,6 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i LK рублей", iClient, sText, g_iCreateGangPrice);
 					}
 					else CPrintToChat(iClient, "%t %t", "Prefix", "Error");
-					
-					CreateTimer(0.2, Timer_OpenGangMenu, iClient, TIMER_FLAG_NO_MAPCHANGE);
 					
 					char szName[MAX_NAME_LENGTH];
 					GetClientName(iClient, szName, sizeof(szName));

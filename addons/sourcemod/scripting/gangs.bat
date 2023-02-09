@@ -12,7 +12,6 @@ spcomp gangs_rpg_booster.sp -o../plugins/gangs_rpg_booster.smx
 spcomp gangs_score_gift.sp -o../plugins/gangs_score_gift.smx
 spcomp gangs_score_shavit.sp -o../plugins/gangs_score_shavit.smx
 spcomp gangs_score_standart.sp -o../plugins/gangs_score_standart.smx
-spcomp gangs_site_statistic.sp -o../plugins/gangs_site_statistic.smx
 spcomp gangs_size.sp -o../plugins/gangs_size.smx
 spcomp gangs_skins.sp -o../plugins/gangs_skins.smx
 spcomp gangs_speed.sp -o../plugins/gangs_speed.smx

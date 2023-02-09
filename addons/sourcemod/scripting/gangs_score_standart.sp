@@ -17,7 +17,8 @@ public Plugin myinfo =
 {
 	name = "[GANGS MODULE] Score Standart",
 	author = "Faust",
-	version = GANGS_VERSION
+	version = GANGS_VERSION,
+	url = "Faust#8073"
 };
 
 public void OnPluginStart()
