@@ -194,7 +194,7 @@ public void SQLCallback_GangStatistics(Database db, DBResultSet results, const c
 	char sFormattedTime[64];
 	char sDisplayString[128];
 
-	data.Reset(); // Возвращаем позицию на 0
+	data.Reset();
 	int iClient = data.ReadCell(); // Client
 	int iGangPosition = data.ReadCell(); // GangPosition
 	int iCountGangs = data.ReadCell(); // Count Gangs
@@ -356,7 +356,7 @@ public int MemberListMenu_CallBack(Menu menu, MenuAction action, int param1, int
 void OpenIndividualMemberMenu(int iClient, char[] sInfo)
 {
 	Menu menu = CreateMenu(IndividualMemberMenu_Callback, MenuAction_Select | MenuAction_End | MenuAction_DisplayItem | MenuAction_Cancel);
-	SetMenuTitle(menu, "Информация : ");
+	SetMenuTitle(menu, "Information: ");
 
 	char sTempArray[6][128]; // 0 - SteamID | 1 - Name | 2 - Invited By | 3 - Rank | 4 - Date (UTF) | 5 - Gang
 	char sDisplayBuffer[64];
@@ -378,7 +378,7 @@ void OpenIndividualMemberMenu(int iClient, char[] sInfo)
 	BuildPath(Path_SM, szBuffer,256, "configs/gangs/ranks.txt");
 	ConfigRanks.ImportFromFile(szBuffer);
 	ConfigRanks.Rewind();
-	if(ConfigRanks.JumpToKey(sTempArray[3])) // Попытка перейти к ключу
+	if(ConfigRanks.JumpToKey(sTempArray[3]))
 	{
 		ConfigRanks.GetString("Name", szBuffer, sizeof(szBuffer));
 		Format(sDisplayBuffer, sizeof(sDisplayBuffer), "%T %T", "Rank", iClient, szBuffer, iClient);

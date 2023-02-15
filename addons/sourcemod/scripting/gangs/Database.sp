@@ -569,7 +569,7 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 						else Discount = GameCMS_GetClientDiscount(iClient);
 						GameCMS_SetClientRubles(iClient, GameCMS_GetClientRubles(iClient) - Colculate(iClient, g_iCreateGangPrice, Discount));
 						if(g_bLog)
-							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i рублей", iClient, sText, Colculate(iClient, g_iCreateGangPrice, Discount));
+							LogToFile("addons/sourcemod/logs/gangs.txt", "The player %N created the gang %s for %i rubles", iClient, sText, Colculate(iClient, g_iCreateGangPrice, Discount));
 					}
 					else if(g_bCreateGangSellMode == 1)
 					{
@@ -582,34 +582,34 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 							Store_SetClientCredits(iClient, Store_GetClientCredits(iClient) - g_iCreateGangPrice);
 						}
 						if(g_bLog)
-							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i кредитов", iClient, sText, g_iCreateGangPrice);
+							LogToFile("addons/sourcemod/logs/gangs.txt", "The player %N created the gang %s for %i credits", iClient, sText, g_iCreateGangPrice);
 					}
 					else if(g_bCreateGangSellMode == 2 && g_bLShopGoldExist)
 					{
 						Shop_SetClientGold(iClient, Shop_GetClientGold(iClient) - g_iCreateGangPrice);
 						if(g_bLog)
-							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i голды", iClient, sText, g_iCreateGangPrice);
+							LogToFile("addons/sourcemod/logs/gangs.txt", "The player %N created a gang of %s for %i gold", iClient, sText, g_iCreateGangPrice);
 					}
 					//else if(g_bCreateGangSellMode == 3 && g_bWCSLoaded)
 					else if(g_bCreateGangSellMode == 3)
 					{
 						WCS_TakeGold(iClient, g_iCreateGangPrice);
 						if(g_bLog)
-							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i WCS голды", iClient, sText, g_iCreateGangPrice);
+							LogToFile("addons/sourcemod/logs/gangs.txt", "The player %N created the gang %s for %i WCS of gold", iClient, sText, g_iCreateGangPrice);
 					}
 					else if(g_bCreateGangSellMode == 4 && g_bLKLoaded)
 					{
 						LK_ChangeBalance(iClient, LK_Cash, LK_Take, g_iCreateGangPrice);
 									
 						if(g_bLog)
-							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i MyJailShop Creditss", iClient, sText, g_iCreateGangPrice);
+							LogToFile("addons/sourcemod/logs/gangs.txt", "The player %N created the gang %s for %i LK рублей", iClient, sText, g_iCreateGangPrice);
 					}
 					else if(g_bCreateGangSellMode == 5 && g_bMyJBShopExist)
 					{
 						MyJailShop_SetCredits(iClient, MyJailShop_GetCredits(iClient) - g_iCreateGangPrice);
 									
 						if(g_bLog)
-							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N создал банду %s за %i LK рублей", iClient, sText, g_iCreateGangPrice);
+							LogToFile("addons/sourcemod/logs/gangs.txt", "The player %N created the gang %s for %i MyJailShop Credits", iClient, sText, g_iCreateGangPrice);
 					}
 					else CPrintToChat(iClient, "%t %t", "Prefix", "Error");
 					
@@ -655,7 +655,7 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 							GameCMS_SetClientRubles(iClient, GameCMS_GetClientRubles(iClient) - Colculate(iClient, g_iRenamePrice, Discount));
 						
 						if(g_bLog)
-							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N изменил название банды на %s за %i рублей", iClient, sText, Colculate(iClient, g_iRenamePrice, Discount));
+							LogToFile("addons/sourcemod/logs/gangs.txt", "Player %N changed the name of the gang to %s for %i rubles", iClient, sText, Colculate(iClient, g_iRenamePrice, Discount));
 					}
 					else if(g_bRenamePriceSellMode == 1)
 					{
@@ -670,7 +670,7 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 						}
 						
 						if(g_bLog)
-							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N изменил название банды на %s за %i кредитов", iClient, sText, g_iRenamePrice);
+							LogToFile("addons/sourcemod/logs/gangs.txt", "Player %N changed the name of the gang to %s for %i credits", iClient, sText, g_iRenamePrice);
 					}
 					else if(g_bRenamePriceSellMode == 2 && g_bLShopGoldExist)
 					{
@@ -680,7 +680,7 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 							Shop_SetClientGold(iClient, Shop_GetClientGold(iClient) - g_iRenamePrice);
 						
 						if(g_bLog)
-							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N изменил название банды на %s за %i голды", iClient, sText, g_iRenamePrice);
+							LogToFile("addons/sourcemod/logs/gangs.txt", "Player %N changed the name of the gang to %s for %i gold", iClient, sText, g_iRenamePrice);
 					}
 					//else if(g_bRenamePriceSellMode == 3 && g_bWCSLoaded)
 					else if(g_bRenamePriceSellMode == 3)
@@ -691,7 +691,7 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 							WCS_TakeGold(iClient, g_iRenamePrice);
 						
 						if(g_bLog)
-							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N изменил название банды на %s за %i WCS голды", iClient, sText, g_iRenamePrice);
+							LogToFile("addons/sourcemod/logs/gangs.txt", "Player %N changed the name of the gang to %s for %i WCS of gold", iClient, sText, g_iRenamePrice);
 					}
 					else if(g_bRenamePriceSellMode == 4 && g_bLKLoaded)
 					{
@@ -701,7 +701,7 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 							LK_ChangeBalance(iClient, LK_Cash, LK_Take, g_iRenamePrice);
 									
 						if(g_bLog)
-							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N изменил название банды на %s за %i LK рублей", iClient, sText, g_iRenamePrice);
+							LogToFile("addons/sourcemod/logs/gangs.txt", "Player %N changed the name of the gang to %s for %i LK rubles", iClient, sText, g_iRenamePrice);
 					}
 					else if(g_bRenamePriceSellMode == 5 && g_bMyJBShopExist)
 					{
@@ -711,7 +711,7 @@ public void SQLCallback_CheckName(Database db, DBResultSet results, const char[]
 							MyJailShop_SetCredits(iClient, MyJailShop_GetCredits(iClient) - g_iRenamePrice);
 									
 						if(g_bLog)
-							LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N изменил название банды на %s за %i LK рублей", iClient, sText, g_iRenamePrice);
+							LogToFile("addons/sourcemod/logs/gangs.txt", "Player %N changed the name of the gang to %s for %i MyJailShop Credits", iClient, sText, g_iRenamePrice);
 					}
 					else CPrintToChat(iClient, "%t %t", "Prefix", "Error");
 					

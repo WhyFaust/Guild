@@ -55,7 +55,7 @@ void OnThinkPost(int iEnt)
 			BuildPath(Path_SM, path, sizeof(path), "configs/gangs/gangs_module_logo.ini");
 			if(!kfg.ImportFromFile(path)) SetFailState("[GANGS MODULE][Logo] - Configuration file not found");
 			kfg.Rewind();
-			if(kfg.JumpToKey(sGangName)) // Попытка перейти к ключу "key1"
+			if(kfg.JumpToKey(sGangName))
 			{
 				int iValue = kfg.GetNum("level");
 				SetEntData(iEnt, m_nPersonaDataPublicLevel + i*4, iValue);

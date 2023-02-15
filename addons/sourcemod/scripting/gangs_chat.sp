@@ -25,7 +25,7 @@ public void OnPluginStart()
 	g_cvChatCommand = AutoExecConfig_CreateConVar("sm_gangs_chat_command", "sm_g", "Command for gang chat");
 
 	ConVar CVar;
-	(CVar = AutoExecConfig_CreateConVar("sm_gangs_chat_tag_mode", "0", "Как отображать Название ранга / 1 - целиком / 0 - только первая буква")).AddChangeHook(UpdateChatTagMode);
+	(CVar = AutoExecConfig_CreateConVar("sm_gangs_chat_tag_mode", "0", "How to display the name of the rank / 1 - whole / 0 - only the first letter")).AddChangeHook(UpdateChatTagMode);
 	g_bChatTagMode = CVar.BoolValue;
 	
 	AutoExecConfig_ExecuteFile();

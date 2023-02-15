@@ -1,6 +1,6 @@
 "Skins"
 {
-	"cuddleleader" //Не должны повторяться, индификатор в бд
+	"cuddleleader" //Should not be repeated, the identifier in the database
 	{
 		"name" "Cuddle Leader" //Name on the menu
 		"model" "models/player/custom_player/legacy/cuddleleader.mdl" //Path to the skin model

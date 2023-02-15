@@ -181,9 +181,9 @@ public Action SetBankRubles(int iClient, int shilings)
 
     char log[300];
     if(shilings > g_GangInfo[GetGangLocalId(iClient)].currency.rubles)
-        Format(log, sizeof(log), "Игрок %N положил в банк %i рублей", iClient, shilings - g_GangInfo[GetGangLocalId(iClient)].currency.rubles);
+        Format(log, sizeof(log), "The player %N deposited %i rubles in the bank", iClient, shilings - g_GangInfo[GetGangLocalId(iClient)].currency.rubles);
     else
-        Format(log, sizeof(log), "Игрок %N забрал из банка %i рублей", iClient, g_GangInfo[GetGangLocalId(iClient)].currency.rubles - shilings);
+        Format(log, sizeof(log), "The player %N took %i rubles from the bank", iClient, g_GangInfo[GetGangLocalId(iClient)].currency.rubles - shilings);
 
     Format(sQuery, sizeof(sQuery), "INSERT INTO gang_bank_log \
                                     (gang_id, player_id, log, date) \
@@ -207,9 +207,9 @@ public Action SetBankRubles(int iClient, int shilings)
     if(g_bLog)
     {
         if(check)
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N забрал из казны %i рублей ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.rubles, shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "The player %N took %i rubles from the bank (was %i, became %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.rubles, shilings);
         else
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N положил в казну %i рублей ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.rubles, shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "The player %N put into the bank %i rubles (was %i, became %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.rubles, shilings);
     }
 
     g_GangInfo[GetGangLocalId(iClient)].currency.rubles = shilings;
@@ -228,9 +228,9 @@ public Action SetBankCredits(int iClient, int shilings)
 
     char log[300];
     if(shilings > g_GangInfo[GetGangLocalId(iClient)].currency.credits)
-        Format(log, sizeof(log), "Игрок %N положил в банк %i кредитов", iClient, shilings - g_GangInfo[GetGangLocalId(iClient)].currency.credits);
+        Format(log, sizeof(log), "Player %N put %i credits in the bank", iClient, shilings - g_GangInfo[GetGangLocalId(iClient)].currency.credits);
     else
-        Format(log, sizeof(log), "Игрок %N забрал из банка %i кредитов", iClient, g_GangInfo[GetGangLocalId(iClient)].currency.credits - shilings);
+        Format(log, sizeof(log), "Player %N took %i credits from the bank", iClient, g_GangInfo[GetGangLocalId(iClient)].currency.credits - shilings);
     
     Format(sQuery, sizeof(sQuery), "INSERT INTO gang_bank_log \
                                     (gang_id, player_id, log, date) \
@@ -254,9 +254,9 @@ public Action SetBankCredits(int iClient, int shilings)
     if(g_bLog)
     {
         if(check)
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N забрал из казны %i кредитов ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.credits, shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "Player %N took %i credits from the bank (was %i, became %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.credits, shilings);
         else
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N положил в казну %i кредитов ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.credits, shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "Player %N put into the bank %i credits (was %i, became %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.credits, shilings);
     }
 
     g_GangInfo[GetGangLocalId(iClient)].currency.credits = shilings;
@@ -275,9 +275,9 @@ public Action SetBankGold(int iClient, int shilings)
 
     char log[300];
     if(shilings > g_GangInfo[GetGangLocalId(iClient)].currency.gold)
-        Format(log, sizeof(log), "Игрок %N положил в банк %i голды", iClient, shilings - g_GangInfo[GetGangLocalId(iClient)].currency.gold);
+        Format(log, sizeof(log), "The player %N put in the bank %i of gold", iClient, shilings - g_GangInfo[GetGangLocalId(iClient)].currency.gold);
     else
-        Format(log, sizeof(log), "Игрок %N забрал из банка %i голды", iClient, g_GangInfo[GetGangLocalId(iClient)].currency.gold - shilings);
+        Format(log, sizeof(log), "Player %N took %i gold from the bank", iClient, g_GangInfo[GetGangLocalId(iClient)].currency.gold - shilings);
     
     Format(sQuery, sizeof(sQuery), "INSERT INTO gang_bank_log \
                                     (gang_id, player_id, log, date) \
@@ -301,9 +301,9 @@ public Action SetBankGold(int iClient, int shilings)
     if(g_bLog)
     {
         if(check)
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N забрал из казны %i голды ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.gold, shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "The player %N took %i gold from the bank (was %i, became %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.gold, shilings);
         else
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N положил в казну %i голды ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.gold, shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "The player %N put into the bank %i Gold (was %i, became %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.gold, shilings);
     }
 
     g_GangInfo[GetGangLocalId(iClient)].currency.gold = shilings;
@@ -322,9 +322,9 @@ public Action SetBankWCSGold(int iClient, int shilings)
 
     char log[300];
     if(shilings > g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold)
-        Format(log, sizeof(log), "Игрок %N положил в банк %i WCS голды", iClient, shilings - g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold);
+        Format(log, sizeof(log), "Player %N deposited %i WCS of gold in the bank", iClient, shilings - g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold);
     else
-        Format(log, sizeof(log), "Игрок %N забрал из банка %i WCS голды", iClient, g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold - shilings);
+        Format(log, sizeof(log), "Player %N took %i WCS of gold from the bank", iClient, g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold - shilings);
     
     Format(sQuery, sizeof(sQuery), "INSERT INTO gang_bank_log \
                                     (gang_id, player_id, log, date) \
@@ -348,9 +348,9 @@ public Action SetBankWCSGold(int iClient, int shilings)
     if(g_bLog)
     {
         if(check)
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N забрал из казны %i wcs голды ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold, shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "Player %N took from the bank %i wcs Gold (was %i, became %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold, shilings);
         else
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N положил в казну %i wcs голды ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold, shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "The player %N put into the bank %i wcs Gold (was %i, became %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold, shilings);
     }
 
     g_GangInfo[GetGangLocalId(iClient)].currency.wcs_gold = shilings;
@@ -369,9 +369,9 @@ public Action SetBankLKRubles(int iClient, int shilings)
 
     char log[300];
     if(shilings > g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles)
-        Format(log, sizeof(log), "Игрок %N положил в банк %i LK рубли", iClient, shilings - g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles);
+        Format(log, sizeof(log), "The player %N put rubles in the bank %i LK", iClient, shilings - g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles);
     else
-        Format(log, sizeof(log), "Игрок %N забрал из банка %i LK рубли", iClient, g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles - shilings);
+        Format(log, sizeof(log), "Player %N took rubles from the bank %i LK", iClient, g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles - shilings);
     
     Format(sQuery, sizeof(sQuery), "INSERT INTO gang_bank_log \
                                     (gang_id, player_id, log, date) \
@@ -395,9 +395,9 @@ public Action SetBankLKRubles(int iClient, int shilings)
     if(g_bLog)
     {
         if(check)
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N забрал из казны %i LK рублей ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles, shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "The player %N took from the bank %i LK rubles (was %i, became %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles, shilings);
         else
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N положил в казну %i LK рублей ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles, shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "The player %N put into the bank %i LK rubles (was %i, became %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles, shilings);
     }
 
     g_GangInfo[GetGangLocalId(iClient)].currency.lk_rubles = shilings;
@@ -416,9 +416,9 @@ public Action SetBankMyJBCredits(int iClient, int shilings)
 
     char log[300];
     if(shilings > g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits)
-        Format(log, sizeof(log), "Игрок %N положил в банк %i MyJB Кредиты", iClient, shilings - g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits);
+        Format(log, sizeof(log), "Player %N deposited %i MyJB Credits in the bank", iClient, shilings - g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits);
     else
-        Format(log, sizeof(log), "Игрок %N забрал из банка %i MyJB Кредиты", iClient, g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits - shilings);
+        Format(log, sizeof(log), "Player %N took %i MyJB Credits from the bank", iClient, g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits - shilings);
     
     Format(sQuery, sizeof(sQuery), "INSERT INTO gang_bank_log \
                                     (gang_id, player_id, log, date) \
@@ -442,9 +442,9 @@ public Action SetBankMyJBCredits(int iClient, int shilings)
     if(g_bLog)
     {
         if(check)
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N забрал из казны %i MyJB кредитов ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits, shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "Player %N took from the bank %i MyJB credits (was %i, became %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits, shilings);
         else
-            LogToFile("addons/sourcemod/logs/gangs.txt", "Игрок %N положил в казну %i MyJB кредитов ( Было %i, стало %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits, shilings);
+            LogToFile("addons/sourcemod/logs/gangs.txt", "Player %N put into the bank %i MyJB credits (was %i, became %i)", iClient, money, g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits, shilings);
     }
 
     g_GangInfo[GetGangLocalId(iClient)].currency.myjb_credits = shilings;

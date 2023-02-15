@@ -84,10 +84,10 @@ public void Gangs_OnExitFromGang(int iClient)
 public void OnClientDisconnect(int iClient)
 {
 	g_iPerkLvl[iClient] = -1;
-	if(g_hTimer[iClient])    // Проверяем что таймер активен
+	if(g_hTimer[iClient])
 	{
-		KillTimer(g_hTimer[iClient]);    // Уничтожаем таймер
-		g_hTimer[iClient] = null;        // Обнуляем значения дескриптора
+		KillTimer(g_hTimer[iClient]);
+		g_hTimer[iClient] = null;
 	}
 	
 	UpdateClientData(iClient);
@@ -520,7 +520,6 @@ public Action TimeTimer(Handle hTimer, int iClient)
 		g_iTimePlayer[iClient]++;
 		if(g_iTimePlayer[iClient] == g_Item.Time)
 		{
-			//ВЫДАЧА
 			int iPrice = 0;
 			if(g_Item.Mode)
 			{
