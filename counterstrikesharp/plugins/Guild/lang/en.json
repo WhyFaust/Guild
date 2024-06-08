@@ -1,0 +1,70 @@
+{
+    "Prefix": "[{blue} Gangs{default} ]",
+    "Yes": "Yes",
+    "No": "No",
+    "Accept": "Accept",
+    "Sure": "Are you sure?",
+    "Cancel": "Cancel",
+    "Oops": "Server settings are incorrect :(",
+
+    "menu<title>": "Gangs",
+    "menu<title_with_name>": "Gang {green}{0}",
+    "menu<title_with_days>": "Gang {green}[{0}] {gray}Days left: {1}",
+
+    "menu<statistic>": "Statistics",
+    "menu<statistic_title>": "Gang Statistics",
+    "menu<statistic_name>": "Name: {0}",
+    "menu<statistic_lvl>": "Level: {0} [{1}/{2}]",
+    "menu<statistic_num_players>": "Number of participants: {0}",
+    "menu<statistic_create_date>": "Creation date: {0}",
+    "menu<statistic_leader>": "Leader: {0}",
+
+    "menu<skills>": "Skills",
+    "size": "Gang size",
+    "hp": "Health points",
+
+    "menu<skill_info>": "{0} [{1}/{2}] ({3} k.)",
+    "menu<skill_success_buy>": "{red}{0} {green}Successfully purchased",
+    "menu<skill_max_lvl>": "{red}You've reached the maximum skill level",
+
+    "menu<admin_panel>": "Admin panel",
+    "menu<invite>": "Invite to gang",
+    "menu<invite_sent>": "{green}Invitation has been sent to {red}{0}",
+    "menu<invite_came>": "You've received an invitation to the gang from {0}",
+    "menu<invite_welcome>": "{green}Welcome to {red}{0}",
+    "menu<invite_accept>": "{green}Player {red}{0} {green}has accepted the invitation",
+    "menu<players>": "Player list",
+    "menu<no_players>": "{red}No available players",
+
+    "menu<disolve>": "Dissolve gang",
+
+    "menu<extend>": "Extend gang",
+    "menu<extend_date>": "Select date",
+    "menu<extend_select_date>": "{0} days ({1} k.)",
+    "menu<extend_success>": "{green}You've successfully extended the gang",
+
+    "menu<rename>": "Rename gang",
+    "menu<rename_with_credits>": "Rename gang ({0} k.)",
+    "menu<rename_print>": "{green}Write the new name of your gang in the chat",
+    "menu<rename_long>": "{green}The name is too long",
+    "menu<rename_short": "{green}The name is too short",
+    "menu<rename_success": "{red}{0}{green} has renamed the gang to {red}{1}",
+    "menu<rename_exist": "{green}The name is already in use",
+
+    "menu<leader>": "Transfer leadership",
+    "menu<leader_sure>": "Are you sure you want to transfer leadership to {0}",
+    "menu<leader_new>": "{green}You've received leadership in the gang",
+    "menu<leader_complete>": "{green}You've successfully transferred leadership to {0}",
+
+    "menu<leave>": "Leave gang",
+    "menu<leave_accept>": "Are you sure you want to leave the gang?",
+    "menu<leave_success>": "{green}You've successfully left the gang",
+
+    "menu<top>": "Gang leaderboard",
+    "menu<top_info>": "{0} {1} level",
+
+    "menu<create>": "Create gang",
+    "menu<create_with_credits>": "Create gang {0} k.",
+    "menu<create_name>": "{green}Write the name of your new gang in the chat",
+    "menu<create_success>": "{red}{0}{green} has created the gang {red}{1}"
+}

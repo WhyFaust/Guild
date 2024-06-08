@@ -1,0 +1,70 @@
+{
+    "Prefix": "[{blue} Ganguri{default} ]",
+    "Yes": "Da",
+    "No": "Nu",
+    "Accept": "Acceptă",
+    "Sure": "Sunteți sigur?",
+    "Cancel": "Anulează",
+    "Oops": "Setările serverului sunt incorecte :(",
+
+    "menu<title>": "Ganguri",
+    "menu<title_with_name>": "Gang {green}{0}",
+    "menu<title_with_days>": "Gang {green}[{0}] {gray}Zile rămase: {1}",
+
+    "menu<statistic>": "Statistică",
+    "menu<statistic_title>": "Statistică gang",
+    "menu<statistic_name>": "Nume: {0}",
+    "menu<statistic_lvl>": "Nivel: {0} [{1}/{2}]",
+    "menu<statistic_num_players>": "Număr de participanți: {0}",
+    "menu<statistic_create_date>": "Data creării: {0}",
+    "menu<statistic_leader>": "Lider: {0}",
+
+    "menu<skills>": "Abilități",
+    "size": "Dimensiunea gangului",
+    "hp": "Puncte de viață",
+
+    "menu<skill_info>": "{0} [{1}/{2}] ({3} k.)",
+    "menu<skill_success_buy>": "{red}{0} {green}Cumpărat cu succes",
+    "menu<skill_max_lvl>": "{red}Ați atins deja nivelul maxim de abilitate",
+
+    "menu<admin_panel>": "Panou de administrare",
+    "menu<invite>": "Invită în gang",
+    "menu<invite_sent>": "{green}Invitația a fost trimisă către {red}{0}",
+    "menu<invite_came>": "Ați primit o invitație în gang de la {0}",
+    "menu<invite_welcome>": "{green}Bun venit în {red}{0}",
+    "menu<invite_accept>": "{green}Jucătorul {red}{0} {green}a acceptat invitația",
+    "menu<players>": "Listă de jucători",
+    "menu<no_players>": "{red}Nu există jucători disponibili",
+
+    "menu<disolve>": "Dezintegrează gangul",
+
+    "menu<extend>": "Prelungește gangul",
+    "menu<extend_date>": "Selectați data",
+    "menu<extend_select_date>": "{0} zile ({1} k.)",
+    "menu<extend_success>": "{green}Ați prelungit cu succes gangul",
+
+    "menu<rename>": "Redenumește gangul",
+    "menu<rename_with_credits>": "Redenumește gangul ({0} k.)",
+    "menu<rename_print>": "{green}Scrieți în chat noul nume al gangului dvs.",
+    "menu<rename_long>": "{green}Numele este prea lung",
+    "menu<rename_short": "{green}Numele este prea scurt",
+    "menu<rename_success": "{red}{0}{green} a redenumit gangul în {red}{1}",
+    "menu<rename_exist": "{green}Numele este deja folosit",
+
+    "menu<leader>": "Transferă liderul",
+    "menu<leader_sure>": "Sunteți sigur că doriți să transferați liderul la {0}",
+    "menu<leader_new>": "{green}Ați primit liderul în gang",
+    "menu<leader_complete>": "{green}Ați transferat cu succes liderul la {0}",
+
+    "menu<leave>": "Părăsește gangul",
+    "menu<leave_accept>": "Sunteți sigur că doriți să părăsiți gangul?",
+    "menu<leave_success>": "{green}Ați părăsit cu succes gangul",
+
+    "menu<top>": "Topul gangurilor",
+    "menu<top_info>": "{0} {1} nivel",
+
+    "menu<create>": "Creează gang",
+    "menu<create_with_credits>": "Creează gang {0} k.",
+    "menu<create_name>": "{green}Scrieți în chat numele noului dvs. gang",
+    "menu<create_success>": "{red}{0}{green} a creat gangul {red}{1}"
+}
