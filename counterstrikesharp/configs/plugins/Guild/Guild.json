@@ -7,21 +7,21 @@
   "DatabaseName": "",
   "ServerId": 0,
   "CreateCost": {
-    "_commentCost" : "Если 0, то бесплатно, если больше, нужен Mode",
+    "_commentCost" : "If it's 0, it's free, if it's more, you need Mode",
     "Value" : 1000,
     "_commentMode" : "0 - Shop(Ganter)",
     "Mode" : 0,
-    "_commentDays" : "На какое количество дней создается банда, 0 - безлимит",
+    "_commentDays" : "For how many days a gang is created, 0 is unlimited",
     "Days" : 15
   },
   "RenameCost": {
-    "_commentCost" : "Если 0, то бесплатно, если больше, нужен Mode",
+    "_commentCost" : "If it's 0, it's free, if it's more, you need Mode",
     "Value" : 1000,
     "_commentMode" : "0 - Shop(Ganter)",
     "Mode" : 0
   },
   "ExtendCost": {
-    "_commentPrices" : "Очистьте список, если не хотите продление",
+    "_commentPrices" : "Clear the list if you don't want an extension",
     "Prices" : [
       {
         "Day" : 7,
