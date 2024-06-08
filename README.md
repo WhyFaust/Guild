@@ -5,7 +5,7 @@
   
   
 ## Essential Plugins:  
-Shop (Optional)  
+Shop by Ganter (Optional) https://github.com/Ganter1234/Shop-Core
   
   
 ## How to install: 
