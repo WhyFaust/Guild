@@ -1,12 +1,6 @@
-﻿using System.Collections.Concurrent;
-using System.Data;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
+﻿using System.Data;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Core.Attributes.Registration;
-using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Menu;
 using Dapper;
 using Microsoft.Extensions.Logging;
@@ -14,7 +8,6 @@ using MySqlConnector;
 using GuildAPI;
 using CounterStrikeSharp.API.Core.Capabilities;
 using ShopAPI;
-using System;
 
 namespace Guild;
 public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
@@ -176,27 +169,27 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
         
         var slot = player.Slot;
         
-        var menu = new ChatMenu($"Банды");
+        var menu = new ChatMenu(Localizer["menu<title>"]);
         if (userInfo[slot].DatabaseID != -1)
         {
             var gang = GangList.Find(x => x.DatabaseID == userInfo[slot].GangId);
             if(gang != null)
             {
                 var days = Helper.ConvertUnixToDateTime(gang.EndDate).Subtract(DateTime.Now).Days;
-                menu.Title = $"Банда {TextColor.Green}[{gang.Name}] {TextColor.Gray}Осталось дней: {days}";
-                menu.AddMenuOption($"Статистика", ((player, option) =>
+                menu.Title = Localizer["menu<title_with_days>", gang.Name, days];
+                menu.AddMenuOption(Localizer["menu<statistic>"], ((player, option) =>
                 {
                     OpenStatisticMenu(player, gang);
                 }));
 
-                menu.AddMenuOption($"Умения", ((player, option) =>
+                menu.AddMenuOption(Localizer["menu<skills>"], ((player, option) =>
                 {
-                    var skillsMenu = new ChatMenu($"Умения");
+                    var skillsMenu = new ChatMenu(Localizer["menu<skills>"]);
                     foreach(var skill in gang.SkillList)
                     {
                         if(_shopApi != null)
                         {
-                            skillsMenu.AddMenuOption($"{skill.Name} [{skill.Level}/{skill.MaxLevel}] ({skill.Price} кр.)", ((player, option) =>
+                            skillsMenu.AddMenuOption(Localizer["menu<skills>", Localizer[skill.Name], skill.Level, skill.MaxLevel, skill.Price], ((player, option) =>
                             {
                                 Task.Run(async () =>
                                 {
@@ -211,14 +204,14 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
                                                 await connection.ExecuteAsync($"UPDATE `gang_perk` SET {skill.Name} = {skill.Level} WHERE `gang_id` = {gang.DatabaseID};");
 
                                                 Server.NextFrame(() => {
-                                                    player.PrintToChat($" {TextColor.Red}{skill.Name} {TextColor.Green}успешно куплен");
+                                                    player.PrintToChat(Localizer["menu<skill_success_buy>", Localizer[skill.Name]]);
                                                 });
                                             }
                                         }
                                         else
                                         {
                                             Server.NextFrame(() => {
-                                                player.PrintToChat($" {TextColor.Red}У вас максимальный уровень умения");
+                                                player.PrintToChat(Localizer["menu<skill_max_lvl>"]);
                                             });
                                         }
                                     }
@@ -235,20 +228,20 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
                     MenuManager.OpenChatMenu(player, skillsMenu);
                 }), NeedExtendGang(gang));
 
-                menu.AddMenuOption($"Игры", ((player, option) =>
+                /*menu.AddMenuOption($"Игры", ((player, option) =>
                 {
                     player.PrintToChat($" {TextColor.Green}В разработке");
-                }), NeedExtendGang(gang));
+                }), NeedExtendGang(gang));*/
 
-                menu.AddMenuOption($"Админ панель", ((player, option) =>
+                menu.AddMenuOption(Localizer["menu<admin_panel>"], ((player, option) =>
                 {
                     OpenAdminMenu(player);
                 }), userInfo[slot].Rank == 0 ? false : true);
 
-                menu.AddMenuOption($"Покинуть банду", ((player, option) =>
+                menu.AddMenuOption(Localizer["menu<leave>"], ((player, option) =>
                 {
-                    var acceptMenu = new ChatMenu($"Вы уверены, что хотите покинуть банду?");
-                    acceptMenu.AddMenuOption($"Да", ((player, option) =>
+                    var acceptMenu = new ChatMenu(Localizer["menu<leave_accept>"]);
+                    acceptMenu.AddMenuOption(Localizer["Yes"], ((player, option) =>
                     {
                         Task.Run(async () =>
                         {
@@ -267,7 +260,7 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
                                     userInfo[slot] = new UserInfo{ SteamID = steamID };
 
                                     Server.NextFrame(() => {
-                                        player.PrintToChat($" {TextColor.Green} Вы успешно покинули банду");
+                                        player.PrintToChat(Localizer["menu<leave_success>"]);
                                     });
                                 }
                             }
@@ -279,20 +272,20 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
                             }
                         });
                     }));
-                    acceptMenu.AddMenuOption($"Не, я передумал", ((invited, option) =>
+                    acceptMenu.AddMenuOption(Localizer["No"], ((invited, option) =>
                     {
                         MenuManager.OpenChatMenu(player, menu);
                     }));
                     MenuManager.OpenChatMenu(player, acceptMenu);    
                 }), userInfo[slot].Rank > 0 ? false : true);
 
-                menu.AddMenuOption($"Топ банды", ((player, option) =>
+                menu.AddMenuOption(Localizer["menu<top>"], ((player, option) =>
                 {
-                    var topGangsMenu = new ChatMenu($"Топ банды");
+                    var topGangsMenu = new ChatMenu(Localizer["menu<top>"]);
                     var gangs = from gang in GangList orderby gang.Exp select gang;
                     foreach (var gang in gangs)
                     {
-                        topGangsMenu.AddMenuOption($"{gang.Name} {GetGangLevel(gang)} ур.", ((player, option) =>
+                        topGangsMenu.AddMenuOption(Localizer["menu<top_info>", gang.Name, GetGangLevel(gang)], ((player, option) =>
                         {
                             OpenStatisticMenu(player, gang);
                         }));
@@ -308,24 +301,24 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
             {
                 if(Config.CreateCost.Mode == 0 && _shopApi != null)
                 {
-                    menu.AddMenuOption($"Создать банду ({Config.CreateCost.Value} кр.)", ((player, option) =>
+                    menu.AddMenuOption(Localizer["menu<create_with_credits>", Config.CreateCost.Value], ((player, option) =>
                     {
                         userInfo[slot].Status = 1;
-                        player.PrintToChat($" {TextColor.Green}Напишите в чат название вашей банды");
+                        player.PrintToChat(Localizer["menu<create_name>"]);
                     }), _shopApi.GetClientCredits(player) < Config.CreateCost.Value);
                 }
             }
             else
             {
-                menu.AddMenuOption($"Создать банду", ((player, option) =>
+                menu.AddMenuOption(Localizer["menu<create>"], ((player, option) =>
                 {
                     userInfo[slot].Status = 1;
-                    player.PrintToChat($" {TextColor.Green}Напишите в чат название вашей банды");
+                    player.PrintToChat(Localizer["menu<create_name>"]);
                 }));
             }
         }
         if(menu.MenuOptions.Count == 0)
-            menu.AddMenuOption($"У создателя сервера кривые настройки :(", ((player, option) =>{}), true);
+            menu.AddMenuOption(Localizer["Oops"], ((player, option) =>{}), true);
         MenuManager.OpenChatMenu(player, menu);
     }
     public void OpenAdminMenu(CCSPlayerController? player)
@@ -338,11 +331,11 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
         if(gang == null)
             return;
 
-        var menu = new ChatMenu($"Банда {TextColor.Green}[{gang.Name}]");
+        var menu = new ChatMenu(Localizer["menu<title_with_name>", gang.Name]);
         var sizeSkill = gang.SkillList.Find(x=>x.Name.Equals("size"));
-        menu.AddMenuOption($"Пригласить в банду", ((player, option) =>
+        menu.AddMenuOption(Localizer["menu<invite>"], ((player, option) =>
         {
-            var usersMenu = new ChatMenu($"Список игроков");
+            var usersMenu = new ChatMenu(Localizer["menu<players>"]);
             
             foreach (var user in CounterStrikeSharp.API.Utilities.GetPlayers())
             {
@@ -352,9 +345,9 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
                 {
                     usersMenu.AddMenuOption($"{user.PlayerName}", ((inviter, option) =>
                     {
-                        inviter.PrintToChat($" {TextColor.Green}Приглашение отправлено {TextColor.Red}{user.PlayerName}");
-                        var acceptMenu = new ChatMenu($"Вам пришло приглашение в банду {gang.Name}");
-                        acceptMenu.AddMenuOption($"Принять", ((invited, option) =>
+                        inviter.PrintToChat(Localizer["menu<invite_sent>", user.PlayerName]);
+                        var acceptMenu = new ChatMenu(Localizer["menu<invite_came>", gang.Name]);
+                        acceptMenu.AddMenuOption(Localizer["Accept"], ((invited, option) =>
                         {
                             
                             if(invited.AuthorizedSteamID != null)
@@ -391,8 +384,8 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
                                                 reader.Close();
                                                 gang.MembersList.Add(userInfo[user.Slot]);
                                                 Server.NextFrame(() => {
-                                                    invited.PrintToChat($" {TextColor.Green}Добро пожаловать в {TextColor.Red}{gang.Name}");
-                                                    inviter.PrintToChat($" {TextColor.Green}Игрок {TextColor.Red}{invited.PlayerName} {TextColor.Green}принял приглашение");
+                                                    invited.PrintToChat(Localizer["menu<invite_welcome>", gang.Name]);
+                                                    inviter.PrintToChat(Localizer["menu<invite_accept>", invited.PlayerName]);
                                                 });
                                             }
                                         }
@@ -412,16 +405,16 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
                 }
             }
             if(usersMenu.MenuOptions.Count > 0) MenuManager.OpenChatMenu(player, usersMenu);
-            else player.PrintToChat($" {TextColor.Red}Нет доступных игроков");
+            else player.PrintToChat(Localizer["menu<no_players>"]);
         }), NeedExtendGang(gang) || (sizeSkill != null && gang.MembersList.Count >= (Config.MaxMembers+sizeSkill.Level)) || gang.MembersList.Count >= Config.MaxMembers);
         if (Config.ExtendCost.Value.Count > 0 && _shopApi != null)
         {
-            menu.AddMenuOption($"Продлить банду", ((player, option) =>
+            menu.AddMenuOption(Localizer["menu<extend>"], ((player, option) =>
             {
-                var pricesMenu = new ChatMenu($"Выберите дату");
+                var pricesMenu = new ChatMenu(Localizer["menu<extend_date>"]);
                 foreach (var price in Config.ExtendCost.Value)
                 {
-                    pricesMenu.AddMenuOption($"{price.Day} дн. ({price.Value}) кр.", ((player, option) =>
+                    pricesMenu.AddMenuOption(Localizer["menu<extend_select_date>", price.Day, price.Value], ((player, option) =>
                     {
                         Task.Run(async () =>
                         {
@@ -439,7 +432,7 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
                                         await connection.ExecuteAsync($"UPDATE `gang_group` SET `end_date` = {newDate} WHERE `id` = '{gang.DatabaseID}'");
                                         gang.EndDate = newDate;
                                         Server.NextFrame(() => {
-                                            player.PrintToChat($" {TextColor.Green}Вы успешно продлили гильдию");
+                                            player.PrintToChat(Localizer["menu<extend_success>"]);
                                         });
                                     }
                                 }
@@ -461,24 +454,24 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
         {
             if(Config.RenameCost.Mode == 0 && _shopApi != null)
             {
-                menu.AddMenuOption($"Переименовать банду ({Config.RenameCost.Value} кр.)", ((player, option) =>
+                menu.AddMenuOption(Localizer["menu<rename_with_credits>", Config.RenameCost.Value], ((player, option) =>
                 {
                     userInfo[slot].Status = 2;
-                    player.PrintToChat($" {TextColor.Green}Напишите в чат новое название вашей банды");
+                    player.PrintToChat(Localizer["menu<rename_print>"]);
                 }), NeedExtendGang(gang) || _shopApi.GetClientCredits(player) < Config.RenameCost.Value);
             }
         }
         else
         {
-            menu.AddMenuOption($"Переименовать банду", ((player, option) =>
+            menu.AddMenuOption(Localizer["menu<rename>"], ((player, option) =>
             {
                 userInfo[slot].Status = 2;
-                player.PrintToChat($" {TextColor.Green}Напишите в чат новое название вашей банды");
+                player.PrintToChat(Localizer["menu<rename_print>"]);
             }), NeedExtendGang(gang));
         }
-        menu.AddMenuOption($"Передать лидерство", ((player, option) =>
+        menu.AddMenuOption(Localizer["menu<leader>"], ((player, option) =>
         {
-            var usersMenu = new ChatMenu($"Список игроков");
+            var usersMenu = new ChatMenu(Localizer["menu<players>"]);
             
             Dictionary<int, string> users = new Dictionary<int, string>();
 
@@ -502,8 +495,8 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
                         {
                             usersMenu.AddMenuOption($"{user.Value}", ((player, option) =>
                             {
-                                var acceptMenu = new ChatMenu($"Вы уверены, что хотите передать лидерство {user.Value}");
-                                acceptMenu.AddMenuOption($"Да", ((player, option) =>
+                                var acceptMenu = new ChatMenu(Localizer["menu<leader_sure>", user.Value]);
+                                acceptMenu.AddMenuOption(Localizer["Yes"], ((player, option) =>
                                 {
                                     Task.Run(async () =>
                                     {
@@ -523,11 +516,11 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
                                                         if(userInfo[player.Slot].DatabaseID == user.Key)
                                                         {
                                                             userInfo[player.Slot].Rank = 0;
-                                                            player.PrintToChat($" {TextColor.Green}Вам передали лидерство в банде");
+                                                            player.PrintToChat(Localizer["menu<leader_new>"]);
                                                             break;
                                                         }
                                                     }
-                                                    player.PrintToChat($" {TextColor.Green}Вы успешно передали лидерство {user.Value}");
+                                                    player.PrintToChat(Localizer["menu<leader_complete>", user.Value]);
                                                 });
                                             }
                                         }
@@ -539,7 +532,7 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
                                         }
                                     });
                                 }));
-                                acceptMenu.AddMenuOption($"Не, я передумал", ((invited, option) =>
+                                acceptMenu.AddMenuOption(Localizer["No"], ((invited, option) =>
                                 {
                                     MenuManager.OpenChatMenu(player, menu);
                                 }));
@@ -548,7 +541,7 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
                         }
                         Server.NextFrame(() => {
                             if(usersMenu.MenuOptions.Count > 0) MenuManager.OpenChatMenu(player, usersMenu);
-                            else player.PrintToChat($" {TextColor.Red}Нет доступных игроков");
+                            else player.PrintToChat(Localizer["menu<no_players>"]);
                         });
                     }
                 }
@@ -562,10 +555,10 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
         }), NeedExtendGang(gang));
         if(userInfo[slot].Rank == 0)
         {    
-            menu.AddMenuOption($"Распустить банду", ((player, option) =>
+            menu.AddMenuOption(Localizer["menu<disolve>"], ((player, option) =>
             {
-                var confirmMenu = new ChatMenu($"{TextColor.Red}Вы уверены?");
-                confirmMenu.AddMenuOption($"{TextColor.Red}Да", ((player, option) =>
+                var confirmMenu = new ChatMenu(Localizer["Sure"]);
+                confirmMenu.AddMenuOption(Localizer["Yes"], ((player, option) =>
                 {
                     Task.Run(async () =>
                     {
@@ -614,7 +607,7 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
                         }
                     });
                 }));
-                confirmMenu.AddMenuOption($"Отмена", ((player, option) =>
+                confirmMenu.AddMenuOption(Localizer["Cancel"], ((player, option) =>
                 {
                     MenuManager.OpenChatMenu(player, menu);
                 }));  
@@ -649,22 +642,22 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
                         var name = data["name"];
 
                     Server.NextFrame(() => {
-                        var statmenu = new ChatMenu($"Статистика банды");
+                        var statmenu = new ChatMenu(Localizer["menu<statistic_title>"]);
 
-                        statmenu.AddMenuOption($"Наименование: {gang.Name}", ((player, option) =>{}), true);
+                        statmenu.AddMenuOption(Localizer["menu<statistic_name>", gang.Name], ((player, option) =>{}), true);
 
                         int level = GetGangLevel(gang);
                         int needexp = level*Config.ExpInc+Config.ExpInc;
 
-                        statmenu.AddMenuOption($"Уровень: {level} [{gang.Exp}/{needexp}]", ((player, option) =>{}), true);
+                        statmenu.AddMenuOption(Localizer["menu<statistic_lvl>", level, gang.Exp, needexp], ((player, option) =>{}), true);
 
-                        statmenu.AddMenuOption($"Кол-во участников: {count}", ((player, option) =>{}), true);
+                        statmenu.AddMenuOption(Localizer["menu<statistic_num_players>", count], ((player, option) =>{}), true);
 
                         DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
                         dateTime = dateTime.AddSeconds(gang.CreateDate).ToLocalTime();
                         var date = dateTime.ToString("dd.MM.yyyy") + " " + dateTime.ToString("hh:mm");
-                        statmenu.AddMenuOption($"Дата создания:  {date}", ((player, option) =>{}), true);
-                        statmenu.AddMenuOption($"Лидер:  {name}", ((player, option) =>{}), true);
+                        statmenu.AddMenuOption(Localizer["menu<statistic_create_date>", date], ((player, option) =>{}), true);
+                        statmenu.AddMenuOption(Localizer["menu<statistic_leader>", name], ((player, option) =>{}), true);
                         
                         MenuManager.OpenChatMenu(player, statmenu);
                     });

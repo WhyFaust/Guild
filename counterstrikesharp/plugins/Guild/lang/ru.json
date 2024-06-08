@@ -1,0 +1,71 @@
+{
+    "Prefix": "[{blue} Gangs{default} ]",
+    "Yes" : "Да",
+    "No" : "Нет",
+    "Accept" : "Принять",
+    "Sure" : "Вы уверены?",
+    "Cancel" : "Отмена",
+    "Oops" : "У создателя сервера кривые настройки :(",
+
+    "menu<title>" : "Банды",
+    "menu<title_with_name>" : "Банда {green}{0}",
+    "menu<title_with_days>" : "Банда {green}[{0}] {gray}Осталось дней: {1}",
+
+    "menu<statistic>" : "Статистика",
+    "menu<statistic_title>" : "Статистика банды",
+    "menu<statistic_name>" : "Наименование: {0}",
+    "menu<statistic_lvl>" : "Уровень: {0} [{1}/{2}]",
+    "menu<statistic_num_players>" : "Кол-во участников: {0}",
+    "menu<statistic_create_date>" : "Дата создания: {0}",
+    "menu<statistic_leader>" : "Лидер: {0}",
+
+    "menu<skills>" : "Умения",
+    "size" : "Размер банды",
+    "hp" : "Жизни",
+
+    "menu<skill_info>" : "{0} [{1}/{2}] ({3} кр.)",
+    "menu<skill_success_buy>" : "{red}{0} {green}Успешно куплен",
+    "menu<skill_max_lvl>" : "{red}У вас максимальный уровень умения",
+
+    "menu<admin_panel>" : "Админ панель",
+    "menu<invite>" : "Пригласить в банду",
+    "menu<invite_sent>" : "{green}Приглашение отправлено {red}{0}",
+    "menu<invite_came>" : "Вам пришло приглашение в банду {0}",
+    "menu<invite_welcome>" : "{green}Добро пожаловать в {red}{0}",
+    "menu<invite_accept>" : "{green}Игрок {red}{0} {green}принял приглашение",
+    "menu<players>" : "Список игроков",
+    "menu<no_players>" : "{red}Нет доступных игроков",
+
+    "menu<disolve>" : "Распустить банду",
+
+    "menu<extend>" : "Продлить банду",
+    "menu<extend_date>" : "Выберите дату",
+    "menu<extend_select_date>" : "{0} дн. ({1}) кр.",
+    "menu<extend_success>" : "{green}Вы успешно продлили гильдию",
+
+    "menu<rename>" : "Переименовать банду",
+    "menu<rename_with_credits>" : "Переименовать банду ({0} кр.)",
+    "menu<rename_print>" : "{green}Напишите в чат новое название вашей банды",
+    "menu<rename_long>" : "{green}Название слишком длинное",
+    "menu<rename_short" : "{green}Название слишком короткое",
+    "menu<rename_success" : "{red}{0}{green} переименовал банду на {red}{1}",
+    "menu<rename_exist" : "{green}Название уже используется",
+
+    "menu<leader>" : "Передать лидерство",
+    "menu<leader_sure>" : "Вы уверены, что хотите передать лидерство {0}",
+    "menu<leader_new>" : "{green}Вам передали лидерство в банде",
+    "menu<leader_complete>" : "{green}Вы успешно передали лидерство {0}",
+
+    "menu<leave>" : "Покинуть банду",
+    "menu<leave_accept>" : "Вы уверены, что хотите покинуть банду?",
+    "menu<leave_success>" : "{green}Вы успешно покинули банду",
+
+    "menu<top>" : "Топ банды",
+    "menu<top_info>" : "{0} {1} ур.",
+
+    "menu<create>" : "Создать банду",
+    "menu<create_with_credits>" : "Создать банду {0} кр.",
+    "menu<create_name>" : "{green}Напишите в чат название вашей банды",
+    "menu<create_success>" : "{red}{0}{green} создал банду {red}{1}"
+
+}

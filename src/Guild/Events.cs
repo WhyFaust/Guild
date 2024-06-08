@@ -1,16 +1,12 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
-using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Entities;
 using Dapper;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
 using System.Data;
-using System.Data.Common;
-using System.Text;
 using static Dapper.SqlMapper;
 
 namespace Guild;
@@ -151,12 +147,12 @@ public partial class Guild
 
             if(message.Length > 16)
             {
-                player.PrintToChat($" {TextColor.Green}Название слишком длинное");
+                player.PrintToChat(Localizer["menu<rename_long>"]);
                 return HookResult.Handled;
             }
             else if(message.Length < 3)
             {
-                player.PrintToChat($" {TextColor.Green}Название слишком короткое");
+                player.PrintToChat(Localizer["menu<rename_short>"]);
                 return HookResult.Handled;
             }
             else if(message.Length == 0)
@@ -233,7 +229,7 @@ public partial class Guild
                                         Server.NextFrame(() =>
                                         {
                                             if (gang != null) _api!.OnGuildCreated(player, gang.DatabaseID);
-                                            Server.PrintToChatAll($" {TextColor.Red}{playerName}{TextColor.Green} создал банду {TextColor.Red}{message}");
+                                            Server.PrintToChatAll(Localizer["menu<create_success>", playerName, message]);
                                         });
                                     }
                                     reader3.Close();
@@ -252,13 +248,13 @@ public partial class Guild
                                 }
                                 Server.NextFrame(() =>
                                 {
-                                    Server.PrintToChatAll($" {TextColor.Red}{playerName}{TextColor.Green} переименовал банду на {TextColor.Red}{message}");
+                                    Server.PrintToChatAll(Localizer["menu<rename_success>", playerName, message]);
                                 });
                             }
                         }
                         else
                         {
-                            Server.NextFrame(() => player.PrintToChat($" {TextColor.Green}Название уже используется"));
+                            Server.NextFrame(() => player.PrintToChat(Localizer["menu<rename_exist>"]));
                         }
                     }
                 }
