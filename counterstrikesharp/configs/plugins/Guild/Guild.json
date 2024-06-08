@@ -1,0 +1,46 @@
+{
+  "OpenCommands": "css_gangs;css_g;css_gang;css_guild;css_guilds",
+  "DatabaseHost": "37.140.192.240",
+  "DatabasePort": 3306,
+  "DatabaseUser": "u2528604_bg",
+  "DatabasePassword": "bobka284697",
+  "DatabaseName": "u2528604_lvl_mirage",
+  "ServerId": 0,
+  "CreateCost": {
+    "_commentCost" : "Если 0, то бесплатно, если больше, нужен Mode",
+    "Value" : 1000,
+    "_commentMode" : "0 - Shop(Ganter)",
+    "Mode" : 0,
+    "_commentDays" : "На какое количество дней создается банда, 0 - безлимит",
+    "Days" : 15
+  },
+  "RenameCost": {
+    "_commentCost" : "Если 0, то бесплатно, если больше, нужен Mode",
+    "Value" : 1000,
+    "_commentMode" : "0 - Shop(Ganter)",
+    "Mode" : 0
+  },
+  "ExtendCost": {
+    "_commentPrices" : "Очистьте список, если не хотите продление",
+    "Prices" : [
+      {
+        "Day" : 7,
+        "Value" : 2500
+      },
+      {
+        "Day" : 14,
+        "Value" : 4000
+      },
+      {
+        "Day" : 30,
+        "Value" : 7500
+      },
+      {
+        "Day" : 90,
+        "Value" : 20000
+      }
+    ]
+  },
+  "MaxMembers": 10,
+  "ExpInc": 100
+}
