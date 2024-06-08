@@ -1,10 +1,10 @@
 {
   "OpenCommands": "css_gangs;css_g;css_gang;css_guild;css_guilds",
-  "DatabaseHost": "37.140.192.240",
+  "DatabaseHost": "",
   "DatabasePort": 3306,
-  "DatabaseUser": "u2528604_bg",
-  "DatabasePassword": "bobka284697",
-  "DatabaseName": "u2528604_lvl_mirage",
+  "DatabaseUser": "",
+  "DatabasePassword": "",
+  "DatabaseName": "",
   "ServerId": 0,
   "CreateCost": {
     "_commentCost" : "Если 0, то бесплатно, если больше, нужен Mode",
