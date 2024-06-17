@@ -6,6 +6,7 @@
   
 ## Essential Plugins:  
 Shop by Ganter (Optional) https://github.com/Ganter1234/Shop-Core
+CS2-Store (Optional) https://github.com/schwarper/cs2-store
   
   
 ## How to install: 
