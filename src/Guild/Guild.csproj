@@ -25,6 +25,12 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="StoreApi">
+       <HintPath>..\StoreApi.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
   <PropertyGroup>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>

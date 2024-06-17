@@ -50,7 +50,7 @@ namespace Guild
         [JsonPropertyName("Value")]
 		public int Value { get; set; } = 0;
         [JsonPropertyName("_commentMode")]
-		public string CommentMode { get; set; } = "0 - Shop(Ganter)";
+		public string CommentMode { get; set; } = "0 - Shop(Ganter), 1 - cs2-store";
         [JsonPropertyName("Mode")]
 		public int Mode { get; set; } = 0;
         [JsonPropertyName("_commentDays")]
@@ -65,7 +65,7 @@ namespace Guild
         [JsonPropertyName("Value")]
 		public int Value { get; set; } = 0;
         [JsonPropertyName("_commentMode")]
-		public string CommentMode { get; set; } = "0 - Shop(Ganter)";
+		public string CommentMode { get; set; } = "0 - Shop(Ganter), 1 - cs2-store";
         [JsonPropertyName("Mode")]
 		public int Mode { get; set; } = 0;
 	}

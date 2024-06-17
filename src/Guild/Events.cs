@@ -225,6 +225,7 @@ public partial class Guild
                                         if (Config.CreateCost.Value > 0) 
                                         {
                                             if(Config.CreateCost.Mode == 0 && _shopApi != null) _shopApi.SetClientCredits(player, _shopApi.GetClientCredits(player) - Config.CreateCost.Value);
+                                            if(Config.CreateCost.Mode == 1 && _storeApi != null) _storeApi.SetPlayerCredits(player, _storeApi.GetPlayerCredits(player) - Config.CreateCost.Value);
                                         }
                                         Server.NextFrame(() =>
                                         {
@@ -245,6 +246,7 @@ public partial class Guild
                                 if (Config.RenameCost.Value > 0) 
                                 {
                                     if(Config.RenameCost.Mode == 0 && _shopApi != null) _shopApi.SetClientCredits(player, _shopApi.GetClientCredits(player) - Config.RenameCost.Value);
+                                    if(Config.RenameCost.Mode == 1 && _storeApi != null) _storeApi.SetPlayerCredits(player, _storeApi.GetPlayerCredits(player) - Config.RenameCost.Value);
                                 }
                                 Server.NextFrame(() =>
                                 {

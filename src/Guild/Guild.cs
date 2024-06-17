@@ -8,6 +8,7 @@ using MySqlConnector;
 using GuildAPI;
 using CounterStrikeSharp.API.Core.Capabilities;
 using ShopAPI;
+using StoreApi;
 
 namespace Guild;
 public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
@@ -28,6 +29,8 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
 
     private IShopApi? _shopApi;
     private readonly PluginCapability<IShopApi> _shopPluginCapability = new("Shop_Core:API");
+
+    private IStoreApi? _storeApi;
 
     public override void Load(bool hotReload)
     {
@@ -81,6 +84,17 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
         try
         {
             _shopApi = _shopPluginCapability.Get();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("{OnAllPluginsLoaded} Fail load another api! | " + ex.Message);
+            Logger.LogDebug(ex.Message);
+            throw new Exception("[Guild] Fail load another api! | " + ex.Message);
+        }
+
+        try
+        {
+            _storeApi = IStoreApi.Capability.Get();
         }
         catch (Exception ex)
         {
@@ -307,6 +321,14 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
                         player.PrintToChat(Localizer["menu<create_name>"]);
                     }), _shopApi.GetClientCredits(player) < Config.CreateCost.Value);
                 }
+                else if(Config.CreateCost.Mode == 1 && _storeApi != null)
+                {
+                    menu.AddMenuOption(Localizer["menu<create_with_credits>", Config.CreateCost.Value], ((player, option) =>
+                    {
+                        userInfo[slot].Status = 1;
+                        player.PrintToChat(Localizer["menu<create_name>"]);
+                    }), _storeApi.GetPlayerCredits(player) < Config.CreateCost.Value);
+                }
             }
             else
             {
@@ -459,6 +481,14 @@ public partial class Guild : BasePlugin, IPluginConfig<GuildConfig>
                     userInfo[slot].Status = 2;
                     player.PrintToChat(Localizer["menu<rename_print>"]);
                 }), NeedExtendGang(gang) || _shopApi.GetClientCredits(player) < Config.RenameCost.Value);
+            }
+            else if(Config.RenameCost.Mode == 0 && _storeApi != null)
+            {
+                menu.AddMenuOption(Localizer["menu<rename_with_credits>", Config.RenameCost.Value], ((player, option) =>
+                {
+                    userInfo[slot].Status = 2;
+                    player.PrintToChat(Localizer["menu<rename_print>"]);
+                }), NeedExtendGang(gang) || _storeApi.GetPlayerCredits(player) < Config.RenameCost.Value);
             }
         }
         else
